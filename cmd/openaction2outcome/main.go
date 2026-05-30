@@ -6,6 +6,7 @@
 //	validate  Check every mark against the schema and point-in-time invariants.
 //	score     Score a submission against the marks (decision + calibration).
 //	study     Run the calibration study (plug-in vs model-averaged coverage).
+//	export    Assemble a Hugging Face-ready dataset directory from the marks.
 package main
 
 import (
@@ -17,6 +18,7 @@ import (
 	"sort"
 
 	"github.com/umbralcalc/openaction2outcome/internal/dossier"
+	"github.com/umbralcalc/openaction2outcome/internal/hfexport"
 	"github.com/umbralcalc/openaction2outcome/internal/ingest"
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
 	"github.com/umbralcalc/openaction2outcome/internal/sbi"
@@ -42,6 +44,8 @@ func main() {
 		err = cmdFetch(os.Args[2:])
 	case "study":
 		err = cmdStudy(os.Args[2:])
+	case "export":
+		err = cmdExport(os.Args[2:])
 	case "-h", "--help", "help":
 		usage()
 		return
@@ -65,6 +69,7 @@ usage:
   openaction2outcome build --series NAME [--raw DIR] [--cache DIR] [--dist DIR] [--marks DIR]
   openaction2outcome validate [--marks DIR]
   openaction2outcome score --submission FILE [--marks DIR] [--out FILE]
+  openaction2outcome export [--marks DIR] [--card FILE] [--out DIR]
 `)
 }
 
@@ -150,6 +155,30 @@ func cmdStudy(args []string) error {
 			study.PlugIn.MeanWidth[i], study.SBI.MeanWidth[i])
 	}
 	fmt.Printf("\nwrote %s\n", *out)
+	return nil
+}
+
+// cmdExport assembles a Hugging Face-ready dataset directory (per-series JSONL +
+// Dataset Card) from the minted marks, staged for `huggingface-cli upload`.
+func cmdExport(args []string) error {
+	fs := flag.NewFlagSet("export", flag.ExitOnError)
+	marksDir := fs.String("marks", "marks", "directory of mark JSON files")
+	cardPath := fs.String("card", "huggingface/README.md", "Dataset Card to ship as README.md")
+	out := fs.String("out", "dist/hf", "output directory (push this to Hugging Face)")
+	fs.Parse(args)
+
+	marks, err := loadMarks(*marksDir)
+	if err != nil {
+		return err
+	}
+	if len(marks) == 0 {
+		return fmt.Errorf("export: no marks under %s", *marksDir)
+	}
+	if err := hfexport.Export(marks, *out, *cardPath); err != nil {
+		return err
+	}
+	fmt.Printf("exported %d mark(s) -> %s (README.md + per-series .jsonl)\n", len(marks), *out)
+	fmt.Printf("push with: huggingface-cli upload <user>/openaction2outcome %s . --repo-type dataset\n", *out)
 	return nil
 }
 

@@ -38,3 +38,6 @@ verify:                      ## verify live artifacts resolve + match hashes (no
 
 clean:                       ## remove staged upload artifacts
 	rm -rf dist
+
+hf:                          ## export a Hugging Face-ready dataset dir (dist/hf)
+	$(CLI) export

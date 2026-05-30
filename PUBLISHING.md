@@ -70,3 +70,37 @@ A model author never needs the mint. They:
 3. produce a `submission.json` and run `openaction2outcome score --submission ...`.
 
 No account, no server, nothing hosted by us beyond static object storage.
+
+# Publishing to Hugging Face Datasets
+
+The marks are mirrored to Hugging Face Datasets — the discovery channel for the
+target audience. Git remains the source of truth; HF carries a flattened, loadable
+view of the marks (one record per mark, the effect distribution + design + a link
+to the episode table in object storage). The full nested marks stay in this repo.
+
+## Generate the dataset directory
+
+```sh
+make hf            # -> dist/hf/ : README.md (Dataset Card) + one <series>.jsonl per config
+```
+
+Each series is a separate config (subset): `floor-standards`, `shmi`.
+
+## Push it (needs a Hugging Face token)
+
+```sh
+pip install -U huggingface_hub
+huggingface-cli login            # paste a token from https://huggingface.co/settings/tokens
+huggingface-cli upload umbralcalc/openaction2outcome dist/hf . --repo-type dataset
+```
+
+The Dataset Card (`huggingface/README.md` in this repo) is the canonical HF
+documentation; `make hf` copies it into `dist/hf/README.md`. Consumers then:
+
+```python
+from datasets import load_dataset
+ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]
+```
+
+The episode tables are not duplicated to HF — they live in R2 and are referenced
+by `episode_table_url` + `episode_table_sha256` in each record.
