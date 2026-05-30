@@ -46,11 +46,7 @@ func EstimateBMA(
 	treatedBelow bool,
 	cfg SMCConfig,
 ) BMAResult {
-	type fitted struct {
-		post     specPosterior
-		logPrior float64
-	}
-	var fits []fitted
+	var ests []specEstimate
 	for i, s := range specs {
 		sf := buildSpecFit(pts, cutoff, s, treatedBelow)
 		post := fitSpecSMC(sf, cfg)
@@ -61,30 +57,48 @@ func EstimateBMA(
 		if specPrior != nil {
 			pw = specPrior[i]
 		}
-		fits = append(fits, fitted{post: post, logPrior: math.Log(pw)})
+		ests = append(ests, specEstimate{
+			spec: s, mean: post.tauMean, variance: post.tauVar, logZ: post.logZ, logPrior: math.Log(pw),
+		})
 	}
-	if len(fits) == 0 {
+	return assembleBMA(ests)
+}
+
+// specEstimate is one spec's contribution to a model average: a Gaussian estimate
+// (mean, variance) of the target effect, the reduced-form log marginal likelihood
+// used for within-bandwidth weighting, and an optional log spec prior.
+type specEstimate struct {
+	spec     Spec
+	mean     float64
+	variance float64
+	logZ     float64
+	logPrior float64
+}
+
+// assembleBMA combines per-spec Gaussian estimates with the hybrid weighting
+// (marginal likelihood within a bandwidth, uniform across bandwidths) into the
+// model-averaged posterior, splitting width into within-spec (sampling) and
+// between-spec (identification) variance.
+func assembleBMA(ests []specEstimate) BMAResult {
+	if len(ests) == 0 {
 		return BMAResult{}
 	}
-
-	// Group surviving specs by bandwidth (same data within a group).
 	groups := make(map[float64][]int)
 	var bwOrder []float64
-	for i, f := range fits {
-		h := f.post.spec.H
-		if _, seen := groups[h]; !seen {
-			bwOrder = append(bwOrder, h)
+	for i, e := range ests {
+		if _, seen := groups[e.spec.H]; !seen {
+			bwOrder = append(bwOrder, e.spec.H)
 		}
-		groups[h] = append(groups[h], i)
+		groups[e.spec.H] = append(groups[e.spec.H], i)
 	}
 	groupWeight := 1.0 / float64(len(bwOrder)) // uniform across bandwidths
 
-	weights := make([]float64, len(fits))
+	weights := make([]float64, len(ests))
 	for _, h := range bwOrder {
 		idxs := groups[h]
 		logs := make([]float64, len(idxs))
 		for j, ix := range idxs {
-			logs[j] = fits[ix].post.logZ + fits[ix].logPrior // valid: shared data
+			logs[j] = ests[ix].logZ + ests[ix].logPrior // valid: shared data
 		}
 		lse := logSumExp(logs)
 		for j, ix := range idxs {
@@ -92,14 +106,13 @@ func EstimateBMA(
 		}
 	}
 
-	res := BMAResult{Specs: make([]SpecWeight, len(fits))}
-	for i, f := range fits {
+	res := BMAResult{Specs: make([]SpecWeight, len(ests))}
+	for i, e := range ests {
 		res.Specs[i] = SpecWeight{
-			Spec: f.post.spec, TauMean: f.post.tauMean, TauSD: math.Sqrt(f.post.tauVar),
-			LogZ: f.post.logZ, Weight: weights[i],
+			Spec: e.spec, TauMean: e.mean, TauSD: math.Sqrt(e.variance), LogZ: e.logZ, Weight: weights[i],
 		}
-		res.Central += weights[i] * f.post.tauMean
-		res.WithinVar += weights[i] * f.post.tauVar
+		res.Central += weights[i] * e.mean
+		res.WithinVar += weights[i] * e.variance
 	}
 	for _, sw := range res.Specs {
 		d := sw.TauMean - res.Central
@@ -107,7 +120,6 @@ func EstimateBMA(
 	}
 	res.TotalSD = math.Sqrt(res.WithinVar + res.BetweenVar)
 	res.Median = res.Quantile(0.5)
-	// Keep specs in a stable, human-friendly order (heaviest weight first).
 	sort.SliceStable(res.Specs, func(i, j int) bool { return res.Specs[i].Weight > res.Specs[j].Weight })
 	return res
 }
