@@ -276,6 +276,8 @@ func cmdBuild(args []string) error {
 		mark, err = series.BuildFloorStandards(*rawDir, *cacheDir, *distDir, cfg)
 	case "shmi":
 		mark, err = series.BuildSHMI(*rawDir, *cacheDir, *distDir, cfg)
+	case "shmi-fuzzy":
+		mark, err = series.BuildSHMIFuzzy(*rawDir, *cacheDir, *distDir, cfg)
 	case "":
 		return fmt.Errorf("build: --series is required (floor-standards, shmi)")
 	default:
@@ -283,6 +285,15 @@ func cmdBuild(args []string) error {
 	}
 	if err != nil {
 		return err
+	}
+
+	// A mark only joins the published corpus if it passes the validity battery
+	// (and, for fuzzy designs, a strong first stage). A failing candidate is
+	// reported but not written, so the dataset holds only trustworthy references.
+	if !mark.Dossier.Admitted {
+		fmt.Printf("NOT ADMITTED: %s (%s) — not written to %s\n", mark.ID, mark.Series, *outDir)
+		fmt.Printf("  %s\n", mark.Dossier.Notes)
+		return nil
 	}
 
 	out := filepath.Join(*outDir, mark.ID+".json")

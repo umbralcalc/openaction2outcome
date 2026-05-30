@@ -1,0 +1,17 @@
+{
+  "source_id": "cqc-inspections-2026-05-30",
+  "title": "CQC dated inspection/report events for NHS acute trusts (extracted 2026-05-30)",
+  "publisher": "Care Quality Commission (CQC)",
+  "landing_page": "https://www.cqc.org.uk/about-us/transparency/using-cqc-data",
+  "download_uri": "https://api.service.cqc.org.uk/public/v1/providers/",
+  "r2_object_key": "raw/cqc-inspections-2026-05-30/cqc_inspections.csv",
+  "local_path": "cqc_inspections.csv",
+  "sha256": "993377de5596dfff8bf154639ef6e47ca195a1a37b46ca1ae9ce2dbff775b92f",
+  "bytes": 64591,
+  "format": "csv",
+  "licence": "Open Government Licence v3.0",
+  "licence_uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "vintage": "CQC report history as held by the CQC API on 2026-05-30, for the NHS trust ODS codes appearing in the SHMI decision windows. One row per published CQC report event (provider_ods, provider_name, report_date, report_type).",
+  "role": "first-stage-treatment",
+  "notes": "Used to define the fuzzy first-stage treatment: whether a trust received a CQC inspection in the period after being banded 'higher than expected'. The CQC public API requires a subscription key, so this canonical file was assembled once by scripts/cqc_extract.py (key read from a gitignored .cqc_api_key); the build reads the frozen file without a key. Not vendored into git: the bytes live in object storage / the local cache, pinned by sha256. Re-extraction needs a CQC API key and may differ as CQC updates."
+}
