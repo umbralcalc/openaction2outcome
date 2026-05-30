@@ -1,0 +1,17 @@
+{
+  "source_id": "imd2019-file10-lad-lower-tier",
+  "title": "English Indices of Deprivation 2019 — File 10: Local Authority District Summaries (lower-tier)",
+  "publisher": "Ministry of Housing, Communities & Local Government (MHCLG)",
+  "landing_page": "https://www.gov.uk/government/statistics/english-indices-of-deprivation-2019",
+  "download_uri": "https://assets.publishing.service.gov.uk/media/5d8b3cfbe5274a08be69aa91/File_10_-_IoD2019_Local_Authority_District_Summaries__lower-tier__.xlsx",
+  "r2_object_key": "raw/imd2019-file10-lad-lower-tier/File_10_IoD2019_LAD_Summaries_lower_tier.xlsx",
+  "local_path": "File_10_IoD2019_LAD_Summaries_lower_tier.xlsx",
+  "sha256": "e4ade0ca7fa5e00e1f89b6c1ae754cd6561dd777543e04ff8a38cadea10b5366",
+  "bytes": 255264,
+  "format": "xlsx",
+  "licence": "Open Government Licence v3.0",
+  "licence_uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "vintage": "IoD2019 (Index of Multiple Deprivation 2019, released 26 September 2019)",
+  "role": "running-variable",
+  "notes": "Running variable for the area-funding seam (UKSPF 2025-26 top-20% IMD prioritisation). Held for a future area-funding mark; the sharp UKSPF form is too recent (2025-26) to have a realized downstream outcome yet. Not vendored into git: fetch from download_uri (or the R2 mirror) into data/cache and verify against sha256."
+}

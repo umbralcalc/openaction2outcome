@@ -1,0 +1,7 @@
+{
+  "_comment": "Object-storage publishing config. base_url is the PUBLIC read base for the bucket (e.g. a Cloudflare R2 custom domain or <accountid>.r2.dev URL). Frozen raw inputs are served at base_url/<source.r2_object_key>; per-mark episode tables at base_url/marks/<mark_id>/<artifact>. Marks reference these by URL + SHA-256, so changing base_url does not affect integrity. Replace the placeholder before publishing.",
+  "base_url": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev",
+  "bucket": "openaction2outcome",
+  "raw_prefix": "raw",
+  "marks_prefix": "marks"
+}
