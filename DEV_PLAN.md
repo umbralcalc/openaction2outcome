@@ -1,118 +1,130 @@
-# CAUSAL YARDSTICK v3 (working title)
-## An open set of causally-validated institutional-decision reference points for testing models that make counterfactual claims
+# openaction2outcome — Development Plan v3
+## Go + stochadex, offline-minted, published as a public repo + static files
 
-**One-line:** A curated, openly-published set of real UK public-sector decisions — each triggered when an institution's measured performance crosses a published threshold — where the true effect of the decision is recovered by regression discontinuity and shipped as an *honest interval* (central estimate + identification uncertainty + a validity dossier). Its purpose is to test whether any model that makes counterfactual claims (world models, model-based policies, digital twins, LLMs answering "what would happen if…") gets the causal effect right at points where ground truth is genuinely known.
+*An open causal yardstick mapping actions to verified outcomes.*
 
-**What it is not:** not a live system, not a recommender, not a leaderboard-first benchmark, not a training corpus. It is a small, bulletproof, fully open reference instrument.
+**Naming convention (decided):** the project is called **`openaction2outcome`** in all places — repo, Go module, CLI, Hugging Face dataset, brand. No short handle/alias, to remove any "which form do I cite?" ambiguity. (Pending final clash verification against UK Companies House, UK IPO/EUIPO trademarks, the live GitHub org, and the Hugging Face namespace before committing the org + module path.)
 
----
+**Stack (committed):** application language is **Go**; simulation + inference via **stochadex** and the author's existing Go inference tooling; everything else is off-the-shelf and chosen to minimise maintenance load and cost.
 
-## 1. Why "yardstick," and why "institutional"
-
-**Yardstick, not benchmark.** A benchmark ranks methods and needs breadth and a leaderboard. A yardstick provides reference points so trustworthy that a model's counterfactual claims can be checked against them. This reframing makes the design's apparent weaknesses into virtues: a small mark count is fine (a ruler needs accurate marks, not many), and the local-to-cutoff estimand is the *design* (precise reference points, not a continuous field), not a caveat.
-
-**Institutional decision units, not individuals.** A scouting pass across UK open data established a hard structural constraint: the conjunction the yardstick needs — a sharp published threshold + a publicly available running variable + a separable public outcome *at the same unit* + plausible non-manipulability — almost never holds for decisions about *individuals*, because individual-level outcomes (income, health, attainment) are locked inside the ONS Secure Research Service, whose safe-outputs rule forbids publishing the row-level dataset. It DOES hold for decisions about *institutions* (schools, NHS trusts, local authorities), whose running variables and outcomes are routinely published openly at matching resolution. The yardstick is therefore built entirely on threshold-triggered decisions about institutions. (See §7 for what was ruled out and why.)
+**Governing principle:** this is an **offline dataset that you mint locally and publish as static files.** No hosted service of any kind — no server, no database, no cron, no serverless function, no WASM. You run a Go pipeline by hand; it produces the marks *and* the scores; you push the results to a public GitHub repo and an object store. A consumer who wants to score their own model downloads the same public Go package and runs it locally. Recurring cost: £0. Things that can break while you're not looking: none.
 
 ---
 
-## 2. The confirmed v1 seams (three domains, three unit-types, two RDD regimes)
+## 1. Architecture in one paragraph
 
-| Seam | Domain | Unit | RDD type | Running variable (open source) | Manipulability |
-|---|---|---|---|---|---|
-| School floor standards | Education | School | Sharp | Performance score — DfE performance tables / Explore Education Statistics | Low–moderate |
-| SHMI mortality banding | Health | NHS trust | Fuzzy | SHMI ratio + banding — NHS England / NHS Digital, monthly, open | Low |
-| Area funding prioritisation (e.g. UKSPF top-20% deprivation) | Local government / regional policy | Local authority | Sharp | IMD percentile — MHCLG English Indices of Deprivation | Very low |
-
-This spread is deliberate and is itself a strength: three distinct policy domains, three institutional unit-types, and a mix of **sharp** and **fuzzy** RDD — demonstrating the instrument works across both identification regimes. Manipulability *improves* down the table, so the area-funding seam (IMD is government-computed and cannot be self-reported or appealed across the boundary) serves as the cleanest anchor mark, with floor standards and SHMI adding domain breadth.
-
-Each seam's "action" differs in sharpness:
-- **Floor standards** — crossing the floor deterministically triggers a named intervention → sharp.
-- **Area funding** — crossing the percentile boundary deterministically changes funding prioritisation → sharp.
-- **SHMI** — crossing the banding boundary raises the *probability* of scrutiny/intervention ("smoke alarm"), not a certainty → fuzzy RDD. Valid and well-understood; fits the fuzzy-but-honest mark design exactly.
+A single public **GitHub repo** (`openaction2outcome`) holds the Go module (the "mint"), the vendored input data (or pointers + hashes), the schema, and the published marks + dossiers + scores. You run `openaction2outcome build` on your own machine: it ingests the frozen open data, runs stochadex-based RDD estimation + the validity battery, emits versioned immutable **mark files** (JSON + parquet), and runs the baseline + your stochadex method through the **same scoring package**, writing scores as static files. You commit the outputs and push large binaries to object storage. The Go module is public, so any consumer can `go install` it and score their own model against the marks locally. That's the whole system.
 
 ---
 
-## 3. What one mark is (fuzzy-but-honest)
+## 2. The Go module (one public repo, where stochadex lives)
 
-A mark is **not** a single number τ. It is a distribution over the true effect, whose width comes from *identification* uncertainty (bandwidth, specification), not just sampling error:
+```
+github.com/<you>/openaction2outcome
+/cmd/openaction2outcome   # CLI: `build`, `validate`, `score`
+/internal/ingest          # per-seam loaders (area funding, floor standards, SHMI)
+/internal/rdd             # RDD estimation via stochadex forward model + SBI
+/internal/validity        # density (McCrary), covariate-continuity, placebo, donut, first-stage
+/internal/mark            # Mark struct, provenance, point-in-time checks
+/pkg/schema               # PUBLIC Go types + JSON schema for marks & submissions
+/pkg/score                # PUBLIC scoring package (Track A + Track B) — what consumers import
+/data/raw                 # vendored frozen inputs (or pointers + SHA-256 if large)
+/marks                    # published mark files (JSON) — the dataset
+/scores                   # published baseline + reference-method scores (static)
+/dossiers                 # rendered validity dossiers (static HTML/markdown)
+README.md                 # how to reproduce scores + score your own model
+```
 
-- **Context (pre-decision state):** covariates the decision-maker observed before the action, incl. the running variable. Pre-treatment only.
-- **Running variable + cutoff `c`:** the published numeric threshold that (sharply or fuzzily) assigns the action.
-- **Action / alternative action(s):** the policy lever and its counterfactual (the field a pure effect-estimation benchmark lacks — this is what makes it a *decision* yardstick).
-- **Outcome:** later, observable in open data at the same unit.
-- **The mark itself:** central effect estimate + an honest interval combining bandwidth/specification/sampling uncertainty.
-- **Validity dossier (ships with every mark):** McCrary/density test (manipulation/sorting), covariate-continuity at `c`, placebo cutoffs, bandwidth sweep, donut robustness; for fuzzy seams, the first-stage discontinuity in treatment probability.
-- **Provenance:** source URIs, per-source licence, IMD/data vintage, funding round, `context_asof` ≤ `decision_timestamp` < `outcome_timestamp`.
+Module path: `github.com/<you>/openaction2outcome`. Consumers import e.g. `github.com/<you>/openaction2outcome/pkg/score`. (Longer than a short alias, but consistent everywhere — the deliberate trade-off.)
 
-**Admission rule:** an episode is admitted if it passes the *validity* tests (no manipulation, no covariate jump, clean placebos, and — for fuzzy seams — a real first-stage jump). It is NOT rejected for a wide interval; width is information and is shipped. Rejection is only for *invalidity*, never for *imprecision*.
+**Two packages are deliberately public and kept dependency-light** so consumers can use them without pulling the whole minting stack:
+- `/pkg/schema` — the Mark + Submission types and JSON schema.
+- `/pkg/score` — the scoring logic. It only *compares distributions* (a submission's predicted effect+uncertainty against a mark's honest interval); it does NOT need stochadex or the SBI machinery. Keeping this boundary clean means a consumer importing `score` gets a tiny dependency tree, and the heavy numerical deps stay inside `/internal`. **Verify this boundary in Phase 0.**
 
----
+**Where stochadex does the work (all inside `/internal`, all offline):** the mark's *honest interval* is a posterior that absorbs identification choices, not a closed-form SE. Use stochadex to define the discontinuity forward model and run SBI over bandwidth / polynomial order / kernel as nuisance parameters → posterior over τ at the cutoff. This is the methodological core and the reason plug-in methods (sampling SE only) fail Track B.
+- Sharp seams (area funding, floor standards): local-polynomial discontinuity forward model.
+- Fuzzy seam (SHMI): two-stage (first-stage treatment-probability jump, then ratio); SBI propagates both stages into the mark.
+- Validity battery: each test returns a structured result shipped *inside* the mark's dossier. Admission = passes validity; never rejected for width.
 
-## 4. How a model is scored (distribution vs distribution), two tracks
-
-A model under test supplies, for a mark's context + action set, its predicted effect *with its own uncertainty*. Two independently-scored tracks:
-
-**Track A — Decision-value consistency.**
-- Sign test: does the model get the direction of value(action) − value(alternative) at the cutoff right?
-- Decision-regret consistent with the mark's interval (no penalty for being unsure where the mark is itself unsure).
-
-**Track B — Calibration against truth (headline; the SBI/Bayesian edge).**
-- Consistency: does the model's predicted interval overlap the mark's honest interval?
-- Calibration curve: when the model claims X% confidence, is it right X% of the time across marks, *accounting for each mark's own width*?
-- Confidently-wrong detector: flagged only when the model is narrow-and-wrong AND the mark is narrow-and-known — the fair version of catching hallucinated counterfactuals.
-- Scoring rule: a proper scoring rule (e.g. CRPS-style) comparing model distribution to mark distribution.
-
-**Predicted, publishable finding:** plug-in RDD methods reporting only sampling SE will systematically *fail* Track-B calibration because they understate the identification uncertainty the marks correctly include; principled Bayesian/SBI methods that propagate specification uncertainty should pass. That contrast is a result, not a leaderboard row.
-
----
-
-## 5. The central intellectual risk (decide deliberately)
-
-Comparing a model's *predictive* uncertainty to a mark's *identification* uncertainty requires stating how the two are treated as commensurable — they are not the same animal. The scoring rule (§4) must make this explicit (interval coverage vs CRPS vs aggregated calibration curve). This is the part a reviewer probes hardest and the part the author's Bayesian-model-comparison background is built to argue. It is a genuine intellectual risk, not a detail: if the two uncertainties turn out not to be cleanly comparable, the headline calibration measurement weakens.
+**Determinism:** seed every stochadex run; record seeds + input hashes + tool versions in each mark's provenance so a mark is re-mintable byte-for-byte. Cheap to enforce now, expensive to retrofit.
 
 ---
 
-## 6. Leakage / point-in-time integrity
+## 3. Data ingestion (no pipelines, no scheduler)
 
-Every mark must satisfy and expose: `context_asof` ≤ `decision_timestamp` < `outcome_timestamp`; the running variable pinned to its decision-time vintage (critical for IMD/SHMI, which are periodically revised); no post-treatment variable in the admissible control set. For percentile-based cutoffs (area funding), each mark is pinned to a specific funding round + IMD vintage because the boundary moves when the index is recomputed.
-
----
-
-## 7. What was ruled out, and why (honest scoping — belongs in the paper)
-
-- **Individual-level thresholds** (FSM/pupil premium £7,400 income; any person-level policy): outcomes locked in ONS SRS, whose safe-outputs rule forbids open publication of the dataset. Incompatible with an open artefact.
-- **Small Business Rate Relief (£12k/£15k RV):** sharp threshold, but the running variable (rateable value) is *appealable* → manipulation/sorting at the cutoff; and no individual-level open outcome join (property→firm→survival has no open key).
-- **Ofsted ratings; CQC special measures:** triggered by a *judgement*, not a numeric cutoff → no continuous running variable → no RDD.
-- **Company audit-exemption thresholds:** "two of three" multi-criteria rule (no single discontinuity) + two-year hysteresis + self-reported, highly manipulable financials.
-
-Stating these rejections is part of the contribution: it documents *why* open-data causal yardsticks must be institutional.
+- **Vendor and freeze the inputs.** Download the specific open files once; store originals (or pointers + SHA-256 if large) with recorded URL, retrieval date, licence. Point-in-time integrity (the leakage requirement) *demands* a frozen vintage anyway, so this is correctness, not laziness.
+- **Per-seam loader** = pure functions turning a vendored raw file into a normalised internal table; unit-tested against a committed sample.
+- **No ETL service, no scheduler, no DB.** Re-ingest by hand only when you deliberately add a vintage or seam.
 
 ---
 
-## 8. Deliverable shape
-- **Corpus:** versioned, immutable-append; parquet + JSON marks + per-mark validity dossiers; one record per institution × decision-period. MIT for schema + evaluator; source data licences passed through with attribution.
-- **API (serves past marks only):** `GET /marks`, `GET /marks/{id}` (full spec + provenance + dossier), `POST /score` (evaluate a submission on Tracks A and B), snapshot dumps. Read-only.
-- **Evaluator:** scores Track A and Track B independently; ships a plug-in local-linear RDD baseline and one principled Bayesian/SBI reference method as the Track-B frontier.
-- **Companion post** ("Engineering Smart Actions in Practice"): the institutional-threshold harvest, the validity protocol, the open-vs-SRS scoping decision, and the plug-in-vs-Bayesian calibration finding.
+## 4. Scoring (folded into the local pipeline — no service)
+
+- `openaction2outcome score` runs every published method (plug-in baseline + your stochadex/SBI reference) against the marks using `/pkg/score`, and writes results to `/scores` as static files. You run it locally as part of minting.
+- A **consumer** scores their own model by: producing a `submission.json` (their predicted effect + uncertainty per mark, to the published schema), then `go run github.com/<you>/openaction2outcome/cmd/openaction2outcome score --submission submission.json`. Runs on their machine; you host nothing.
+- The README documents the submission schema and includes a **committed example submission + its expected scores**, so anyone can verify they're using the tool correctly and reproduce your numbers. This is what makes it a usable *yardstick* rather than a dataset dump.
+- **No leaderboard.** If you ever want one, it's a hand-maintained static table in the repo updated from PRs. Yardstick framing makes that acceptable.
 
 ---
 
-## 9. v1 scope
-- Three seams above; sharp RDD for floor standards + area funding, fuzzy RDD for SHMI.
-- Target a tight set of fully-dossiered marks per seam (quality over count); a small total is acceptable and on-brand for a yardstick.
-- Both tracks; plug-in baseline + one Bayesian/SBI reference method.
-- Explicit limitations: local-to-cutoff estimand, single defensible spec per mark, periodic-vintage running variables, fuzzy-seam first-stage dependence, and the commensurability question (§5).
+## 5. Publishing (static, free)
+
+- **Source of truth + dataset + code:** the public GitHub repo `openaction2outcome`. Git gives versioning, immutability, and provenance for free. Tag releases (`v1.0.0`) for citable, frozen snapshots.
+- **Large binaries (parquet):** GitHub Releases assets if modest; **Cloudflare R2** if larger — S3-compatible API but **zero egress fees**, the right default for a downloadable dataset. Avoid plain S3 (per-GB download charges) unless already wired and traffic will be trivial.
+- **Discoverability mirror:** push the dataset to **Hugging Face Datasets** as `openaction2outcome` — free, the right audience, and it sits directly beside CausalReasoningBenchmark and Open Bandit Dataset (the work you position against / share lineage with). Splits: `floor-standards`, `shmi`, `area-funding`.
+- **Dossiers:** render at mint time to static HTML/markdown; view in-repo on GitHub or serve via **GitHub Pages** (free, zero-maintenance). Precompute any discontinuity/posterior plots to static images or JSON — no JS framework.
 
 ---
 
-## 10. Novelty statement (scoped, defensible)
-The first **open** causal yardstick that scores counterfactual-claiming models against **real-world, quasi-experimentally-identified institutional-decision reference points carrying honest identification uncertainty**. The field currently validates counterfactual world models almost exclusively against *simulators* (exact but synthetic), because real-world counterfactual ground truth is assumed unavailable; this supplies exactly that, via RDD, openly. Claim the wiring (RDD ground truth + honest-uncertainty marks + counterfactual-model calibration scoring + open institutional sourcing), not the individual components, each of which is mature.
+## 6. CI (optional, minimal)
+
+You can run everything by hand. If you want one safety net: a single **GitHub Actions** workflow on tag that runs `openaction2outcome validate` (re-mint and assert outputs match committed hashes → catches accidental drift) + `go test`. No deploys, no scheduled jobs, no self-hosted runners. Nothing runs unless you push a tag. Optional; manual is fine for v1.
 
 ---
 
-## 11. Honest risk register
-- **Mark yield per seam** is the binding empirical constraint — density/continuity tests will reject candidates; resolved only during build, not by more scoping.
-- **Commensurability of the two uncertainties** (§5) is the real intellectual risk.
-- **Periodic-vintage running variables** (IMD, SHMI revisions) require careful point-in-time pinning to avoid leakage.
-- **Fast-moving field** — counterfactual world-model evaluation is active (multiple 2026 papers); the open-real-world-ground-truth lane is open today but should be claimed promptly and scoped tightly.
-- **Novelty is recombination at an intersection**, not a new primitive — pitch accordingly.
+## 7. Cost & maintenance summary
+
+| Component | Tech | Cost | Maintenance |
+|---|---|---|---|
+| Mint + scoring (offline) | Go + stochadex, run by hand | £0 (your machine) | Run on demand |
+| Code + dataset + scores | Public GitHub repo | £0 | None |
+| Large binaries | GitHub Releases / Cloudflare R2 | £0 (R2 zero-egress) | None |
+| Discoverability mirror | Hugging Face Datasets | £0 | None |
+| Dossiers | Static HTML (in-repo or Pages) | £0 | None |
+| Consumer scoring | They `go install` the public module | £0 to you | None |
+| CI (optional) | GitHub Actions on tag | £0 | One workflow file |
+
+**Recurring cost: £0. Hosted services: none. Databases: none. Scheduled jobs: none. WASM/Workers: none.** The system is inert between the times you choose to run it.
+
+---
+
+## 8. Build phases (each ends in something shippable)
+
+**Phase 0 — Schema + one hand-made mark.** Define the `Mark` + `Submission` types and JSON schema in `/pkg/schema` (extend the CausalReasoningBenchmark identification schema with action / alternative-action / decision-value fields). Hand-build one area-funding mark end-to-end with a simple local-linear fit (no stochadex yet) to nail schema, provenance, and point-in-time fields. Verify the `score`-vs-`internal` package boundary holds (scoring imports nothing heavy). *Deliverable: one valid mark + schema + the public module skeleton.*
+
+**Phase 1 — stochadex RDD + validity battery on the anchor seam.** Build `/internal/rdd` (SBI → honest interval) and `/internal/validity`. Run on **area funding (UKSPF/IMD)** first — non-manipulable running variable makes it the gentlest test of the estimation code. *Deliverable: a handful of fully-dossiered area-funding marks with posterior intervals.*
+
+**Phase 2 — scoring + the headline finding.** Implement `/pkg/score` (Track A + Track B), wire `openaction2outcome score`, run the plug-in baseline + your stochadex method, and *show the calibration gap* between them in `/scores`. *Deliverable: reproducible scores + a committed example submission; the headline result is demonstrable on one clean seam.*
+
+**Phase 3 — second + third seams.** Add floor standards (sharp, mildly manipulable) and SHMI (fuzzy, two-stage) — each exercises new code (manipulation-sensitivity; first-stage). *Deliverable: three-domain corpus, v1 complete.*
+
+**Phase 4 — publish + write-up.** Tag `v1.0.0`, push to R2 + Hugging Face, render dossiers, write the "Engineering Smart Actions in Practice" post (harvest method, validity protocol, open-vs-SRS scoping, the calibration finding). *Deliverable: public v1 + post.*
+
+Phases 0–2 are the spine: at the end of Phase 2 you have a complete, novel, working instrument on one seam, published as a public repo. Phases 3–4 add breadth and reach.
+
+---
+
+## 9. Deferred to build-time (not blockers)
+- Exact scoring rule / commensurability treatment (brief §5) — settle in Phase 2 once real marks + baseline behaviour are visible.
+- Per-seam mark yield — discovered by running Phases 1/3.
+- Final name clash verification (Companies House, trademark, GitHub org, HF namespace) — before committing the org + module path.
+
+---
+
+## 10. Anti-scope-creep guardrails
+- No live ingestion, ever, in v1 — vendor and freeze.
+- No database, no auth, no accounts, no leaderboard service.
+- No hosted scoring (no WASM, no Worker) — scoring runs where the data is.
+- Keep `/pkg/score` and `/pkg/schema` dependency-light and public; heavy deps stay in `/internal`.
+- Re-minting is manual and deterministic; nothing auto-updates.
+- One name everywhere: `openaction2outcome`. No aliases.
