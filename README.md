@@ -1,3 +1,5 @@
+![](assets/logo.png)
+
 # The OpenAction2Outcome Datasets
 
 **Real-world reference points for testing models that predict the effects of decisions.**
