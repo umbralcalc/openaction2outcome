@@ -1,0 +1,956 @@
+{
+  "schema_version": "0.2.0",
+  "id": "floor-standards-p8-2016",
+  "seam": "floor-standards",
+  "domain": "Education",
+  "unit_type": "school",
+  "rdd_type": "sharp",
+  "design": {
+    "running_variable": {
+      "name": "progress_8_2016",
+      "description": "Progress 8 score, 2015/16 revised performance tables",
+      "units": "P8 score",
+      "source_id": "ks4-2015-2016-final"
+    },
+    "cutoff": -0.5,
+    "direction": "below-treated",
+    "action": "Below the Progress 8 floor standard (-0.5): flagged for intervention/scrutiny (support, possible academy order).",
+    "alternative": "At or above the floor: no floor-triggered intervention.",
+    "outcome": {
+      "name": "progress_8_2018",
+      "description": "Progress 8 score two years later, 2017/18 revised performance tables",
+      "units": "P8 score",
+      "source_id": "ks4-2017-2018-final"
+    },
+    "estimand": "Sharp RD effect at -0.5 of being flagged below the 2016 Progress 8 floor on the school's 2017/18 Progress 8 (local-to-cutoff, complete cases)."
+  },
+  "context": {
+    "description": "State-funded mainstream secondary schools in England assessed against the 2016 Progress 8 floor standard.",
+    "covariate_names": [
+      "ks2_prior_attainment",
+      "pct_disadvantaged_fsm",
+      "ks4_cohort_size"
+    ],
+    "population": "3098 mainstream secondary schools with a numeric 2015/16 Progress 8 score"
+  },
+  "data": {
+    "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/floor-standards-p8-2016/episodes.csv.gz",
+    "sha256": "f2458f3df85381e1cd61b5f4d859940b1efcbc4dda6c672b22d1a20818a22005",
+    "format": "csv.gz",
+    "rows": 3098,
+    "bytes": 61955,
+    "columns": [
+      "unit_id",
+      "unit_name",
+      "running_value",
+      "assigned",
+      "treated",
+      "outcome",
+      "ks2_prior_attainment",
+      "pct_disadvantaged_fsm",
+      "ks4_cohort_size"
+    ]
+  },
+  "sample": [
+    {
+      "unit_id": "104688",
+      "unit_name": "Holly Lodge Girls' College",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.24,
+      "covariates": {
+        "ks2_prior_attainment": 27,
+        "ks4_cohort_size": 117,
+        "pct_disadvantaged_fsm": 59
+      }
+    },
+    {
+      "unit_id": "105257",
+      "unit_name": "Harper Green School",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "covariates": {
+        "ks2_prior_attainment": 27.4,
+        "ks4_cohort_size": 259,
+        "pct_disadvantaged_fsm": 45
+      }
+    },
+    {
+      "unit_id": "107761",
+      "unit_name": "Newsome High School and Sports College",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.44,
+      "covariates": {
+        "ks2_prior_attainment": 25.7,
+        "ks4_cohort_size": 118,
+        "pct_disadvantaged_fsm": 46
+      }
+    },
+    {
+      "unit_id": "108647",
+      "unit_name": "Seaton Burn College, A Specialist Business and Enterprise School",
+      "running_value": -0.5,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.76,
+      "covariates": {
+        "ks2_prior_attainment": 27.7,
+        "ks4_cohort_size": 76,
+        "pct_disadvantaged_fsm": 37
+      }
+    },
+    {
+      "unit_id": "112038",
+      "unit_name": "Treviglas Community College",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.58,
+      "covariates": {
+        "ks2_prior_attainment": 28.1,
+        "ks4_cohort_size": 131,
+        "pct_disadvantaged_fsm": 22
+      }
+    },
+    {
+      "unit_id": "112940",
+      "unit_name": "Granville Sports College",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "covariates": {
+        "ks2_prior_attainment": 27.7,
+        "ks4_cohort_size": 100,
+        "pct_disadvantaged_fsm": 31
+      }
+    },
+    {
+      "unit_id": "116427",
+      "unit_name": "Aldworth School",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.39,
+      "covariates": {
+        "ks2_prior_attainment": 27.9,
+        "ks4_cohort_size": 173,
+        "pct_disadvantaged_fsm": 24
+      }
+    },
+    {
+      "unit_id": "119725",
+      "unit_name": "West Craven High School",
+      "running_value": -0.48,
+      "assigned": false,
+      "treated": false,
+      "covariates": {
+        "ks2_prior_attainment": 25.9,
+        "ks4_cohort_size": 81,
+        "pct_disadvantaged_fsm": 23
+      }
+    },
+    {
+      "unit_id": "119770",
+      "unit_name": "Central Lancaster High School",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.33,
+      "covariates": {
+        "ks2_prior_attainment": 26.5,
+        "ks4_cohort_size": 149,
+        "pct_disadvantaged_fsm": 40
+      }
+    },
+    {
+      "unit_id": "119771",
+      "unit_name": "Fleetwood High School",
+      "running_value": -0.52,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.56,
+      "covariates": {
+        "ks2_prior_attainment": 26.6,
+        "ks4_cohort_size": 126,
+        "pct_disadvantaged_fsm": 56
+      }
+    },
+    {
+      "unit_id": "131196",
+      "unit_name": "Isambard Community School",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.14,
+      "covariates": {
+        "ks2_prior_attainment": 28.7,
+        "ks4_cohort_size": 223,
+        "pct_disadvantaged_fsm": 11
+      }
+    },
+    {
+      "unit_id": "131669",
+      "unit_name": "Causeway School",
+      "running_value": -0.5,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.54,
+      "covariates": {
+        "ks2_prior_attainment": 26.4,
+        "ks4_cohort_size": 148,
+        "pct_disadvantaged_fsm": 39
+      }
+    },
+    {
+      "unit_id": "131945",
+      "unit_name": "New College Leicester",
+      "running_value": -0.5,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.44,
+      "covariates": {
+        "ks2_prior_attainment": 25.5,
+        "ks4_cohort_size": 139,
+        "pct_disadvantaged_fsm": 60
+      }
+    },
+    {
+      "unit_id": "133293",
+      "unit_name": "St Hild's Church of England Voluntary Aided School",
+      "running_value": -0.48,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.68,
+      "covariates": {
+        "ks2_prior_attainment": 27.3,
+        "ks4_cohort_size": 149,
+        "pct_disadvantaged_fsm": 51
+      }
+    },
+    {
+      "unit_id": "134724",
+      "unit_name": "Da Vinci Community School",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "covariates": {
+        "ks2_prior_attainment": 25.8,
+        "ks4_cohort_size": 118,
+        "pct_disadvantaged_fsm": 59
+      }
+    },
+    {
+      "unit_id": "134994",
+      "unit_name": "Shuttleworth College",
+      "running_value": -0.52,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.42,
+      "covariates": {
+        "ks2_prior_attainment": 26.1,
+        "ks4_cohort_size": 136,
+        "pct_disadvantaged_fsm": 38
+      }
+    },
+    {
+      "unit_id": "135401",
+      "unit_name": "Bacon's College",
+      "running_value": -0.48,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.04,
+      "covariates": {
+        "ks2_prior_attainment": 28.4,
+        "ks4_cohort_size": 176,
+        "pct_disadvantaged_fsm": 59
+      }
+    },
+    {
+      "unit_id": "135606",
+      "unit_name": "Trinity Catholic College",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "covariates": {
+        "ks2_prior_attainment": 27.7,
+        "ks4_cohort_size": 229,
+        "pct_disadvantaged_fsm": 42
+      }
+    },
+    {
+      "unit_id": "135731",
+      "unit_name": "St Chads Catholic and Church of England High School",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.69,
+      "covariates": {
+        "ks2_prior_attainment": 27.3,
+        "ks4_cohort_size": 177,
+        "pct_disadvantaged_fsm": 42
+      }
+    },
+    {
+      "unit_id": "135904",
+      "unit_name": "City Academy Norwich",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.33,
+      "covariates": {
+        "ks2_prior_attainment": 24.6,
+        "ks4_cohort_size": 133,
+        "pct_disadvantaged_fsm": 59
+      }
+    },
+    {
+      "unit_id": "135936",
+      "unit_name": "Fulwood Academy",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.63,
+      "covariates": {
+        "ks2_prior_attainment": 26.2,
+        "ks4_cohort_size": 106,
+        "pct_disadvantaged_fsm": 43
+      }
+    },
+    {
+      "unit_id": "136166",
+      "unit_name": "Marine Academy Plymouth",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.82,
+      "covariates": {
+        "ks2_prior_attainment": 25.9,
+        "ks4_cohort_size": 118,
+        "pct_disadvantaged_fsm": 55
+      }
+    },
+    {
+      "unit_id": "136202",
+      "unit_name": "King's Lynn Academy",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.81,
+      "covariates": {
+        "ks2_prior_attainment": 26.4,
+        "ks4_cohort_size": 133,
+        "pct_disadvantaged_fsm": 24
+      }
+    },
+    {
+      "unit_id": "136206",
+      "unit_name": "St Aldhelm's Academy",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": 0.45,
+      "covariates": {
+        "ks2_prior_attainment": 25.2,
+        "ks4_cohort_size": 81,
+        "pct_disadvantaged_fsm": 38
+      }
+    },
+    {
+      "unit_id": "136716",
+      "unit_name": "The Long Eaton School",
+      "running_value": -0.48,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.68,
+      "covariates": {
+        "ks2_prior_attainment": 27.4,
+        "ks4_cohort_size": 212,
+        "pct_disadvantaged_fsm": 26
+      }
+    },
+    {
+      "unit_id": "137317",
+      "unit_name": "Stephenson Studio School",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.78,
+      "covariates": {
+        "ks2_prior_attainment": 25.1,
+        "ks4_cohort_size": 34,
+        "pct_disadvantaged_fsm": 35
+      }
+    },
+    {
+      "unit_id": "137484",
+      "unit_name": "Homewood School and Sixth Form Centre",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.4,
+      "covariates": {
+        "ks2_prior_attainment": 26.5,
+        "ks4_cohort_size": 355,
+        "pct_disadvantaged_fsm": 19
+      }
+    },
+    {
+      "unit_id": "137749",
+      "unit_name": "Queen Elizabeth's Academy",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "covariates": {
+        "ks2_prior_attainment": 25.3,
+        "ks4_cohort_size": 108,
+        "pct_disadvantaged_fsm": 46
+      }
+    },
+    {
+      "unit_id": "138439",
+      "unit_name": "Sir Herbert Leon Academy",
+      "running_value": -0.48,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.71,
+      "covariates": {
+        "ks2_prior_attainment": 26.4,
+        "ks4_cohort_size": 93,
+        "pct_disadvantaged_fsm": 60
+      }
+    },
+    {
+      "unit_id": "138466",
+      "unit_name": "Nailsea School",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.45,
+      "covariates": {
+        "ks2_prior_attainment": 28.2,
+        "ks4_cohort_size": 144,
+        "pct_disadvantaged_fsm": 17
+      }
+    },
+    {
+      "unit_id": "138644",
+      "unit_name": "Hartshill School",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.53,
+      "covariates": {
+        "ks2_prior_attainment": 27.1,
+        "ks4_cohort_size": 200,
+        "pct_disadvantaged_fsm": 29
+      }
+    },
+    {
+      "unit_id": "138754",
+      "unit_name": "Haven High Academy",
+      "running_value": -0.49,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.69,
+      "covariates": {
+        "ks2_prior_attainment": 25.5,
+        "ks4_cohort_size": 196,
+        "pct_disadvantaged_fsm": 30
+      }
+    },
+    {
+      "unit_id": "139130",
+      "unit_name": "Colne Primet Academy",
+      "running_value": -0.5,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.46,
+      "covariates": {
+        "ks2_prior_attainment": 25.3,
+        "ks4_cohort_size": 76,
+        "pct_disadvantaged_fsm": 45
+      }
+    },
+    {
+      "unit_id": "139596",
+      "unit_name": "Parkfield School",
+      "running_value": -0.52,
+      "assigned": true,
+      "treated": true,
+      "outcome": 0.19,
+      "covariates": {
+        "ks2_prior_attainment": 27.9,
+        "ks4_cohort_size": 25,
+        "pct_disadvantaged_fsm": 20
+      }
+    },
+    {
+      "unit_id": "139946",
+      "unit_name": "Oasis Academy Hextable",
+      "running_value": -0.48,
+      "assigned": false,
+      "treated": false,
+      "covariates": {
+        "ks2_prior_attainment": 24.8,
+        "ks4_cohort_size": 68,
+        "pct_disadvantaged_fsm": 29
+      }
+    },
+    {
+      "unit_id": "141321",
+      "unit_name": "Darwen Vale High School",
+      "running_value": -0.5,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.91,
+      "covariates": {
+        "ks2_prior_attainment": 27.7,
+        "ks4_cohort_size": 132,
+        "pct_disadvantaged_fsm": 29
+      }
+    },
+    {
+      "unit_id": "141470",
+      "unit_name": "St John Fisher Catholic Voluntary Academy",
+      "running_value": -0.5,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.38,
+      "covariates": {
+        "ks2_prior_attainment": 27.7,
+        "ks4_cohort_size": 194,
+        "pct_disadvantaged_fsm": 26
+      }
+    },
+    {
+      "unit_id": "141682",
+      "unit_name": "Hinckley Academy and John Cleveland Sixth Form Centre",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.5,
+      "covariates": {
+        "ks2_prior_attainment": 27.9,
+        "ks4_cohort_size": 493,
+        "pct_disadvantaged_fsm": 17
+      }
+    },
+    {
+      "unit_id": "141700",
+      "unit_name": "The King's CofE (VA) School",
+      "running_value": -0.51,
+      "assigned": true,
+      "treated": true,
+      "outcome": -0.59,
+      "covariates": {
+        "ks2_prior_attainment": 27.1,
+        "ks4_cohort_size": 78,
+        "pct_disadvantaged_fsm": 46
+      }
+    },
+    {
+      "unit_id": "141986",
+      "unit_name": "Sandhill View Academy",
+      "running_value": -0.5,
+      "assigned": false,
+      "treated": false,
+      "outcome": -0.28,
+      "covariates": {
+        "ks2_prior_attainment": 26.6,
+        "ks4_cohort_size": 148,
+        "pct_disadvantaged_fsm": 49
+      }
+    }
+  ],
+  "effect": {
+    "central": 0.028351345667168324,
+    "std_dev": 0.07288464763483019,
+    "interval": {
+      "level": 0.95,
+      "lower": -0.05435099279414654,
+      "upper": 0.25567218457610363
+    },
+    "quantiles": [
+      {
+        "p": 0.025,
+        "value": -0.054350992794146555
+      },
+      {
+        "p": 0.05,
+        "value": -0.04286371548760767
+      },
+      {
+        "p": 0.1,
+        "value": -0.02928761760915842
+      },
+      {
+        "p": 0.25,
+        "value": -0.007860089110899054
+      },
+      {
+        "p": 0.5,
+        "value": 0.009948780343760566
+      },
+      {
+        "p": 0.75,
+        "value": 0.03147358347251748
+      },
+      {
+        "p": 0.9,
+        "value": 0.1364497923299926
+      },
+      {
+        "p": 0.95,
+        "value": 0.21977717607176656
+      },
+      {
+        "p": 0.975,
+        "value": 0.25567218457610363
+      }
+    ],
+    "samples": [
+      -0.08419218835913553,
+      -0.07111293676774141,
+      -0.06438979443430937,
+      -0.05966682197817985,
+      -0.055957717210532026,
+      -0.052869120048367024,
+      -0.05020237496146948,
+      -0.047842519605382355,
+      -0.045716771523330535,
+      -0.04377600497211105,
+      -0.04198543011073301,
+      -0.04031947214621617,
+      -0.03875876214469126,
+      -0.03728827190340961,
+      -0.035896106676657866,
+      -0.034572695005835985,
+      -0.03331022811725004,
+      -0.03210226157051617,
+      -0.030943425463545997,
+      -0.029829209069953053,
+      -0.028755797595085585,
+      -0.02771994609684912,
+      -0.02671888033876129,
+      -0.02575021745268119,
+      -0.024811901387952057,
+      -0.023902149572537827,
+      -0.023019408230923535,
+      -0.022162314530900097,
+      -0.021329664254357047,
+      -0.020520384062549177,
+      -0.01973350769184999,
+      -0.01896815559828046,
+      -0.0182235176879242,
+      -0.017498838841564626,
+      -0.016793406978866755,
+      -0.016106543421649,
+      -0.015437595316950364,
+      -0.014785929876505122,
+      -0.014150930185688294,
+      -0.013531992335760808,
+      -0.01292852364023164,
+      -0.012339941709719613,
+      -0.011765674179058282,
+      -0.011205158904059036,
+      -0.010657844471547013,
+      -0.010123190893248483,
+      -0.009600670380307257,
+      -0.009089768119470331,
+      -0.008589982993524606,
+      -0.008100828206970043,
+      -0.007621831793068707,
+      -0.007152536990432726,
+      -0.006692502486482855,
+      -0.006241302531786813,
+      -0.005798526933873567,
+      -0.005363780942012349,
+      -0.0049366850360133135,
+      -0.004516874632674077,
+      -0.004103999723340648,
+      -0.0036977244553962176,
+      -0.0032977266695179462,
+      -0.0029036974033862474,
+      -0.0025153403712969346,
+      -0.002132371427886041,
+      -0.001754518022981654,
+      -0.0013815186534782775,
+      -0.00101312231710629,
+      -0.0006490879720504926,
+      -0.0002891840055600737,
+      0.00006681228601642265,
+      0.0004191152039484383,
+      0.000767931139291697,
+      0.00111345904964727,
+      0.0014558909200195038,
+      0.0017954122075875584,
+      0.0021322022704563107,
+      0.002466434780657137,
+      0.0027982781218338663,
+      0.003127895772180543,
+      0.003455446673300712,
+      0.003781085585738339,
+      0.0041049634319916106,
+      0.004427227627866934,
+      0.004748022403064597,
+      0.005067489111911891,
+      0.00538576653517725,
+      0.005702991173911154,
+      0.0060192975362684895,
+      0.006334818418273861,
+      0.0066496851794974835,
+      0.006964028014615162,
+      0.0072779762218335,
+      0.007591658469170254,
+      0.00790520305959173,
+      0.008218738196023805,
+      0.008532392247271734,
+      0.008846294015906864,
+      0.009160573009205645,
+      0.009475359714259387,
+      0.009790785878411333,
+      0.010106984796222174,
+      0.010424091604216267,
+      0.010742243584718685,
+      0.011061580480158997,
+      0.011382244819290996,
+      0.011704382256859665,
+      0.012028141928337604,
+      0.012353676821453368,
+      0.012681144166344565,
+      0.013010705846289095,
+      0.013342528831099282,
+      0.013676785635406238,
+      0.014013654804215629,
+      0.014353321428281607,
+      0.01469597769202239,
+      0.015041823456889522,
+      0.015391066883302003,
+      0.01574392509446492,
+      0.01610062488561132,
+      0.016461403482429908,
+      0.016826509352671708,
+      0.01719620307516071,
+      0.017570758270663435,
+      0.017950462599297223,
+      0.018335618829370674,
+      0.01872654598274659,
+      0.019123580561993328,
+      0.01952707786473746,
+      0.019937413390745985,
+      0.020354984347345804,
+      0.020780211258837313,
+      0.02121353968558165,
+      0.02165544205846416,
+      0.022106419634492724,
+      0.022567004579444674,
+      0.02303776218382879,
+      0.0235192932191289,
+      0.024012236442563735,
+      0.024517271260746314,
+      0.025035120566093243,
+      0.025566553765214682,
+      0.02611239002660718,
+      0.026673501786815254,
+      0.02725081857115999,
+      0.02784533120882482,
+      0.02845809655458776,
+      0.029090242873232204,
+      0.029742976100490946,
+      0.030417587269488795,
+      0.031115461487611046,
+      0.031838088969448425,
+      0.032587078781315254,
+      0.03336417613690787,
+      0.034171284308494546,
+      0.03501049249285361,
+      0.03588411131020265,
+      0.03679471804030912,
+      0.03774521424952411,
+      0.0387388991943632,
+      0.039779563394223214,
+      0.04087160819283875,
+      0.04202019920097627,
+      0.04323146458570726,
+      0.044512753808390274,
+      0.04587297953442715,
+      0.04732307658988766,
+      0.04887662971395523,
+      0.05055075131088339,
+      0.0523673405858983,
+      0.05435494438704136,
+      0.0565516052691592,
+      0.05900940676488965,
+      0.061802107515138885,
+      0.0650388106201212,
+      0.0688905408147886,
+      0.07364787564380593,
+      0.07986585310306973,
+      0.08880697966336967,
+      0.10390748085121032,
+      0.12680480074982764,
+      0.1442657935567646,
+      0.1565649580762637,
+      0.16641386721547574,
+      0.17493480855537857,
+      0.18265609307004455,
+      0.18986775946599,
+      0.19674911713399357,
+      0.20342293841987297,
+      0.20998226156369842,
+      0.21650570458637114,
+      0.22306775874738888,
+      0.22974730232637414,
+      0.23663663252795253,
+      0.24385365631154043,
+      0.2515618079591456,
+      0.260007853148964,
+      0.26960486413933593,
+      0.2811511922740585,
+      0.29660534228407975,
+      0.324365632584218
+    ],
+    "uncertainty_budget": {
+      "sampling": 0.0009692731430061082,
+      "specification": 0.00434289871784725
+    }
+  },
+  "dossier": {
+    "density": {
+      "method": "binned-density-discontinuity (McCrary-style, Phase-0 simplified)",
+      "statistic": 6.187878787878837,
+      "p_value": 0.3806860651532179,
+      "passed": true,
+      "detail": "density at cutoff: below=46.9 above=53.0 jump=6.2 (z=0.88); no significant discontinuity =\u003e no detected sorting"
+    },
+    "covariate_continuity": [
+      {
+        "name": "ks2_prior_attainment",
+        "method": "covariate-continuity (local-linear jump in covariate)",
+        "statistic": 0.05553859209594947,
+        "p_value": 0.6255741109469943,
+        "passed": true,
+        "detail": "jump=0.05554 se=0.1138 z=0.49 (n_treat=252 n_ctrl=1201)"
+      },
+      {
+        "name": "pct_disadvantaged_fsm",
+        "method": "covariate-continuity (local-linear jump in covariate)",
+        "statistic": 0.4044346947954409,
+        "p_value": 0.8009922994176668,
+        "passed": true,
+        "detail": "jump=0.4044 se=1.604 z=0.25 (n_treat=252 n_ctrl=1201)"
+      },
+      {
+        "name": "ks4_cohort_size",
+        "method": "covariate-continuity (local-linear jump in covariate)",
+        "statistic": 3.9518042059919765,
+        "p_value": 0.5858486178247725,
+        "passed": true,
+        "detail": "jump=3.952 se=7.253 z=0.54 (n_treat=252 n_ctrl=1201)"
+      }
+    ],
+    "placebo_cutoffs": [
+      {
+        "cutoff": -1.3,
+        "estimate": 0.12433798561775844,
+        "std_err": 0.21894630195672798,
+        "passed": true
+      },
+      {
+        "cutoff": 0.3,
+        "estimate": -0.013931084020456314,
+        "std_err": 0.026552573160441618,
+        "passed": true
+      }
+    ],
+    "bandwidth_sweep": [
+      {
+        "param": 0.3,
+        "estimate": 0.04827504835687563,
+        "std_err": 0.046548062251100225
+      },
+      {
+        "param": 0.4,
+        "estimate": 0.03367196211329726,
+        "std_err": 0.04193513909061976
+      },
+      {
+        "param": 0.5,
+        "estimate": 0.021400769787044582,
+        "std_err": 0.0397239116689257
+      },
+      {
+        "param": 0.6,
+        "estimate": 0.013867367670698016,
+        "std_err": 0.03816061571508551
+      },
+      {
+        "param": 0.7,
+        "estimate": 0.009268802160717127,
+        "std_err": 0.03680894816243349
+      },
+      {
+        "param": 0.8,
+        "estimate": 0.005591981535816637,
+        "std_err": 0.03626219158208015
+      }
+    ],
+    "donut_robustness": [
+      {
+        "param": 0.05,
+        "estimate": 0.011437391865058766,
+        "std_err": 0.05824483486854712
+      },
+      {
+        "param": 0.1,
+        "estimate": -0.049957217974357926,
+        "std_err": 0.10537965164502085
+      }
+    ],
+    "admitted": true,
+    "notes": "Phase-1 SBI: Bayesian model average over 20 specs (bandwidth x order x kernel) via stochadex SMC (4000 particles, 8 rounds). Honest interval [-0.0544, 0.2557] (sd 0.0729) decomposes into sampling sd 0.0311 and identification sd 0.0659. For comparison, the plug-in local-linear interval is [-0.0627, 0.1055] (sd 0.0429) — narrower because it ignores between-spec identification uncertainty; this is the gap a model that reports only sampling SE should fail on Track B. Design is effectively sharp: of 302 schools below -0.5, only 1 are excluded by the floor's CI condition (P8CIUPP\u003e=0). DIFFERENTIAL ATTRITION CAVEAT: within +/-0.5 of the cutoff, 21.5% of below-floor schools vs 11.3% of above-floor schools lack a linked 2017/18 P8 (sponsored academies are re-issued a new URN). This attrition is correlated with treatment and biases the complete-case estimate; it is the dominant threat to this mark and motivates the Phase-2 attrition-aware treatment."
+  },
+  "provenance": {
+    "sources": [
+      {
+        "source_id": "ks4-2015-2016-final",
+        "title": "Key Stage 4 (KS4) final performance tables — school-level data, 2015/16",
+        "publisher": "Department for Education (DfE)",
+        "download_uri": "https://www.compare-school-performance.service.gov.uk/download-data?download=true\u0026regions=0\u0026filters=KS4\u0026fileformat=csv\u0026year=2015-2016",
+        "landing_page": "https://www.find-school-performance-data.service.gov.uk/download-data",
+        "retrieved_at": "",
+        "licence": "Open Government Licence v3.0",
+        "sha256": "01288f9a4e39a9ad7c4a3dd6e88445d34664ea2dc36bb28adbb09d1c57046dd6",
+        "vintage": "2015/16 academic year, revised/final performance tables"
+      },
+      {
+        "source_id": "ks4-2017-2018-final",
+        "title": "Key Stage 4 (KS4) final performance tables — school-level data, 2017/18",
+        "publisher": "Department for Education (DfE)",
+        "download_uri": "https://www.compare-school-performance.service.gov.uk/download-data?download=true\u0026regions=0\u0026filters=KS4\u0026fileformat=csv\u0026year=2017-2018",
+        "landing_page": "https://www.find-school-performance-data.service.gov.uk/download-data",
+        "retrieved_at": "",
+        "licence": "Open Government Licence v3.0",
+        "sha256": "6f0a6f5bb1154f94afe2463c25498e91700a5d561a80f19f8f2923d3f0e5bb6e",
+        "vintage": "2017/18 academic year, revised/final performance tables"
+      }
+    ],
+    "context_asof": "2016-08-25",
+    "decision_timestamp": "2017-01-19",
+    "outcome_timestamp": "2019-01-24",
+    "running_variable_vintage": "KS4 2015/16 revised performance tables (Progress 8)",
+    "decision_round": "Progress 8 floor standard, 2016 (assessed on 2015/16 results)",
+    "seed": 1,
+    "tool_versions": {
+      "go": "go1.25.2",
+      "openaction2outcome": "0.2.0",
+      "smc": "particles=4000,rounds=8",
+      "stochadex": "v0.0.0-20260529062707-b3fa54eb7212"
+    },
+    "outcome_realized": true
+  }
+}

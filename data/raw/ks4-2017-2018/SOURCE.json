@@ -1,0 +1,17 @@
+{
+  "source_id": "ks4-2017-2018-final",
+  "title": "Key Stage 4 (KS4) final performance tables — school-level data, 2017/18",
+  "publisher": "Department for Education (DfE)",
+  "landing_page": "https://www.find-school-performance-data.service.gov.uk/download-data",
+  "download_uri": "https://www.compare-school-performance.service.gov.uk/download-data?download=true&regions=0&filters=KS4&fileformat=csv&year=2017-2018",
+  "r2_object_key": "raw/ks4-2017-2018-final/england_ks4final_2017-2018.csv",
+  "local_path": "england_ks4final_2017-2018.csv",
+  "sha256": "6f0a6f5bb1154f94afe2463c25498e91700a5d561a80f19f8f2923d3f0e5bb6e",
+  "bytes": 11299172,
+  "format": "csv",
+  "licence": "Open Government Licence v3.0",
+  "licence_uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "vintage": "2017/18 academic year, revised/final performance tables",
+  "role": "outcome",
+  "notes": "Outcome-year vintage. Outcome = P8MEA (2017/18) linked by URN to the 2015/16 decision file. Linkage caveat: schools that became SPONSORED academies after being flagged below floor are re-issued a NEW URN, so they may be absent under their original URN; this treatment-correlated attrition is measured and reported in the mark's validity dossier. Not vendored into git: fetch from download_uri (or the R2 mirror) into data/cache and verify against sha256."
+}

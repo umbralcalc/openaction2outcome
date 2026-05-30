@@ -1,0 +1,19 @@
+# Compiled binary (CLI built into the repo root)
+/openaction2outcome
+
+# Go build/test artifacts
+*.test
+*.out
+
+# Fetched raw inputs (bytes live in object storage / source; git keeps only the
+# SOURCE.json pointers under data/raw). Re-fetch with `openaction2outcome fetch`.
+/data/cache/
+
+# Build artifacts staged for upload to object storage (episode sidecars, etc.)
+/dist/
+
+# Local submission/score scratch (the committed example stays tracked)
+/my.scores.json
+
+# OS cruft
+.DS_Store

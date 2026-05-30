@@ -1,0 +1,17 @@
+{
+  "source_id": "ks4-2015-2016-final",
+  "title": "Key Stage 4 (KS4) final performance tables — school-level data, 2015/16",
+  "publisher": "Department for Education (DfE)",
+  "landing_page": "https://www.find-school-performance-data.service.gov.uk/download-data",
+  "download_uri": "https://www.compare-school-performance.service.gov.uk/download-data?download=true&regions=0&filters=KS4&fileformat=csv&year=2015-2016",
+  "r2_object_key": "raw/ks4-2015-2016-final/england_ks4final_2015-2016.csv",
+  "local_path": "england_ks4final_2015-2016.csv",
+  "sha256": "01288f9a4e39a9ad7c4a3dd6e88445d34664ea2dc36bb28adbb09d1c57046dd6",
+  "bytes": 8402208,
+  "format": "csv",
+  "licence": "Open Government Licence v3.0",
+  "licence_uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "vintage": "2015/16 academic year, revised/final performance tables",
+  "role": "running-variable-and-treatment-assignment",
+  "notes": "Decision-year vintage. Below the Progress 8 floor in 2016 iff P8MEA < -0.5 AND P8CIUPP < 0. Canonical bytes are the exact CSV served by DfE (UTF-8 with BOM, 372 columns). Not vendored into git: fetch from download_uri (or the R2 mirror) into data/cache and verify against sha256."
+}

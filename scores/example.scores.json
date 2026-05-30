@@ -1,0 +1,71 @@
+{
+  "model_name": "example-plugin-baseline",
+  "schema_version": "0.2.0",
+  "mark_scores": [
+    {
+      "mark_id": "floor-standards-p8-2016",
+      "track_a": {
+        "mark_sign_known": false,
+        "sign_correct": true,
+        "regret": 0
+      },
+      "track_b": {
+        "intervals_overlap": true,
+        "overlap_fraction": 0.2528843187306913,
+        "cramer_distance": 0.01597210717617447,
+        "pit": 0.13953014867900054,
+        "confidently_wrong": false
+      }
+    }
+  ],
+  "summary": {
+    "num_marks_scored": 1,
+    "num_sign_known": 0,
+    "sign_accuracy": 0,
+    "mean_regret": 0,
+    "total_regret": 0,
+    "overlap_rate": 1,
+    "mean_overlap_fraction": 0.2528843187306913,
+    "mean_cramer_distance": 0.01597210717617447,
+    "num_confidently_wrong": 0,
+    "calibration": [
+      {
+        "nominal": 0.1,
+        "empirical": 0
+      },
+      {
+        "nominal": 0.2,
+        "empirical": 1
+      },
+      {
+        "nominal": 0.3,
+        "empirical": 1
+      },
+      {
+        "nominal": 0.4,
+        "empirical": 1
+      },
+      {
+        "nominal": 0.5,
+        "empirical": 1
+      },
+      {
+        "nominal": 0.6,
+        "empirical": 1
+      },
+      {
+        "nominal": 0.7,
+        "empirical": 1
+      },
+      {
+        "nominal": 0.8,
+        "empirical": 1
+      },
+      {
+        "nominal": 0.9,
+        "empirical": 1
+      }
+    ]
+  },
+  "skipped": {}
+}
