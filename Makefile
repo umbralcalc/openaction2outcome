@@ -1,18 +1,22 @@
 # openaction2outcome — offline mint + publish workflow.
 # Override the rclone remote name with: make publish RCLONE_REMOTE=myremote
 CLI    := go run ./cmd/openaction2outcome
-SEAM   ?= floor-standards
+SERIES ?= floor-standards
 REMOTE ?= r2
 
-.PHONY: all fetch build validate score test publish verify clean
+.PHONY: all fetch build build-all validate score study test publish verify clean
 
-all: build validate          ## fetch (implicit) + mint + validate
+all: build-all validate      ## fetch (implicit) + mint every series + validate
 
 fetch:                       ## download frozen inputs into data/cache (verify SHA-256)
 	$(CLI) fetch
 
-build:                       ## mint the mark + stage the episode sidecar (auto-fetches)
-	$(CLI) build --seam $(SEAM)
+build:                       ## mint one series (SERIES=floor-standards|shmi) + stage its sidecar
+	$(CLI) build --series $(SERIES)
+
+build-all:                   ## mint every series
+	$(CLI) build --series floor-standards
+	$(CLI) build --series shmi
 
 validate:                    ## check every mark against the schema
 	$(CLI) validate
@@ -26,7 +30,7 @@ study:                       ## run the calibration study (plug-in vs SBI covera
 test:                        ## unit + real-data integration tests (offline)
 	go test ./...
 
-publish: build               ## upload staged artifacts to R2, then verify
+publish: build-all           ## upload staged artifacts to R2, then verify
 	RCLONE_REMOTE=$(REMOTE) ./scripts/publish.sh
 
 verify:                      ## verify live artifacts resolve + match hashes (no upload)

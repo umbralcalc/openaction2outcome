@@ -1,0 +1,887 @@
+{
+  "schema_version": "0.3.0",
+  "id": "shmi-higher-than-expected-banding",
+  "series": "shmi",
+  "domain": "Health",
+  "unit_type": "nhs-trust",
+  "rdd_type": "sharp",
+  "design": {
+    "running_variable": {
+      "name": "shmi_minus_od_upper",
+      "description": "SHMI minus the overdispersed upper control limit (positive =\u003e banded 'higher than expected')",
+      "units": "SHMI ratio",
+      "source_id": "shmi-historical-oct24-sep25"
+    },
+    "cutoff": 0,
+    "direction": "above-treated",
+    "action": "Publicly banded 'higher than expected' mortality (SHMI above the overdispersed upper control limit) — a 'smoke alarm' that raises scrutiny.",
+    "alternative": "Banded 'as expected' (SHMI within the control limits): no higher-than-expected flag.",
+    "outcome": {
+      "name": "shmi_next_window",
+      "description": "The trust's SHMI in the following non-overlapping 12-month window",
+      "units": "SHMI ratio",
+      "source_id": "shmi-historical-oct24-sep25"
+    },
+    "estimand": "Sharp RD (intention-to-treat) effect at the upper control limit of being banded 'higher than expected' on the trust's SHMI in the following 12-month window (pooled trust-years, local-to-cutoff)."
+  },
+  "context": {
+    "description": "English non-specialist acute NHS trusts assessed against the SHMI 'higher than expected' mortality banding.",
+    "covariate_names": [
+      "expected_deaths",
+      "decision_shmi"
+    ],
+    "population": "368 pooled trust-years across non-overlapping reporting windows"
+  },
+  "data": {
+    "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/shmi-higher-than-expected-banding/episodes.csv.gz",
+    "sha256": "bdf9ef119fff440dd07684f6dad139abfc9fd8f47d9ad5cc35d77476605f915c",
+    "format": "csv.gz",
+    "rows": 368,
+    "bytes": 8606,
+    "columns": [
+      "unit_id",
+      "unit_name",
+      "running_value",
+      "assigned",
+      "treated",
+      "outcome",
+      "expected_deaths",
+      "decision_shmi"
+    ]
+  },
+  "sample": [
+    {
+      "unit_id": "R0B@APR23_MAR24",
+      "unit_name": "SOUTH TYNESIDE AND SUNDERLAND NHS FOUNDATION TRUST",
+      "running_value": -0.023900000000000032,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1597,
+      "covariates": {
+        "decision_shmi": 1.0962,
+        "expected_deaths": 2965
+      }
+    },
+    {
+      "unit_id": "RAE@APR22_MAR23",
+      "unit_name": "BRADFORD TEACHING HOSPITALS NHS FOUNDATION TRUST",
+      "running_value": -0.019200000000000106,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1629,
+      "covariates": {
+        "decision_shmi": 1.1072,
+        "expected_deaths": 1495
+      }
+    },
+    {
+      "unit_id": "RAJ@APR22_MAR23",
+      "unit_name": "MID AND SOUTH ESSEX NHS FOUNDATION TRUST",
+      "running_value": 0.010199999999999987,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.0758,
+      "covariates": {
+        "decision_shmi": 1.1276,
+        "expected_deaths": 5180
+      }
+    },
+    {
+      "unit_id": "RBD@APR22_MAR23",
+      "unit_name": "DORSET COUNTY HOSPITAL NHS FOUNDATION TRUST",
+      "running_value": 0.0026999999999999247,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.1057,
+      "covariates": {
+        "decision_shmi": 1.1355,
+        "expected_deaths": 970
+      }
+    },
+    {
+      "unit_id": "RBD@APR23_MAR24",
+      "unit_name": "DORSET COUNTY HOSPITAL NHS FOUNDATION TRUST",
+      "running_value": -0.023900000000000032,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.0366,
+      "covariates": {
+        "decision_shmi": 1.1057,
+        "expected_deaths": 1170
+      }
+    },
+    {
+      "unit_id": "RBK@APR18_MAR19",
+      "unit_name": "WALSALL HEALTHCARE NHS TRUST",
+      "running_value": -0.02190000000000003,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.0822,
+      "covariates": {
+        "decision_shmi": 1.1093,
+        "expected_deaths": 1350
+      }
+    },
+    {
+      "unit_id": "RC1@APR18_MAR19",
+      "unit_name": "BEDFORD HOSPITAL NHS TRUST",
+      "running_value": -0.0017999999999998018,
+      "assigned": false,
+      "treated": false,
+      "covariates": {
+        "decision_shmi": 1.1321,
+        "expected_deaths": 1120
+      }
+    },
+    {
+      "unit_id": "RD8@APR23_MAR24",
+      "unit_name": "MILTON KEYNES UNIVERSITY HOSPITAL NHS FOUNDATION TRUST",
+      "running_value": -0.025600000000000067,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1293,
+      "covariates": {
+        "decision_shmi": 1.1031,
+        "expected_deaths": 1245
+      }
+    },
+    {
+      "unit_id": "RDE@APR18_MAR19",
+      "unit_name": "EAST SUFFOLK AND NORTH ESSEX NHS FOUNDATION TRUST",
+      "running_value": -0.005700000000000038,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.0752,
+      "covariates": {
+        "decision_shmi": 1.1167,
+        "expected_deaths": 3975
+      }
+    },
+    {
+      "unit_id": "RDE@APR23_MAR24",
+      "unit_name": "EAST SUFFOLK AND NORTH ESSEX NHS FOUNDATION TRUST",
+      "running_value": -0.0132000000000001,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.0853,
+      "covariates": {
+        "decision_shmi": 1.1052,
+        "expected_deaths": 4050
+      }
+    },
+    {
+      "unit_id": "RFR@APR18_MAR19",
+      "unit_name": "THE ROTHERHAM NHS FOUNDATION TRUST",
+      "running_value": -0.0042999999999999705,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1997,
+      "covariates": {
+        "decision_shmi": 1.127,
+        "expected_deaths": 1345
+      }
+    },
+    {
+      "unit_id": "RGP@APR23_MAR24",
+      "unit_name": "JAMES PAGET UNIVERSITY HOSPITALS NHS FOUNDATION TRUST",
+      "running_value": -0.007800000000000029,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1312,
+      "covariates": {
+        "decision_shmi": 1.1185,
+        "expected_deaths": 1495
+      }
+    },
+    {
+      "unit_id": "RJN@APR18_MAR19",
+      "unit_name": "EAST CHESHIRE NHS TRUST",
+      "running_value": -0.0038999999999997925,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1577,
+      "covariates": {
+        "decision_shmi": 1.1362,
+        "expected_deaths": 795
+      }
+    },
+    {
+      "unit_id": "RJR@APR18_MAR19",
+      "unit_name": "COUNTESS OF CHESTER HOSPITAL NHS FOUNDATION TRUST",
+      "running_value": -0.0253000000000001,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.0752,
+      "covariates": {
+        "decision_shmi": 1.1055,
+        "expected_deaths": 1400
+      }
+    },
+    {
+      "unit_id": "RK9@APR18_MAR19",
+      "unit_name": "UNIVERSITY HOSPITALS PLYMOUTH NHS TRUST",
+      "running_value": 0.013000000000000123,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.0761,
+      "covariates": {
+        "decision_shmi": 1.139,
+        "expected_deaths": 2245
+      }
+    },
+    {
+      "unit_id": "RK9@APR23_MAR24",
+      "unit_name": "UNIVERSITY HOSPITALS PLYMOUTH NHS TRUST",
+      "running_value": -0.01110000000000011,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.2471,
+      "covariates": {
+        "decision_shmi": 1.1112,
+        "expected_deaths": 2215
+      }
+    },
+    {
+      "unit_id": "RKB@APR18_MAR19",
+      "unit_name": "UNIVERSITY HOSPITALS COVENTRY AND WARWICKSHIRE NHS TRUST",
+      "running_value": -0.02750000000000008,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1086,
+      "covariates": {
+        "decision_shmi": 1.0973,
+        "expected_deaths": 2605
+      }
+    },
+    {
+      "unit_id": "RLT@APR18_MAR19",
+      "unit_name": "GEORGE ELIOT HOSPITAL NHS TRUST",
+      "running_value": -0.015000000000000124,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1593,
+      "covariates": {
+        "decision_shmi": 1.1212,
+        "expected_deaths": 975
+      }
+    },
+    {
+      "unit_id": "RMC@APR23_MAR24",
+      "unit_name": "BOLTON NHS FOUNDATION TRUST",
+      "running_value": 0.023299999999999876,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.1349,
+      "covariates": {
+        "decision_shmi": 1.1497,
+        "expected_deaths": 1480
+      }
+    },
+    {
+      "unit_id": "RNA@APR18_MAR19",
+      "unit_name": "THE DUDLEY GROUP NHS FOUNDATION TRUST",
+      "running_value": 0.006599999999999939,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.1468,
+      "covariates": {
+        "decision_shmi": 1.1332,
+        "expected_deaths": 2085
+      }
+    },
+    {
+      "unit_id": "RNA@APR22_MAR23",
+      "unit_name": "THE DUDLEY GROUP NHS FOUNDATION TRUST",
+      "running_value": -0.0022999999999999687,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.0015,
+      "covariates": {
+        "decision_shmi": 1.1207,
+        "expected_deaths": 2060
+      }
+    },
+    {
+      "unit_id": "RNZ@APR22_MAR23",
+      "unit_name": "SALISBURY NHS FOUNDATION TRUST",
+      "running_value": 0.0031000000000001027,
+      "assigned": true,
+      "treated": true,
+      "outcome": 0.9559,
+      "covariates": {
+        "decision_shmi": 1.1365,
+        "expected_deaths": 935
+      }
+    },
+    {
+      "unit_id": "RP5@APR23_MAR24",
+      "unit_name": "DONCASTER AND BASSETLAW TEACHING HOSPITALS NHS FOUNDATION TRUST",
+      "running_value": 0.007100000000000106,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.1429,
+      "covariates": {
+        "decision_shmi": 1.129,
+        "expected_deaths": 2330
+      }
+    },
+    {
+      "unit_id": "RPA@APR22_MAR23",
+      "unit_name": "MEDWAY NHS FOUNDATION TRUST",
+      "running_value": 0.012499999999999956,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.1932,
+      "covariates": {
+        "decision_shmi": 1.1388,
+        "expected_deaths": 1495
+      }
+    },
+    {
+      "unit_id": "RQ8@APR18_MAR19",
+      "unit_name": "MID ESSEX HOSPITAL SERVICES NHS TRUST",
+      "running_value": 0.0052000000000000934,
+      "assigned": true,
+      "treated": true,
+      "covariates": {
+        "decision_shmi": 1.1331,
+        "expected_deaths": 1815
+      }
+    },
+    {
+      "unit_id": "RQW@APR18_MAR19",
+      "unit_name": "THE PRINCESS ALEXANDRA HOSPITAL NHS TRUST",
+      "running_value": 0.0028999999999999027,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.0745,
+      "covariates": {
+        "decision_shmi": 1.1336,
+        "expected_deaths": 1410
+      }
+    },
+    {
+      "unit_id": "RR8@APR22_MAR23",
+      "unit_name": "LEEDS TEACHING HOSPITALS NHS TRUST",
+      "running_value": 0.007100000000000106,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.1313,
+      "covariates": {
+        "decision_shmi": 1.1268,
+        "expected_deaths": 3185
+      }
+    },
+    {
+      "unit_id": "RR8@APR23_MAR24",
+      "unit_name": "LEEDS TEACHING HOSPITALS NHS TRUST",
+      "running_value": 0.012299999999999978,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.125,
+      "covariates": {
+        "decision_shmi": 1.1313,
+        "expected_deaths": 3585
+      }
+    },
+    {
+      "unit_id": "RRF@APR18_MAR19",
+      "unit_name": "WRIGHTINGTON, WIGAN AND LEIGH NHS FOUNDATION TRUST",
+      "running_value": 0.013800000000000034,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.1814,
+      "covariates": {
+        "decision_shmi": 1.1434,
+        "expected_deaths": 1540
+      }
+    },
+    {
+      "unit_id": "RTE@APR22_MAR23",
+      "unit_name": "GLOUCESTERSHIRE HOSPITALS NHS FOUNDATION TRUST",
+      "running_value": -0.011300000000000088,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1578,
+      "covariates": {
+        "decision_shmi": 1.1109,
+        "expected_deaths": 2255
+      }
+    },
+    {
+      "unit_id": "RTR@APR22_MAR23",
+      "unit_name": "SOUTH TEES HOSPITALS NHS FOUNDATION TRUST",
+      "running_value": -0.025299999999999878,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.0701,
+      "covariates": {
+        "decision_shmi": 1.0966,
+        "expected_deaths": 2330
+      }
+    },
+    {
+      "unit_id": "RWA@APR23_MAR24",
+      "unit_name": "HULL UNIVERSITY TEACHING HOSPITALS NHS TRUST",
+      "running_value": 0.027700000000000058,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.0918,
+      "covariates": {
+        "decision_shmi": 1.1476,
+        "expected_deaths": 3070
+      }
+    },
+    {
+      "unit_id": "RWD@APR18_MAR19",
+      "unit_name": "UNITED LINCOLNSHIRE TEACHING HOSPITALS NHS TRUST",
+      "running_value": -0.024499999999999966,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.0756,
+      "covariates": {
+        "decision_shmi": 1.0991,
+        "expected_deaths": 3175
+      }
+    },
+    {
+      "unit_id": "RWP@APR18_MAR19",
+      "unit_name": "WORCESTERSHIRE ACUTE HOSPITALS NHS TRUST",
+      "running_value": 0.018799999999999928,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.0428,
+      "covariates": {
+        "decision_shmi": 1.144,
+        "expected_deaths": 2480
+      }
+    },
+    {
+      "unit_id": "RWY@APR23_MAR24",
+      "unit_name": "CALDERDALE AND HUDDERSFIELD NHS FOUNDATION TRUST",
+      "running_value": 0.005899999999999794,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.1516,
+      "covariates": {
+        "decision_shmi": 1.128,
+        "expected_deaths": 2255
+      }
+    },
+    {
+      "unit_id": "RXK@APR23_MAR24",
+      "unit_name": "SANDWELL AND WEST BIRMINGHAM HOSPITALS NHS TRUST",
+      "running_value": 0.007600000000000051,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.0428,
+      "covariates": {
+        "decision_shmi": 1.1315,
+        "expected_deaths": 1855
+      }
+    },
+    {
+      "unit_id": "RXL@APR18_MAR19",
+      "unit_name": "BLACKPOOL TEACHING HOSPITALS NHS FOUNDATION TRUST",
+      "running_value": 0.025700000000000056,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.0952,
+      "covariates": {
+        "decision_shmi": 1.1525,
+        "expected_deaths": 2035
+      }
+    },
+    {
+      "unit_id": "RXP@APR18_MAR19",
+      "unit_name": "COUNTY DURHAM AND DARLINGTON NHS FOUNDATION TRUST",
+      "running_value": -0.012599999999999945,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.1322,
+      "covariates": {
+        "decision_shmi": 1.112,
+        "expected_deaths": 2690
+      }
+    },
+    {
+      "unit_id": "RXP@APR22_MAR23",
+      "unit_name": "COUNTY DURHAM AND DARLINGTON NHS FOUNDATION TRUST",
+      "running_value": 0.0004999999999999449,
+      "assigned": true,
+      "treated": true,
+      "outcome": 1.2371,
+      "covariates": {
+        "decision_shmi": 1.1214,
+        "expected_deaths": 2665
+      }
+    },
+    {
+      "unit_id": "RXR@APR22_MAR23",
+      "unit_name": "EAST LANCASHIRE HOSPITALS NHS TRUST",
+      "running_value": -0.028100000000000014,
+      "assigned": false,
+      "treated": false,
+      "outcome": 1.3193,
+      "covariates": {
+        "decision_shmi": 1.094,
+        "expected_deaths": 2290
+      }
+    }
+  ],
+  "effect": {
+    "central": -0.01314184028469295,
+    "std_dev": 0.02378212494161956,
+    "interval": {
+      "level": 0.95,
+      "lower": -0.06583399496880651,
+      "upper": 0.017676971126885252
+    },
+    "quantiles": [
+      {
+        "p": 0.025,
+        "value": -0.06583399496880654
+      },
+      {
+        "p": 0.05,
+        "value": -0.054134517427033735
+      },
+      {
+        "p": 0.1,
+        "value": -0.043657176778761034
+      },
+      {
+        "p": 0.25,
+        "value": -0.029957436421627404
+      },
+      {
+        "p": 0.5,
+        "value": -0.010910047709966807
+      },
+      {
+        "p": 0.75,
+        "value": 0.008377520222490921
+      },
+      {
+        "p": 0.9,
+        "value": 0.012967004074057969
+      },
+      {
+        "p": 0.95,
+        "value": 0.015328139043820126
+      },
+      {
+        "p": 0.975,
+        "value": 0.017676971126885252
+      }
+    ],
+    "samples": [
+      -0.09740183817252432,
+      -0.08405626151592632,
+      -0.07684083686857104,
+      -0.07166906544754556,
+      -0.06759100255077816,
+      -0.06422594103659815,
+      -0.06138085139181773,
+      -0.05894028045928401,
+      -0.0568250141971169,
+      -0.05497516307939988,
+      -0.05334314871495062,
+      -0.051890562021558145,
+      -0.05058636762969311,
+      -0.04940555475424571,
+      -0.04832799452075105,
+      -0.047337466676825465,
+      -0.046420852952217026,
+      -0.0455674863848297,
+      -0.04476863638799318,
+      -0.044017105804289094,
+      -0.043306917225503214,
+      -0.042633069019216624,
+      -0.04199134518174773,
+      -0.04137816654928109,
+      -0.04079047376122569,
+      -0.04022563464788481,
+      -0.03968137047559059,
+      -0.03915569682220682,
+      -0.03864687586682872,
+      -0.03815337763786765,
+      -0.037673848335607316,
+      -0.03720708427638285,
+      -0.036752010331592685,
+      -0.03630766198248257,
+      -0.03587317030080785,
+      -0.03544774931070763,
+      -0.03503068529924337,
+      -0.03462132773010462,
+      -0.03421908148295408,
+      -0.033823400194255074,
+      -0.033433780517562475,
+      -0.033049757154707926,
+      -0.03267089853600173,
+      -0.03229680304898144,
+      -0.03192709573249096,
+      -0.03156142536684556,
+      -0.031199461902203837,
+      -0.030840894176553058,
+      -0.030485427882331884,
+      -0.03013278374698901,
+      -0.029782695897962626,
+      -0.02943491038686881,
+      -0.029089183851268227,
+      -0.028745282295371023,
+      -0.02840297997354227,
+      -0.028062058362572452,
+      -0.02772230521044465,
+      -0.02738351365082093,
+      -0.02704548137373037,
+      -0.02670800984400703,
+      -0.026370903559932532,
+      -0.026033969345308286,
+      -0.02569701566884291,
+      -0.0253598519853089,
+      -0.02502228809341832,
+      -0.024684133505807136,
+      -0.02434519682691756,
+      -0.02400528513494489,
+      -0.023664203364387217,
+      -0.023321753686123284,
+      -0.02297773488236922,
+      -0.02263194171435623,
+      -0.022284164281163657,
+      -0.021934187368877082,
+      -0.02158178979017336,
+      -0.021226743715632046,
+      -0.0208688139996206,
+      -0.020507757505610694,
+      -0.020143322438392154,
+      -0.019775247694037865,
+      -0.019403262242857294,
+      -0.019027084566238632,
+      -0.018646422175561922,
+      -0.0182609712506911,
+      -0.01787041644742588,
+      -0.01747443093830904,
+      -0.01707267677000355,
+      -0.016664805643786196,
+      -0.01625046025421232,
+      -0.015829276355176544,
+      -0.015400885762477477,
+      -0.01496492054680408,
+      -0.014521018718544679,
+      -0.014068831751341306,
+      -0.01360803432659976,
+      -0.013138336692754625,
+      -0.01265950000067233,
+      -0.012171354871824355,
+      -0.011673823242849851,
+      -0.011166943169217323,
+      -0.010650895728522784,
+      -0.010126032431964003,
+      -0.009592900674564486,
+      -0.009052263858611572,
+      -0.008505112143189567,
+      -0.007952659628348551,
+      -0.007396324511060126,
+      -0.006837690554757468,
+      -0.006278450993123791,
+      -0.0057203392334133196,
+      -0.005165053597392029,
+      -0.004614184959669249,
+      -0.004069155975164898,
+      -0.003531178691406814,
+      -0.003001234346908332,
+      -0.002480075953795859,
+      -0.001968251608003088,
+      -0.0014661447240290944,
+      -0.0009740264784406935,
+      -0.0004921152978955307,
+      -0.000020637798769279018,
+      0.00044011512238078176,
+      0.0008897442902957163,
+      0.0013277182302175467,
+      0.0017533763485509698,
+      0.0021659634507759295,
+      0.0025646937713543786,
+      0.0029488349781403274,
+      0.003317796013835755,
+      0.0036712004916184676,
+      0.004008931275655769,
+      0.004331140328453928,
+      0.004638227104753418,
+      0.004930795102847153,
+      0.005209598158668522,
+      0.005475486455025515,
+      0.005729358859678749,
+      0.005972124766839955,
+      0.006204676011680113,
+      0.00642786787163104,
+      0.00664250748143414,
+      0.006849347870902495,
+      0.007049086017996866,
+      0.00724236361086864,
+      0.0074297695253052794,
+      0.007611843298720684,
+      0.007789079102091586,
+      0.0079619298778223,
+      0.008130811432358592,
+      0.008296106357207244,
+      0.008458167709917457,
+      0.008617322425032933,
+      0.008773874449815526,
+      0.008928107614962922,
+      0.009080288259677754,
+      0.00923066763547229,
+      0.009379484115519688,
+      0.009526965237228423,
+      0.009673329605727518,
+      0.009818788685589382,
+      0.009963548507717794,
+      0.010107811318128507,
+      0.010251777195530432,
+      0.010395645665330789,
+      0.010539617339087,
+      0.010683895610677376,
+      0.010828688443760007,
+      0.010974210289691658,
+      0.011120684181321776,
+      0.011268344056415202,
+      0.011417437375506097,
+      0.011568228113589995,
+      0.011721000224388746,
+      0.011876061701605541,
+      0.012033749395923225,
+      0.012194434792766641,
+      0.012358531018776174,
+      0.01252650143143266,
+      0.012698870266572564,
+      0.012876235988036857,
+      0.013059288225966598,
+      0.013248829541963082,
+      0.013445803778666245,
+      0.013651333532562388,
+      0.013866770488271167,
+      0.01409376423557947,
+      0.014334358220026783,
+      0.01459112648522395,
+      0.014867373390929584,
+      0.015167433489230133,
+      0.015497136086189012,
+      0.01586455084471091,
+      0.016281233163318483,
+      0.016764399092104608,
+      0.01734091301693321,
+      0.018054987015801556,
+      0.018983935983198592,
+      0.02027406307660346,
+      0.02225639988937267,
+      0.026357560112844763
+    ],
+    "uncertainty_budget": {
+      "sampling": 0.00018522157891514193,
+      "specification": 0.00038036788782366105
+    }
+  },
+  "dossier": {
+    "density": {
+      "method": "binned-density-discontinuity (McCrary-style)",
+      "statistic": 1.6547619047619158,
+      "p_value": 0.622924560454828,
+      "passed": true,
+      "detail": "density at cutoff: below=10.7 above=12.4 jump=1.7 (z=0.49); no significant discontinuity =\u003e no detected sorting"
+    },
+    "covariate_continuity": [
+      {
+        "name": "expected_deaths",
+        "method": "covariate-continuity (local-linear jump in covariate)",
+        "statistic": -48.31273331178045,
+        "p_value": 0.8553682504502961,
+        "passed": true,
+        "detail": "jump=-48.31 se=265.1 z=-0.18 (n_treat=36 n_ctrl=198)"
+      }
+    ],
+    "placebo_cutoffs": [
+      {
+        "cutoff": -0.2,
+        "estimate": -0.007355389520638966,
+        "std_err": 0.013018192469791703,
+        "passed": true
+      },
+      {
+        "cutoff": -0.1,
+        "estimate": 0.005551038438813549,
+        "std_err": 0.011044929466128084,
+        "passed": true
+      }
+    ],
+    "bandwidth_sweep": [
+      {
+        "param": 0.08,
+        "estimate": -0.029949445452122747,
+        "std_err": 0.021786045876269554
+      },
+      {
+        "param": 0.12,
+        "estimate": -0.024908610703282985,
+        "std_err": 0.019594240327289
+      },
+      {
+        "param": 0.15,
+        "estimate": -0.02442513482156672,
+        "std_err": 0.018862085166780247
+      },
+      {
+        "param": 0.2,
+        "estimate": -0.026453282845778636,
+        "std_err": 0.018273952975324925
+      },
+      {
+        "param": 0.25,
+        "estimate": -0.025781195101699517,
+        "std_err": 0.017688334306393674
+      }
+    ],
+    "donut_robustness": [
+      {
+        "param": 0.02,
+        "estimate": -0.03248252270698693,
+        "std_err": 0.03747318665377702
+      },
+      {
+        "param": 0.04,
+        "estimate": -0.04729723308627132,
+        "std_err": 0.10203878417001577
+      }
+    ],
+    "admitted": true,
+    "notes": "Sharp intention-to-treat RDD on the SHMI 'higher than expected' banding, pooled over 3 non-overlapping reporting-window pairs (trust-years). Effect of being publicly flagged (SHMI above the overdispersed upper control limit) on the trust's SHMI in the following 12-month window. SBI honest interval [-0.0658, 0.0177] (sd 0.0238) splits into sampling sd 0.0136 and identification sd 0.0195; the plug-in interval is [-0.0616, 0.0128] (sd 0.0190). SMALL-N CAVEAT: only ~120 acute trusts per window, so the interval is wide by design. The RDD nets out SHMI's mean reversion (smooth through the cutoff); the flagging effect is the discontinuity. Pooling assumes a stable effect across windows and treats trust-years as units (within-trust serial correlation is not modelled, which understates the sampling component). COVID windows (Apr 2019 - Mar 2022 decisions) are excluded. This is intention-to-treat on the banding label, not the effect of any specific downstream intervention."
+  },
+  "provenance": {
+    "sources": [
+      {
+        "source_id": "shmi-historical-oct24-sep25",
+        "title": "Summary Hospital-level Mortality Indicator (SHMI) — historical trust-level data (release Oct 2024 - Sep 2025)",
+        "publisher": "NHS England (NHS Digital)",
+        "download_uri": "https://files.digital.nhs.uk/9E/F90BCF/SHMI%20data%2C%20Oct24-Sep25.zip",
+        "landing_page": "https://digital.nhs.uk/data-and-information/publications/statistical/shmi/2026-02",
+        "retrieved_at": "",
+        "licence": "Open Government Licence v3.0",
+        "sha256": "0e67d902cab0084c9f7a61a67de4e8b94f21b06b45cfeb1c50982f48f45e2a5f",
+        "vintage": "SHMI release for the reporting period October 2024 - September 2025 (published February 2026); the bundled historical file carries the as-published SHMI value, banding, and control limits for every rolling 12-month window back to Jan 2018 - Dec 2018."
+      }
+    ],
+    "context_asof": "2018-04-01",
+    "decision_timestamp": "2024-03-31",
+    "outcome_timestamp": "2025-03-31",
+    "running_variable_vintage": "SHMI historical trust-level series, as published (release Oct 2024 - Sep 2025)",
+    "decision_round": "SHMI 'higher than expected' banding, pooled non-overlapping windows",
+    "seed": 1,
+    "tool_versions": {
+      "go": "go1.25.2",
+      "openaction2outcome": "0.3.0",
+      "smc": "particles=4000,rounds=8",
+      "stochadex": "v0.0.0-20260529062707-b3fa54eb7212"
+    },
+    "outcome_realized": true
+  }
+}

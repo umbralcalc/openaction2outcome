@@ -212,12 +212,8 @@ func normalCDF(z float64) float64 {
 	return 0.5 * math.Erfc(-z/math.Sqrt2)
 }
 
-// DefaultFloorSpecs is the specification grid for the floor-standards series:
-// bandwidth x polynomial order x kernel.
-func DefaultFloorSpecs() []Spec {
-	bandwidths := []float64{0.4, 0.5, 0.6, 0.7, 0.8}
-	orders := []int{1, 2}
-	kernels := []Kernel{Triangular, Boxcar}
+// gridSpecs builds a bandwidth x order x kernel specification grid.
+func gridSpecs(bandwidths []float64, orders []int, kernels []Kernel) []Spec {
 	specs := make([]Spec, 0, len(bandwidths)*len(orders)*len(kernels))
 	for _, k := range kernels {
 		for _, o := range orders {
@@ -227,4 +223,17 @@ func DefaultFloorSpecs() []Spec {
 		}
 	}
 	return specs
+}
+
+// DefaultFloorSpecs is the specification grid for the floor-standards series,
+// whose running variable (Progress 8) spans a few points.
+func DefaultFloorSpecs() []Spec {
+	return gridSpecs([]float64{0.4, 0.5, 0.6, 0.7, 0.8}, []int{1, 2}, []Kernel{Triangular, Boxcar})
+}
+
+// DefaultSHMISpecs is the grid for the SHMI series, whose running variable
+// (SHMI minus its control limit) spans a much smaller range, so the bandwidths
+// are correspondingly tighter.
+func DefaultSHMISpecs() []Spec {
+	return gridSpecs([]float64{0.08, 0.12, 0.16, 0.20, 0.25}, []int{1, 2}, []Kernel{Triangular, Boxcar})
 }

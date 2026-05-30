@@ -274,8 +274,10 @@ func cmdBuild(args []string) error {
 	switch *seriesName {
 	case "floor-standards":
 		mark, err = series.BuildFloorStandards(*rawDir, *cacheDir, *distDir, cfg)
+	case "shmi":
+		mark, err = series.BuildSHMI(*rawDir, *cacheDir, *distDir, cfg)
 	case "":
-		return fmt.Errorf("build: --series is required (floor-standards)")
+		return fmt.Errorf("build: --series is required (floor-standards, shmi)")
 	default:
 		return fmt.Errorf("build: unknown or not-yet-implemented series %q", *seriesName)
 	}

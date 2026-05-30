@@ -1,0 +1,18 @@
+{
+  "source_id": "shmi-historical-oct24-sep25",
+  "title": "Summary Hospital-level Mortality Indicator (SHMI) — historical trust-level data (release Oct 2024 - Sep 2025)",
+  "publisher": "NHS England (NHS Digital)",
+  "landing_page": "https://digital.nhs.uk/data-and-information/publications/statistical/shmi/2026-02",
+  "download_uri": "https://files.digital.nhs.uk/9E/F90BCF/SHMI%20data%2C%20Oct24-Sep25.zip",
+  "r2_object_key": "raw/shmi-historical-oct24-sep25/SHMI_data_Oct24-Sep25.zip",
+  "local_path": "SHMI_data_Oct24-Sep25.zip",
+  "sha256": "0e67d902cab0084c9f7a61a67de4e8b94f21b06b45cfeb1c50982f48f45e2a5f",
+  "bytes": 3846601,
+  "format": "zip",
+  "licence": "Open Government Licence v3.0",
+  "licence_uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "vintage": "SHMI release for the reporting period October 2024 - September 2025 (published February 2026); the bundled historical file carries the as-published SHMI value, banding, and control limits for every rolling 12-month window back to Jan 2018 - Dec 2018.",
+  "role": "running-variable-and-outcome",
+  "inner_path": "SHMI data/Historical_trust_level_SHMI_data_Oct24-Sep25_csv.csv",
+  "notes": "Accredited official statistic. The running variable is each trust's SHMI minus its overdispersed upper control limit (OD_UL); a trust is banded 'higher than expected' (band 1) exactly when SHMI > OD_UL. The outcome is the trust's SHMI in a later, non-overlapping window. PUBLICATION_MONTH gives the as-published vintage, so the banding reflects how trusts were actually flagged at decision time. Not vendored into git: fetch from download_uri (or the R2 mirror) into data/cache and verify against sha256."
+}

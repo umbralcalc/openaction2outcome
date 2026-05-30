@@ -1,6 +1,6 @@
 ![](assets/logo.png)
 
-# The OpenAction2Outcome Datasets
+# The Open Action->Outcome Datasets
 
 **Real-world reference points for testing models that predict the effects of decisions.**
 
@@ -11,7 +11,7 @@ is rarely available, so people fall back on simulators.
 
 These datasets provide that ground truth.
 
-OpenAction2Outcome is a collection of datasets tracking real-world decisions and their measured outcomes.
+`openaction2outcome` is a collection of datasets tracking real-world decisions and their measured outcomes.
 
 In each case an institution crossed a published threshold (a school's performance score, a hospital's mortality rating, an area's deprivation rank), which triggered an action, and where the true effect of that action can be recovered — because units that *just* crossed the line are comparable to those that *just* didn't (regression discontinuity).
 
