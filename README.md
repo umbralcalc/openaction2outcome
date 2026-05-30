@@ -1,164 +1,94 @@
-# OpenAction2Outcome Datasets
+# The OpenAction2Outcome Datasets
 
-**An open causal yardstick mapping institutional decisions to verified outcomes.**
+**Real-world reference points for testing models that predict the effects of decisions.**
 
-A small, bulletproof, fully open set of real UK public-sector decisions — each
-triggered when an institution's measured performance crosses a published
-threshold — where the true effect of the decision is recovered by regression
-discontinuity (RDD) and shipped as an *honest interval* (central estimate +
-identification uncertainty + a validity dossier). Its purpose is to test whether
-any model that makes counterfactual claims gets the causal effect right at points
-where ground truth is genuinely known. See [BRIEF.md](BRIEF.md) for the full
-rationale and [DEV_PLAN.md](DEV_PLAN.md) for the build plan.
+If your model answers "what would happen if we did X?" (a world model, a model-based policy, a digital twin, an LLM reasoning about consequences) you need to know when it's right. 
 
-This is an **offline dataset you mint locally and publish as static files** — no
-server, no database, no scheduled jobs. You run a Go pipeline by hand; it
-produces the marks *and* the scores. A consumer scores their own model with the
-same public Go package, locally. Recurring cost: £0.
+Usually you can't: real-world counterfactual ground truth
+is rarely available, so people fall back on simulators.
 
-**Storage model.** Git holds the *instrument* — code, slim mark JSON (~20 KB),
-source pointers, dossiers, example scores. The *bulky bytes* — the frozen
-open-data inputs and the per-mark analysis-ready episode tables model authors
-train on — live in object storage (Cloudflare R2, zero egress) and are referenced
-from marks and manifests by URL + SHA-256. Inputs are **not** vendored into git:
-`data/raw/<id>/SOURCE.json` is a pointer (canonical URL + mirror key + hash), and
-`openaction2outcome fetch` downloads the bytes into a gitignored cache, verifying
-the hash. See [PUBLISHING.md](PUBLISHING.md).
+These datasets provide that ground truth.
 
-## Status — Phase 1 (SBI estimator on the first seam)
+OpenAction2Outcome is a collection of datasets tracking real-world decisions and their measured outcomes.
 
-| Piece | State |
-|---|---|
-| Public module skeleton (`pkg/schema`, `pkg/score`, `cmd`, `internal/*`) | ✅ |
-| `Mark` + `Submission` schema with point-in-time / leakage guards | ✅ |
-| Dependency-light scoring (Track A + Track B) — imports only `pkg/schema` + stdlib | ✅ |
-| First genuine, outcome-bearing mark on **real open data** | ✅ floor standards |
-| **stochadex SBI estimator** — model-averaged posterior, honest interval | ✅ floor standards |
-| Second + third seams (area funding, SHMI) | ⏳ Phase 2+ |
+In each case an institution crossed a published threshold (a school's performance score, a hospital's mortality rating, an area's deprivation rank), which triggered an action, and where the true effect of that action can be recovered — because units that *just* crossed the line are comparable to those that *just* didn't (regression discontinuity).
 
-**Phase-1 SBI (the headline).** The mark's honest interval is a Bayesian
-model-averaged posterior over the discontinuity effect τ. For each spec on a
-grid (bandwidth × polynomial order × kernel), **stochadex SMC** returns the
-within-spec posterior and log marginal likelihood; specs are combined by the
-*hybrid* rule — marginal-likelihood weighting *within* a bandwidth (where the
-models share data), uniform *across* bandwidths (which don't). The interval's
-width splits exactly into **sampling** vs **identification** (between-spec)
-variance. On the floor-standards mark the identification component *dominates*
-(sd ≈ 0.066 vs sampling ≈ 0.031) — precisely the width a plug-in method
-reporting only sampling SE omits, and the reason it should under-cover on
-Track B.
+Each reference point ships with an **honest interval**: a central estimate plus a range that's truthful about what's actually uncertain.
 
-The first mark is the **education floor-standards** seam: a sharp RDD on the 2016
-Progress 8 floor of **−0.5**, with the outcome being each school's Progress 8 two
-years later (2017/18), linked by URN. (The area-funding seam's running variable —
-IMD 2019 — is frozen under `data/raw/imd2019`, but its sharp form, UKSPF 2025-26,
-is too recent to have a realized downstream outcome yet; see the project notes.)
+You can check two things against it: does your model get the **effect** right, and is its **confidence** honest?
 
-## Repository layout
+## What's in it
 
-```
-cmd/openaction2outcome   CLI: fetch, build, validate, score
-internal/ingest          input fetch-to-cache + loaders (KS4 performance tables)
-internal/rdd             plug-in local-linear RDD estimator (comparison baseline)
-internal/sbi             stochadex SBI: per-spec SMC + hybrid BMA posterior over τ
-internal/validity        density / covariate-continuity / placebo / donut battery
-internal/publish         publish config + deterministic episode-table writer
-internal/seam            per-seam mint orchestration
-pkg/schema   (PUBLIC)    Mark + Submission types — stdlib only
-pkg/score    (PUBLIC)    Track A + Track B scoring — imports only pkg/schema
-data/raw                 SOURCE.json pointers (URL + mirror key + SHA-256 + licence)
-data/cache               fetched input bytes (gitignored; `fetch` populates)
-dist                     staged episode sidecars for upload (gitignored)
-marks                    published slim mark files (JSON)
-scores                   published / example scores
-examples                 example submission
-publish.json             object-store base URL (Cloudflare R2)
-```
+- **Marks** - the reference points. Small JSON files in [`marks/`](marks); one per decision. Each gives the setup, the effect as a distribution, the evidence it passed, and full provenance. See the [data dictionary](docs/schema.md).
+- **Dossiers** — a readable write-up of each mark's validity checks, in [`dossiers/`](dossiers).
+- **Episode tables** — the per-unit data behind each mark, in object storage (referenced from the mark by URL + hash). Only needed if you want the raw rows.
+- **Scorer** — a small Go package ([`pkg/score`](pkg/score)) that grades a model's predictions. Nothing is hosted; you run it locally.
 
-`pkg/schema` and `pkg/score` are deliberately dependency-light so a consumer who
-only wants to score a model pulls a tiny dependency tree; all heavy numerics stay
-in `internal`.
+## The finding it's built to show
 
-## Reproduce the marks and scores
+A method that reports only its *sampling* error looks confident but is wrong too often — it ignores how much the answer depends on modelling choices. A method that
+accounts for that is honestly less certain, and better calibrated. 
 
-```sh
-go run ./cmd/openaction2outcome fetch              # download frozen inputs into data/cache (verifies SHA-256)
-go test ./...                                       # unit + real-data integration tests (skips if not fetched)
-go run ./cmd/openaction2outcome build --seam floor-standards   # mints the slim mark + stages the episode sidecar
-go run ./cmd/openaction2outcome validate            # checks every mark against the schema
-```
+The committed [calibration study](scores/calibration-study.json) (`make study`) shows it against
+known truth — at a nominal 95% interval, the plug-in method covers the truth only 80% of the time, the model-averaged method 92%.
 
-Minting is **deterministic**: re-running `build` reproduces the mark *and* its
-episode sidecar byte-for-byte (seeds, tool versions, and input SHA-256s are
-recorded in each mark's provenance, and the cached inputs are integrity-checked at
-mint time). `go test` is offline — the integration test skips cleanly until you
-have run `fetch`.
+## Use the data
 
-## Score your own model
-
-1. (Optional) Download a mark's analysis-ready episode table from its `data.uri`
-   (a single gzipped CSV, content-addressed by `data.sha256`) to train/validate
-   your model on. You never need to run the mint or re-derive anything.
-2. Produce a `submission.json` to the published schema (`pkg/schema`,
-   `Submission`): for each mark, your predicted effect *with your own
-   uncertainty*. See [examples/submission.example.json](examples/submission.example.json).
-3. Run it locally — nothing is hosted:
+1. Read a mark from [`marks/`](marks) (and, if you want the raw rows, download its episode table from the mark's `data.uri`, verifying `data.sha256`).
+2. Write a `submission.json`: your predicted effect, with your own uncertainty, per mark. See [`examples/submission.example.json`](examples/submission.example.json).
+3. Score it locally:
 
 ```sh
 go run ./cmd/openaction2outcome score --submission submission.json --out my.scores.json
 ```
 
-The committed [examples/submission.example.json](examples/submission.example.json)
-and its [expected scores](scores/example.scores.json) let you confirm you are
-using the tool correctly.
+You get two independent scores per mark — **decision** (did you get the direction right, and what would a wrong call cost?) and **calibration** (does your stated
+uncertainty match the truth?). 
 
-### The headline finding — plug-in methods fail calibration (BRIEF §4)
+The committed
+[example submission](examples/submission.example.json) and its [expected scores](scores/example.scores.json) let you confirm your setup.
 
-A plug-in RDD that reports only **sampling** SE is systematically over-confident,
-because it omits the **identification** uncertainty (bandwidth / order / kernel
-choice) the SBI marks correctly include. The committed calibration study
-([scores/calibration-study.json](scores/calibration-study.json), reproduce with
-`make study`) demonstrates it against **known truth** — 100 synthetic RDD
-problems with a planted effect and side-dependent curvature, scoring each
-method's interval by whether it covers the *true* effect (not the SBI estimate,
-so the test isn't circular):
+## Reproduce the marks
 
-| nominal coverage | plug-in (sampling SE only) | SBI (hybrid model-averaged) |
-|--:|--:|--:|
-| 50% | 0.32 | 0.41 |
-| 80% | 0.57 | 0.75 |
-| 90% | 0.72 | 0.86 |
-| 95% | **0.80** | **0.92** |
+Everything is minted offline and deterministically — same inputs, same bytes out.
 
-The plug-in under-covers the truth at every level; the SBI intervals — wider,
-because they fold in identification uncertainty — roughly halve the calibration
-error. This is the result the yardstick exists to make measurable.
+```sh
+make fetch      # download the frozen open-data inputs (verifies hashes)
+make build      # mint the floor-standards mark + dossier
+make validate   # check every mark against the schema
+make study      # re-run the calibration study
+```
 
-### How a model is scored (two independent tracks)
+## Layout
 
-- **Track A — decision-value consistency:** does the model get the *sign* of the
-  effect right, and what is its decision regret? No penalty where the mark itself
-  is unsure of the sign.
-- **Track B — calibration against truth:** does the model's interval overlap the
-  mark's honest interval; a CRPS-style distribution distance; a PIT calibration
-  curve; and a *confidently-wrong* detector (flagged only when a narrow model is
-  wrong **and** the mark is itself narrow-and-known).
+```
+cmd/openaction2outcome   CLI: fetch, build, validate, score, study
+internal/ingest          load + cache the frozen open-data inputs
+internal/rdd             plug-in local-linear estimator (comparison baseline)
+internal/sbi             model-averaged estimator (the honest interval)
+internal/validity        manipulation / continuity / placebo / robustness checks
+internal/dossier         render a mark to a readable dossier
+internal/series          per-series minting
+internal/publish         publishing config + episode-table writer
+pkg/schema   (public)    Mark + Submission types — standard library only
+pkg/score    (public)    the scorer — depends only on pkg/schema
+marks  dossiers  scores  examples  docs   the published outputs + reference
+data/raw                 pointers (URL + hash + licence) to the frozen inputs
+```
 
-## What one mark carries
+`pkg/schema` and `pkg/score` are kept dependency-light so scoring a model pulls a
+tiny dependency tree; the estimation machinery stays in `internal`. How the data
+is stored and published is described in [PUBLISHING.md](PUBLISHING.md).
 
-Running variable + published cutoff; the action and its counterfactual; the later
-open outcome; the effect as a **distribution** (central estimate + honest interval
-whose width folds in bandwidth/specification uncertainty, not just sampling SE); a
-**validity dossier** (density/manipulation, covariate continuity, placebo cutoffs,
-bandwidth sweep, donut robustness); and full **provenance** (sources, licences,
-SHA-256s, and `context_asof ≤ decision < outcome` point-in-time timestamps). A
-mark is admitted iff it passes the validity tests — never rejected for a wide
-interval.
+## Coverage
+
+Currently one series — **floor standards** (English school Progress 8 floor of
+−0.5; outcome is each school's Progress 8 two years later). Two more are planned:
+NHS mortality banding (a fuzzy threshold) and area-based funding.
 
 ## Licensing
 
-Schema, scoring, and evaluator code: MIT (see [LICENSE](LICENSE)). Source data
-licences are passed through with attribution — the DfE and MHCLG inputs used here
-are © Crown copyright, licensed under the
-[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
-Each frozen input records its own licence in `data/raw/<id>/SOURCE.json`.
+Code and schema: MIT (see [LICENSE](LICENSE)). The underlying data is UK public
+sector information (© Crown copyright) under the
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/);
+each input records its own licence in `data/raw/<id>/SOURCE.json`.

@@ -1,10 +1,10 @@
-// Package seam orchestrates per-seam mark minting: it wires the cached frozen
+// Package series orchestrates per-series mark minting: it wires the cached frozen
 // inputs (ingest) through the RDD estimator (rdd) and the validity battery
 // (validity) into a finished schema.Mark, and stages the analysis-ready episode
-// table for object-storage publishing (publish). This is the Phase-0 path for
-// the education floor-standards seam — a sharp RDD on the 2016 Progress 8 floor
+// table for object-storage publishing (publish). This is the path for
+// the education floor-standards series — a sharp RDD on the 2016 Progress 8 floor
 // of -0.5, scored against each school's Progress 8 two years later.
-package seam
+package series
 
 import (
 	"fmt"
@@ -134,7 +134,7 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 	}
 
 	// --- estimate the discontinuity.
-	// Phase-1 headline: a Bayesian model-averaged SBI posterior over tau (stochadex
+	// The honest interval is a Bayesian model-averaged SBI posterior over tau (stochadex
 	// SMC across a bandwidth x order x kernel grid). Its width splits exactly into
 	// within-spec sampling variance and between-spec identification variance.
 	bma := sbi.EstimateBMA(estPts, floorCutoff, sbi.DefaultFloorSpecs(), nil, true,
@@ -150,7 +150,7 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 	}
 
 	// Plug-in local-linear estimate kept as the documented comparison: it reports
-	// a narrower, sampling-led interval and is what under-covers on Track B.
+	// a narrower, sampling-led interval and is what under-covers, failing calibration.
 	res := rdd.Estimate(estPts, floorCutoff, floorRefBW, floorBandwidths, true)
 	plugLo, plugHi := res.Interval95()
 
@@ -177,12 +177,12 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 	attBelow, attAbove := attritionRates(schools16, outcome, floorCutoff, floorRefBW)
 	plugSD := res.TotalSD
 	notes := fmt.Sprintf(
-		"Phase-1 SBI: Bayesian model average over %d specs (bandwidth x order x kernel) via stochadex SMC (%d particles, %d rounds). "+
+		"SBI: Bayesian model average over %d specs (bandwidth x order x kernel) via stochadex SMC (%d particles, %d rounds). "+
 			"Honest interval [%.4f, %.4f] (sd %.4f) decomposes into sampling sd %.4f and identification sd %.4f. "+
-			"For comparison, the plug-in local-linear interval is [%.4f, %.4f] (sd %.4f) — narrower because it ignores between-spec identification uncertainty; this is the gap a model that reports only sampling SE should fail on Track B. "+
+			"For comparison, the plug-in local-linear interval is [%.4f, %.4f] (sd %.4f) — narrower because it ignores between-spec identification uncertainty; this is the gap a model that reports only sampling SE should fail the calibration score. "+
 			"Design is effectively sharp: of %d schools below -0.5, only %d are excluded by the floor's CI condition (P8CIUPP>=0). "+
 			"DIFFERENTIAL ATTRITION CAVEAT: within +/-%.1f of the cutoff, %.1f%% of below-floor schools vs %.1f%% of above-floor schools lack a linked 2017/18 P8 (sponsored academies are re-issued a new URN). "+
-			"This attrition is correlated with treatment and biases the complete-case estimate; it is the dominant threat to this mark and motivates the Phase-2 attrition-aware treatment.",
+			"This attrition is correlated with treatment and biases the complete-case estimate; it is the dominant threat to this mark and motivates a future attrition-aware treatment.",
 		len(bma.Specs), smcParticles, smcRounds,
 		blo, bhi, bma.TotalSD, math.Sqrt(bma.WithinVar), math.Sqrt(bma.BetweenVar),
 		plugLo, plugHi, plugSD,
@@ -201,7 +201,7 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
 		ID:            markID,
-		Seam:          schema.SeamFloorStandards,
+		Series:        schema.SeriesFloorStandards,
 		Domain:        "Education",
 		UnitType:      "school",
 		RDDType:       schema.Sharp,

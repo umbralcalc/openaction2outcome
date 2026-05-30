@@ -57,7 +57,7 @@ func TestMarkAssignmentConsistency(t *testing.T) {
 	m := Mark{
 		SchemaVersion: SchemaVersion,
 		ID:            "t1",
-		Seam:          SeamAreaFunding,
+		Series:        SeriesAreaFunding,
 		RDDType:       Sharp,
 		Design:        Design{Cutoff: 20, Direction: BelowTreated}, // most-deprived = low percentile
 		Effect: Distribution{

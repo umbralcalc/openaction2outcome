@@ -11,7 +11,7 @@ import (
 // institutional decision that was (sharply or fuzzily) triggered when a unit's
 // running variable crossed a published cutoff. The distribution's width carries
 // honest identification uncertainty, and the Mark ships with the validity
-// dossier that earned its admission (BRIEF §3).
+// dossier that earned its admission.
 //
 // A Mark is admitted iff it passes the validity battery (no manipulation, no
 // covariate jump, clean placebos, and — for fuzzy seams — a real first stage).
@@ -19,7 +19,7 @@ import (
 type Mark struct {
 	SchemaVersion string  `json:"schema_version"`
 	ID            string  `json:"id"`
-	Seam          Seam    `json:"seam"`
+	Series        Series  `json:"series"`
 	Domain        string  `json:"domain"`
 	UnitType      string  `json:"unit_type"`
 	RDDType       RDDType `json:"rdd_type"`
@@ -129,7 +129,7 @@ type Context struct {
 // Observation is one unit's episode: its running-variable value at the
 // decision-time vintage, the action it was assigned/received, its later
 // outcome, and its pre-treatment covariates. Post-treatment variables must
-// never appear in Covariates (BRIEF §6).
+// never appear in Covariates.
 type Observation struct {
 	UnitID       string             `json:"unit_id"`
 	UnitName     string             `json:"unit_name,omitempty"`
@@ -150,10 +150,10 @@ func (m Mark) Validate() error {
 	if m.ID == "" {
 		return errors.New("mark: empty id")
 	}
-	switch m.Seam {
-	case SeamAreaFunding, SeamFloorStandards, SeamSHMI:
+	switch m.Series {
+	case SeriesAreaFunding, SeriesFloorStandards, SeriesSHMI:
 	default:
-		return fmt.Errorf("mark %q: unknown seam %q", m.ID, m.Seam)
+		return fmt.Errorf("mark %q: unknown series %q", m.ID, m.Series)
 	}
 	switch m.RDDType {
 	case Sharp, Fuzzy:
@@ -197,7 +197,7 @@ func (m Mark) Validate() error {
 // checkAssignment verifies the Assigned flag is monotone-consistent with the
 // running value, cutoff, and direction — a cheap guard against a loader
 // mislabelling the treated side. It checks only the *strict* sides, leaving the
-// exact-cutoff boundary convention to the seam (e.g. the floor standard treats
+// exact-cutoff boundary convention to the series (e.g. the floor standard treats
 // P8 strictly below -0.5, so a school exactly at -0.5 is a control even though
 // it sits on the cutoff).
 func (m Mark) checkAssignment(o Observation) error {

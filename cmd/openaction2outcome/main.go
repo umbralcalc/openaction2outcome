@@ -1,17 +1,11 @@
-// Command openaction2outcome is the CLI for the causal yardstick: mint marks,
-// validate them, and score submissions. In line with the governing principle
-// (DEV_PLAN §0) it is an offline tool you run by hand — no server, no daemon.
+// Command openaction2outcome is the CLI for the causal yardstick. It is an
+// offline tool you run by hand — no server, no daemon.
 //
-//	openaction2outcome validate [--marks DIR]
-//	    Validate every mark JSON under DIR against the schema and point-in-time
-//	    invariants. Exit non-zero on the first failure.
-//
-//	openaction2outcome score --submission FILE [--marks DIR] [--out FILE]
-//	    Score a submission against the published marks on Tracks A and B.
-//
-//	openaction2outcome build ...
-//	    Mint marks from frozen inputs (RDD + validity battery). Implemented from
-//	    Phase 1 onward; currently a stub.
+//	fetch     Download the frozen open-data inputs into the local cache.
+//	build     Mint a series' marks from the cached inputs (estimate + validate).
+//	validate  Check every mark against the schema and point-in-time invariants.
+//	score     Score a submission against the marks (decision + calibration).
+//	study     Run the calibration study (plug-in vs model-averaged coverage).
 package main
 
 import (
@@ -22,10 +16,11 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/umbralcalc/openaction2outcome/internal/dossier"
 	"github.com/umbralcalc/openaction2outcome/internal/ingest"
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
 	"github.com/umbralcalc/openaction2outcome/internal/sbi"
-	"github.com/umbralcalc/openaction2outcome/internal/seam"
+	"github.com/umbralcalc/openaction2outcome/internal/series"
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
 	"github.com/umbralcalc/openaction2outcome/pkg/score"
 )
@@ -67,7 +62,7 @@ func usage() {
 usage:
   openaction2outcome fetch [--raw DIR] [--cache DIR] [--publish-config FILE]
   openaction2outcome study [--problems N] [--seed N] [--out FILE]
-  openaction2outcome build --seam NAME [--raw DIR] [--cache DIR] [--dist DIR] [--marks DIR]
+  openaction2outcome build --series NAME [--raw DIR] [--cache DIR] [--dist DIR] [--marks DIR]
   openaction2outcome validate [--marks DIR]
   openaction2outcome score --submission FILE [--marks DIR] [--out FILE]
 `)
@@ -123,7 +118,7 @@ func loadPublishConfig(path string) (publish.Config, error) {
 	return cfg, nil
 }
 
-// cmdStudy runs the headline calibration study (BRIEF §4): across synthetic RDD
+// cmdStudy runs the headline calibration study: across synthetic RDD
 // problems with known truth, the plug-in's sampling-only intervals under-cover
 // while the SBI hybrid-BMA intervals track nominal coverage. Deterministic.
 func cmdStudy(args []string) error {
@@ -204,7 +199,7 @@ func cmdValidate(args []string) error {
 		if err != nil {
 			return fmt.Errorf("%s: %w", p, err)
 		}
-		fmt.Printf("ok   %s  (%s, %s, admitted=%v)\n", filepath.Base(p), m.Seam, m.RDDType, m.Dossier.Admitted)
+		fmt.Printf("ok   %s  (%s, %s, admitted=%v)\n", filepath.Base(p), m.Series, m.RDDType, m.Dossier.Admitted)
 	}
 	fmt.Printf("validated %d mark(s)\n", len(paths))
 	return nil
@@ -246,11 +241,12 @@ func cmdScore(args []string) error {
 
 func cmdBuild(args []string) error {
 	fs := flag.NewFlagSet("build", flag.ExitOnError)
-	seamName := fs.String("seam", "", "seam to mint: floor-standards")
+	seriesName := fs.String("series", "", "series to mint: floor-standards")
 	rawDir := fs.String("raw", "data/raw", "directory of SOURCE.json pointers")
 	cacheDir := fs.String("cache", "data/cache", "directory of fetched input bytes")
 	distDir := fs.String("dist", "dist", "directory to stage published artifacts (episode sidecars)")
 	outDir := fs.String("marks", "marks", "directory to write the minted mark")
+	dossierDir := fs.String("dossiers", "dossiers", "directory to write the rendered validity dossier")
 	cfgPath := fs.String("publish-config", "publish.json", "publish config (object-store base URL)")
 	noFetch := fs.Bool("offline", false, "do not fetch; require inputs already cached")
 	fs.Parse(args)
@@ -275,13 +271,13 @@ func cmdBuild(args []string) error {
 	}
 
 	var mark schema.Mark
-	switch *seamName {
+	switch *seriesName {
 	case "floor-standards":
-		mark, err = seam.BuildFloorStandards(*rawDir, *cacheDir, *distDir, cfg)
+		mark, err = series.BuildFloorStandards(*rawDir, *cacheDir, *distDir, cfg)
 	case "":
-		return fmt.Errorf("build: --seam is required (floor-standards)")
+		return fmt.Errorf("build: --series is required (floor-standards)")
 	default:
-		return fmt.Errorf("build: unknown or not-yet-implemented seam %q", *seamName)
+		return fmt.Errorf("build: unknown or not-yet-implemented series %q", *seriesName)
 	}
 	if err != nil {
 		return err
@@ -296,8 +292,12 @@ func cmdBuild(args []string) error {
 	if err := schema.WriteMark(f, mark); err != nil {
 		return err
 	}
+	dossierPath := filepath.Join(*dossierDir, mark.ID+".md")
+	if err := os.WriteFile(dossierPath, []byte(dossier.Render(mark)), 0o644); err != nil {
+		return err
+	}
 	fmt.Printf("minted %s (%s, admitted=%v, effect=%.4g [%.4g, %.4g], episodes=%d)\n",
-		out, mark.Seam, mark.Dossier.Admitted, mark.Effect.Central,
+		out, mark.Series, mark.Dossier.Admitted, mark.Effect.Central,
 		mark.Effect.Interval.Lower, mark.Effect.Interval.Upper, mark.Data.Rows)
 	fmt.Printf("staged  %s  (sha256=%s, %d bytes)\n", mark.Data.URI, mark.Data.SHA256, mark.Data.Bytes)
 	return nil

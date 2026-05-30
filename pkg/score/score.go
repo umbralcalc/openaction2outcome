@@ -6,23 +6,27 @@ import (
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
 )
 
-// TrackA captures decision-value consistency for one mark (BRIEF §4, Track A).
-type TrackA struct {
-	// MarkSignKnown is true when the mark's honest interval excludes zero, so
-	// the sign of the true effect is itself identified.
+// DecisionScore measures whether a model would make the right call at the
+// cutoff: does it get the direction of the effect right, and what does a wrong
+// call cost? A model is not penalised where the reference effect's own interval
+// is unsure of the sign.
+type DecisionScore struct {
+	// MarkSignKnown is true when the reference interval excludes zero, so the
+	// sign of the true effect is itself identified.
 	MarkSignKnown bool `json:"mark_sign_known"`
 	// SignCorrect reports whether the model's central estimate has the same sign
-	// as the mark's central estimate. Meaningful only when MarkSignKnown.
+	// as the reference estimate. Meaningful only when MarkSignKnown.
 	SignCorrect bool `json:"sign_correct"`
-	// Regret is the decision regret: zero unless the mark's sign is known and the
-	// model points the other way, in which case it is the magnitude of the
-	// mark's central effect (the value foregone by the wrong decision). No
-	// penalty accrues where the mark is itself unsure of the sign.
+	// Regret is zero unless the reference sign is known and the model points the
+	// other way, in which case it is the magnitude of the reference effect (the
+	// value foregone by the wrong call).
 	Regret float64 `json:"regret"`
 }
 
-// TrackB captures calibration-against-truth for one mark (BRIEF §4, Track B).
-type TrackB struct {
+// CalibrationScore measures whether a model's stated uncertainty matches the
+// truth: does its predicted interval overlap the reference interval, how far
+// apart are the two distributions, and is the model confidently wrong?
+type CalibrationScore struct {
 	// IntervalsOverlap is true when the model's predicted interval overlaps the
 	// mark's honest interval at all.
 	IntervalsOverlap bool `json:"intervals_overlap"`
@@ -44,9 +48,9 @@ type TrackB struct {
 
 // MarkScore is the full per-mark result.
 type MarkScore struct {
-	MarkID string `json:"mark_id"`
-	TrackA TrackA `json:"track_a"`
-	TrackB TrackB `json:"track_b"`
+	MarkID      string           `json:"mark_id"`
+	Decision    DecisionScore    `json:"decision"`
+	Calibration CalibrationScore `json:"calibration"`
 }
 
 // Options tunes the confidently-wrong detector's "narrow" thresholds. Widths
@@ -62,7 +66,7 @@ func (o Options) markNarrow() float64 {
 	if o.MarkNarrowWidth > 0 {
 		return o.MarkNarrowWidth
 	}
-	return math.Inf(1) // by default no mark counts as narrow until calibrated per-seam
+	return math.Inf(1) // by default no mark counts as narrow until calibrated per-series
 }
 
 func (o Options) modelNarrow() float64 {
@@ -72,21 +76,21 @@ func (o Options) modelNarrow() float64 {
 	return math.Inf(1)
 }
 
-// ScoreMark evaluates one prediction against one mark on both tracks.
+// ScoreMark evaluates one prediction against one mark on both scores.
 func ScoreMark(m schema.Mark, p schema.Prediction, opt Options) MarkScore {
 	return MarkScore{
-		MarkID: m.ID,
-		TrackA: scoreTrackA(m, p),
-		TrackB: scoreTrackB(m, p, opt),
+		MarkID:      m.ID,
+		Decision:    scoreDecision(m, p),
+		Calibration: scoreCalibration(m, p, opt),
 	}
 }
 
-func scoreTrackA(m schema.Mark, p schema.Prediction) TrackA {
+func scoreDecision(m schema.Mark, p schema.Prediction) DecisionScore {
 	mc := m.Effect.Central
 	iv := m.Effect.Interval
 	signKnown := iv != nil && (iv.Lower > 0 || iv.Upper < 0)
 
-	a := TrackA{MarkSignKnown: signKnown}
+	a := DecisionScore{MarkSignKnown: signKnown}
 	if !signKnown {
 		a.SignCorrect = true // unidentified sign: no decision to get wrong
 		return a
@@ -98,8 +102,8 @@ func scoreTrackA(m schema.Mark, p schema.Prediction) TrackA {
 	return a
 }
 
-func scoreTrackB(m schema.Mark, p schema.Prediction, opt Options) TrackB {
-	var b TrackB
+func scoreCalibration(m schema.Mark, p schema.Prediction, opt Options) CalibrationScore {
+	var b CalibrationScore
 	mi := m.Effect.Interval
 	pi := p.Effect.Interval
 

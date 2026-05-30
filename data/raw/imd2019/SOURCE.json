@@ -13,5 +13,5 @@
   "licence_uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
   "vintage": "IoD2019 (Index of Multiple Deprivation 2019, released 26 September 2019)",
   "role": "running-variable",
-  "notes": "Running variable for the area-funding seam (UKSPF 2025-26 top-20% IMD prioritisation). Held for a future area-funding mark; the sharp UKSPF form is too recent (2025-26) to have a realized downstream outcome yet. Not vendored into git: fetch from download_uri (or the R2 mirror) into data/cache and verify against sha256."
+  "notes": "Running variable for the area-funding series (UKSPF 2025-26 top-20% IMD prioritisation). Held for a future area-funding mark; the sharp UKSPF form is too recent (2025-26) to have a realized downstream outcome yet. Not vendored into git: fetch from download_uri (or the R2 mirror) into data/cache and verify against sha256."
 }

@@ -18,17 +18,17 @@ type Report struct {
 	Skipped Skipped `json:"skipped"`
 }
 
-// Summary aggregates the per-mark scores across both tracks.
+// Summary aggregates the per-mark scores across both scores.
 type Summary struct {
 	NumMarksScored int `json:"num_marks_scored"`
 
-	// Track A.
+	// Decision.
 	NumSignKnown int     `json:"num_sign_known"`
 	SignAccuracy float64 `json:"sign_accuracy"` // over sign-known marks
 	MeanRegret   float64 `json:"mean_regret"`
 	TotalRegret  float64 `json:"total_regret"`
 
-	// Track B.
+	// Calibration.
 	OverlapRate         float64            `json:"overlap_rate"`
 	MeanOverlapFraction float64            `json:"mean_overlap_fraction"`
 	MeanCramerDistance  float64            `json:"mean_cramer_distance"`
@@ -52,7 +52,7 @@ type Skipped struct {
 
 // ScoreSubmission evaluates a submission against the supplied marks. Marks are
 // matched to predictions by ID; coverage gaps in either direction are reported
-// rather than silently dropped (DEV_PLAN "no silent caps").
+// rather than silently dropped.
 func ScoreSubmission(marks []schema.Mark, sub schema.Submission, opt Options) Report {
 	markByID := make(map[string]schema.Mark, len(marks))
 	for _, m := range marks {
@@ -100,22 +100,22 @@ func summarise(scores []MarkScore) Summary {
 	pits := make([]float64, 0, len(scores))
 
 	for _, ms := range scores {
-		if ms.TrackA.MarkSignKnown {
+		if ms.Decision.MarkSignKnown {
 			s.NumSignKnown++
-			if ms.TrackA.SignCorrect {
+			if ms.Decision.SignCorrect {
 				signCorrect++
 			}
 		}
-		s.TotalRegret += ms.TrackA.Regret
-		if ms.TrackB.IntervalsOverlap {
+		s.TotalRegret += ms.Decision.Regret
+		if ms.Calibration.IntervalsOverlap {
 			overlaps++
 		}
-		overlapFracSum += ms.TrackB.OverlapFraction
-		cramerSum += ms.TrackB.CramerDistance
-		if ms.TrackB.ConfidentlyWrong {
+		overlapFracSum += ms.Calibration.OverlapFraction
+		cramerSum += ms.Calibration.CramerDistance
+		if ms.Calibration.ConfidentlyWrong {
 			s.NumConfidentlyWrong++
 		}
-		pits = append(pits, ms.TrackB.PIT)
+		pits = append(pits, ms.Calibration.PIT)
 	}
 
 	n := float64(len(scores))
@@ -132,9 +132,9 @@ func summarise(scores []MarkScore) Summary {
 
 // calibrationCurve turns the per-mark PITs into a curve at deciles. Empirical[k]
 // is the fraction of PITs <= the nominal level — uniform PITs give Empirical ≈
-// Nominal. (Per-mark-width-aware calibration — integrating the PIT over each
-// mark's own distribution rather than at its central point — is the Phase-2
-// refinement tied to the §5 commensurability question.)
+// Nominal. (A per-mark-width-aware calibration — integrating the PIT over each
+// mark's own distribution rather than at its central point — is a planned
+// refinement.)
 func calibrationCurve(pits []float64) []CalibrationPoint {
 	levels := []float64{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9}
 	out := make([]CalibrationPoint, len(levels))
@@ -155,9 +155,9 @@ func calibrationCurve(pits []float64) []CalibrationPoint {
 func (r Report) String() string {
 	s := r.Summary
 	out := fmt.Sprintf("model=%q marks_scored=%d\n", r.ModelName, s.NumMarksScored)
-	out += fmt.Sprintf("  Track A: sign_accuracy=%.3f (over %d sign-known) total_regret=%.4g mean_regret=%.4g\n",
+	out += fmt.Sprintf("  Decision: sign_accuracy=%.3f (over %d sign-known) total_regret=%.4g mean_regret=%.4g\n",
 		s.SignAccuracy, s.NumSignKnown, s.TotalRegret, s.MeanRegret)
-	out += fmt.Sprintf("  Track B: overlap_rate=%.3f mean_overlap_frac=%.3f mean_cramer=%.4g confidently_wrong=%d\n",
+	out += fmt.Sprintf("  Calibration: overlap_rate=%.3f mean_overlap_frac=%.3f mean_cramer=%.4g confidently_wrong=%d\n",
 		s.OverlapRate, s.MeanOverlapFraction, s.MeanCramerDistance, s.NumConfidentlyWrong)
 	if len(r.Skipped.UnpredictedMarks) > 0 {
 		out += fmt.Sprintf("  skipped (unpredicted marks): %v\n", r.Skipped.UnpredictedMarks)

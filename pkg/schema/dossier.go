@@ -2,7 +2,7 @@ package schema
 
 // ValidityDossier ships inside every Mark. It records the result of each
 // validity test and the admission verdict. Admission requires passing the
-// validity tests; it is never withheld for a wide interval (BRIEF §3).
+// validity tests; it is never withheld for a wide interval.
 type ValidityDossier struct {
 	// Density is the manipulation / sorting test at the cutoff (McCrary-style).
 	Density TestResult `json:"density"`
@@ -62,7 +62,7 @@ type SweepPoint struct {
 	StdErr   *float64 `json:"std_err,omitempty"`
 }
 
-// FirstStageResult is the fuzzy-seam first stage: the jump in treatment
+// FirstStageResult is the fuzzy-series first stage: the jump in treatment
 // probability at the cutoff. A fuzzy mark is only admissible with a real jump.
 type FirstStageResult struct {
 	Jump   float64  `json:"jump"`

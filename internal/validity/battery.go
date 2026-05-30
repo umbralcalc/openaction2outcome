@@ -1,8 +1,6 @@
-// Package validity implements the Phase-0 validity battery: simple, honest
-// versions of the manipulation/continuity/placebo/robustness tests every mark
-// ships in its dossier (BRIEF §3). These are intentionally plain (the full
-// McCrary density test and SBI-propagated robustness arrive in Phase 1); each
-// returns a structured schema result so it can be shipped inside the mark.
+// Package validity implements the validity battery: the manipulation,
+// covariate-continuity, placebo, and robustness tests every mark ships in its
+// dossier. Each returns a structured schema result embedded in the mark.
 package validity
 
 import (
@@ -22,18 +20,18 @@ func twoSidedP(z float64) float64 { return 2 * normalSF(math.Abs(z)) }
 
 func f64ptr(f float64) *float64 { return &f }
 
-// DensityTest is a binned, slope-aware manipulation test (McCrary-style,
-// Phase-0 simplified). It bins the running variable within ±h of the cutoff,
-// fits a separate line to bin counts on each side, and tests whether the
-// density is discontinuous at the cutoff (which sorting/manipulation would
-// produce). Poisson bin-count variance is propagated into the jump's SE.
+// DensityTest is a binned, slope-aware manipulation test (McCrary-style). It
+// bins the running variable within ±h of the cutoff, fits a separate line to bin
+// counts on each side, and tests whether the density is discontinuous at the
+// cutoff (which sorting/manipulation would produce). Poisson bin-count variance
+// is propagated into the jump's SE.
 func DensityTest(running []float64, cutoff, binW, h float64) schema.TestResult {
 	left := binCounts(running, cutoff-h, cutoff, binW)
 	right := binCounts(running, cutoff, cutoff+h, binW)
 
 	fL, vL, okL := poissonInterceptAtRight(left, cutoff) // density approaching cutoff from below
 	fR, vR, okR := poissonInterceptAtLeft(right, cutoff) // density approaching cutoff from above
-	res := schema.TestResult{Method: "binned-density-discontinuity (McCrary-style, Phase-0 simplified)"}
+	res := schema.TestResult{Method: "binned-density-discontinuity (McCrary-style)"}
 	if !okL || !okR || (vL+vR) <= 0 {
 		res.Detail = "insufficient bins to estimate density either side of the cutoff"
 		return res

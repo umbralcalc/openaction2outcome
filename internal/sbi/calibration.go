@@ -6,7 +6,7 @@ import (
 	"github.com/umbralcalc/openaction2outcome/internal/rdd"
 )
 
-// This file implements the headline calibration demonstration (BRIEF §4): across
+// This file implements the headline calibration demonstration: across
 // many synthetic RDD problems with a KNOWN true effect, a plug-in interval
 // (sampling SE at one fixed specification) under-covers the truth, while the SBI
 // hybrid-BMA interval — which folds in identification (between-spec) uncertainty
@@ -125,7 +125,7 @@ func RunCalibrationStudy(numProblems, n int, trueTau, sigma float64, specs []Spe
 			"the plug-in's sampling-only intervals under-cover the truth (empirical coverage below nominal) " +
 			"because they omit the identification uncertainty from bandwidth/order/kernel choice; the SBI " +
 			"hybrid model-averaged intervals fold that in and track nominal coverage. This is the Track-B " +
-			"calibration gap of BRIEF §4.",
+			"calibration gap this instrument is built to measure.",
 	}
 }
 

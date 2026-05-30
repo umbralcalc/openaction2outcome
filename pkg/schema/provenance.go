@@ -7,7 +7,7 @@ import (
 
 // Provenance records where a mark's inputs came from, under what licence, the
 // point-in-time timestamps that defend against leakage, and the determinism
-// record that makes the mark re-mintable byte-for-byte (DEV_PLAN §2).
+// record that makes the mark re-mintable byte-for-byte.
 type Provenance struct {
 	// Sources are the frozen open-data inputs, each with its own licence + hash.
 	Sources []Source `json:"sources"`
@@ -25,7 +25,7 @@ type Provenance struct {
 	// at decision time (critical for periodically-revised indices like IMD/SHMI).
 	RunningVariableVintage string `json:"running_variable_vintage"`
 
-	// FundingRound (area-funding seam) or analogous decision-round identifier.
+	// FundingRound (area-funding series) or analogous decision-round identifier.
 	DecisionRound string `json:"decision_round,omitempty"`
 
 	// Determinism record.

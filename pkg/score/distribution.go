@@ -1,15 +1,15 @@
-// Package score is the public, dependency-light evaluator for the
-// openaction2outcome yardstick. It compares a model's predicted effect
-// distribution against a mark's honest interval on two independently-reported
-// tracks (BRIEF §4):
+// Package score is the public, dependency-light evaluator. It compares a model's
+// predicted effect distribution against a reference mark on two independent
+// scores:
 //
-//	Track A — decision-value consistency (sign + regret).
-//	Track B — calibration against truth (overlap, a CRPS-style distribution
-//	          distance, PIT calibration, and a confidently-wrong detector).
+//	DecisionScore    — does the model get the direction of the effect right, and
+//	                   what does a wrong call cost?
+//	CalibrationScore — does the model's stated uncertainty match the truth
+//	                   (interval overlap, a CRPS-style distribution distance, a
+//	                   calibration curve, and a confidently-wrong flag)?
 //
-// It imports only the standard library and pkg/schema. The heavy minting
-// machinery (RDD/SBI) lives under /internal and is deliberately absent here so
-// a consumer importing `score` gets a tiny dependency tree (DEV_PLAN §2).
+// It imports only the standard library and pkg/schema, so a consumer scoring a
+// model pulls a tiny dependency tree; the estimation machinery stays in /internal.
 package score
 
 import (

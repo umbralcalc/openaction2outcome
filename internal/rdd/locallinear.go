@@ -1,10 +1,8 @@
-// Package rdd holds the Phase-0 regression-discontinuity estimator: a simple
-// triangular-kernel local-linear fit on each side of the cutoff. It is
-// deliberately plain Go (no stochadex yet — DEV_PLAN Phase 0). Its one
-// on-brand feature is that the reported interval folds *bandwidth /
-// specification* spread into its width, not only sampling SE, so even this
-// simple mark carries honest identification uncertainty (BRIEF §3/§4). The full
-// SBI posterior arrives in Phase 1.
+// Package rdd is the plug-in regression-discontinuity estimator: a triangular-
+// kernel local-linear fit on each side of the cutoff. The reported interval
+// folds bandwidth/specification spread into its width, not only sampling SE.
+// It serves as the simple comparison baseline against the model-averaged
+// estimator in package sbi.
 package rdd
 
 import (
