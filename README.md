@@ -84,9 +84,15 @@ is stored and published is described in [PUBLISHING.md](PUBLISHING.md).
 
 ## Coverage
 
-Currently one series — **floor standards** (English school Progress 8 floor of
-−0.5; outcome is each school's Progress 8 two years later). Two more are planned:
-NHS mortality banding (a fuzzy threshold) and area-based funding.
+Two series so far:
+
+- **Floor standards** — English school Progress 8 floor of −0.5; outcome is each
+  school's Progress 8 two years later.
+- **SHMI** — NHS trusts publicly banded "higher than expected" mortality when
+  their SHMI crosses the upper control limit; outcome is the trust's SHMI in the
+  next 12-month window (a sharp intention-to-treat design, pooled trust-years).
+
+Area-based funding is planned.
 
 ## Licensing
 
