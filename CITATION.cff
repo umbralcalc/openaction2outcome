@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this dataset, please cite it as below."
+title: "OpenAction2Outcome: an open causal yardstick for testing counterfactual models"
+abstract: >-
+  A small, openly-published set of real UK public-sector decisions where an
+  institution crossed a published threshold, which triggered an action, and where
+  the true effect of that action is recovered by regression discontinuity and
+  shipped as an honest interval (a central estimate plus an interval that
+  separates sampling uncertainty from the identification uncertainty of modelling
+  choices), together with a validity dossier. Its purpose is to test whether
+  models that make counterfactual claims get the causal effect right, and report
+  honest uncertainty, at points where ground truth is genuinely known.
+type: dataset
+authors:
+  - family-names: Hardwick
+    given-names: Robert
+repository-code: "https://github.com/umbralcalc/openaction2outcome"
+url: "https://github.com/umbralcalc/openaction2outcome"
+keywords:
+  - causal inference
+  - regression discontinuity
+  - counterfactual evaluation
+  - uncertainty quantification
+  - world models
+license: MIT
+version: 0.1.0
+date-released: "2026-05-30"
