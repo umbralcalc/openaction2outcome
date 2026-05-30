@@ -11,9 +11,9 @@
       },
       "track_b": {
         "intervals_overlap": true,
-        "overlap_fraction": 0.4658974363467718,
-        "cramer_distance": 0.008971251068746688,
-        "pit": 0.07636403308593598,
+        "overlap_fraction": 0.2528843187306913,
+        "cramer_distance": 0.01597210717617447,
+        "pit": 0.13953014867900054,
         "confidently_wrong": false
       }
     }
@@ -25,13 +25,13 @@
     "mean_regret": 0,
     "total_regret": 0,
     "overlap_rate": 1,
-    "mean_overlap_fraction": 0.4658974363467718,
-    "mean_cramer_distance": 0.008971251068746688,
+    "mean_overlap_fraction": 0.2528843187306913,
+    "mean_cramer_distance": 0.01597210717617447,
     "num_confidently_wrong": 0,
     "calibration": [
       {
         "nominal": 0.1,
-        "empirical": 1
+        "empirical": 0
       },
       {
         "nominal": 0.2,

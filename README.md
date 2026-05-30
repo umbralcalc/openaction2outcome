@@ -1,4 +1,4 @@
-# openaction2outcome
+# OpenAction2Outcome
 
 **An open causal yardstick mapping institutional decisions to verified outcomes.**
 
@@ -25,7 +25,7 @@ from marks and manifests by URL + SHA-256. Inputs are **not** vendored into git:
 `openaction2outcome fetch` downloads the bytes into a gitignored cache, verifying
 the hash. See [PUBLISHING.md](PUBLISHING.md).
 
-## Status — Phase 0 (schema + first real mark)
+## Status — Phase 1 (SBI estimator on the first seam)
 
 | Piece | State |
 |---|---|
@@ -33,7 +33,20 @@ the hash. See [PUBLISHING.md](PUBLISHING.md).
 | `Mark` + `Submission` schema with point-in-time / leakage guards | ✅ |
 | Dependency-light scoring (Track A + Track B) — imports only `pkg/schema` + stdlib | ✅ |
 | First genuine, outcome-bearing mark on **real open data** | ✅ floor standards |
-| stochadex / SBI estimation, second + third seams | ⏳ Phase 1+ |
+| **stochadex SBI estimator** — model-averaged posterior, honest interval | ✅ floor standards |
+| Second + third seams (area funding, SHMI) | ⏳ Phase 2+ |
+
+**Phase-1 SBI (the headline).** The mark's honest interval is a Bayesian
+model-averaged posterior over the discontinuity effect τ. For each spec on a
+grid (bandwidth × polynomial order × kernel), **stochadex SMC** returns the
+within-spec posterior and log marginal likelihood; specs are combined by the
+*hybrid* rule — marginal-likelihood weighting *within* a bandwidth (where the
+models share data), uniform *across* bandwidths (which don't). The interval's
+width splits exactly into **sampling** vs **identification** (between-spec)
+variance. On the floor-standards mark the identification component *dominates*
+(sd ≈ 0.066 vs sampling ≈ 0.031) — precisely the width a plug-in method
+reporting only sampling SE omits, and the reason it should under-cover on
+Track B.
 
 The first mark is the **education floor-standards** seam: a sharp RDD on the 2016
 Progress 8 floor of **−0.5**, with the outcome being each school's Progress 8 two
@@ -46,7 +59,8 @@ is too recent to have a realized downstream outcome yet; see the project notes.)
 ```
 cmd/openaction2outcome   CLI: fetch, build, validate, score
 internal/ingest          input fetch-to-cache + loaders (KS4 performance tables)
-internal/rdd             local-linear RDD estimator (honest interval)
+internal/rdd             plug-in local-linear RDD estimator (comparison baseline)
+internal/sbi             stochadex SBI: per-spec SMC + hybrid BMA posterior over τ
 internal/validity        density / covariate-continuity / placebo / donut battery
 internal/publish         publish config + deterministic episode-table writer
 internal/seam            per-seam mint orchestration

@@ -11,12 +11,14 @@ import (
 	"math"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"sort"
 	"strconv"
 
 	"github.com/umbralcalc/openaction2outcome/internal/ingest"
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
 	"github.com/umbralcalc/openaction2outcome/internal/rdd"
+	"github.com/umbralcalc/openaction2outcome/internal/sbi"
 	"github.com/umbralcalc/openaction2outcome/internal/validity"
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
 )
@@ -29,9 +31,20 @@ const (
 	// sampleHalfWidth bounds the inline near-cutoff Sample carried in the mark.
 	sampleHalfWidth = 0.05
 	sampleMaxRows   = 40
+
+	// SMC settings for the SBI posterior (recorded in provenance for re-mints).
+	smcParticles = 4000
+	smcRounds    = 8
+	smcSeed      = 1
+
+	postSamples = 200 // deterministic posterior samples shipped for CRPS scoring
 )
 
 var floorBandwidths = []float64{0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
+
+// posteriorQuantileGrid is the set of probabilities at which the mark ships
+// posterior quantiles (for finer calibration / CRPS than the headline interval).
+var posteriorQuantileGrid = []float64{0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975}
 
 var episodeColumns = []string{
 	"unit_id", "unit_name", "running_value", "assigned", "treated", "outcome",
@@ -120,18 +133,26 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 		Columns: episodeColumns,
 	}
 
-	// --- estimate the discontinuity (honest interval folds in bandwidth spread).
-	res := rdd.Estimate(estPts, floorCutoff, floorRefBW, floorBandwidths, true)
-	lo, hi := res.Interval95()
+	// --- estimate the discontinuity.
+	// Phase-1 headline: a Bayesian model-averaged SBI posterior over tau (stochadex
+	// SMC across a bandwidth x order x kernel grid). Its width splits exactly into
+	// within-spec sampling variance and between-spec identification variance.
+	bma := sbi.EstimateBMA(estPts, floorCutoff, sbi.DefaultFloorSpecs(), nil, true,
+		sbi.SMCConfig{NumParticles: smcParticles, NumRounds: smcRounds, Seed: smcSeed})
+	blo, bhi := bma.Interval(0.95)
 	effect := schema.Distribution{
-		Central:  res.Central,
-		StdDev:   f64ptr(res.TotalSD),
-		Interval: &schema.Interval{Level: 0.95, Lower: lo, Upper: hi},
-		UncertaintyBudget: &schema.UncertaintyBudget{
-			Sampling:      f64ptr(res.SamplingVar),
-			Specification: f64ptr(res.SpecVar),
-		},
+		Central:           bma.Central,
+		StdDev:            f64ptr(bma.TotalSD),
+		Interval:          &schema.Interval{Level: 0.95, Lower: blo, Upper: bhi},
+		Quantiles:         toQuantiles(bma, posteriorQuantileGrid),
+		Samples:           bma.Samples(postSamples),
+		UncertaintyBudget: &schema.UncertaintyBudget{Sampling: f64ptr(bma.WithinVar), Specification: f64ptr(bma.BetweenVar)},
 	}
+
+	// Plug-in local-linear estimate kept as the documented comparison: it reports
+	// a narrower, sampling-led interval and is what under-covers on Track B.
+	res := rdd.Estimate(estPts, floorCutoff, floorRefBW, floorBandwidths, true)
+	plugLo, plugHi := res.Interval95()
 
 	// --- validity battery.
 	running := make([]float64, 0, len(schools16))
@@ -154,10 +175,17 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 	admitted := density.Passed && covOK
 
 	attBelow, attAbove := attritionRates(schools16, outcome, floorCutoff, floorRefBW)
+	plugSD := res.TotalSD
 	notes := fmt.Sprintf(
-		"Phase-0 simple local-linear fit (no SBI yet). Design is effectively sharp: of %d schools below -0.5, only %d are excluded by the floor's CI condition (P8CIUPP>=0). "+
+		"Phase-1 SBI: Bayesian model average over %d specs (bandwidth x order x kernel) via stochadex SMC (%d particles, %d rounds). "+
+			"Honest interval [%.4f, %.4f] (sd %.4f) decomposes into sampling sd %.4f and identification sd %.4f. "+
+			"For comparison, the plug-in local-linear interval is [%.4f, %.4f] (sd %.4f) — narrower because it ignores between-spec identification uncertainty; this is the gap a model that reports only sampling SE should fail on Track B. "+
+			"Design is effectively sharp: of %d schools below -0.5, only %d are excluded by the floor's CI condition (P8CIUPP>=0). "+
 			"DIFFERENTIAL ATTRITION CAVEAT: within +/-%.1f of the cutoff, %.1f%% of below-floor schools vs %.1f%% of above-floor schools lack a linked 2017/18 P8 (sponsored academies are re-issued a new URN). "+
-			"This attrition is correlated with treatment and biases the complete-case estimate; it is the dominant threat to this mark and motivates the Phase-1 attrition-aware treatment.",
+			"This attrition is correlated with treatment and biases the complete-case estimate; it is the dominant threat to this mark and motivates the Phase-2 attrition-aware treatment.",
+		len(bma.Specs), smcParticles, smcRounds,
+		blo, bhi, bma.TotalSD, math.Sqrt(bma.WithinVar), math.Sqrt(bma.BetweenVar),
+		plugLo, plugHi, plugSD,
 		countBelow(schools16, floorCutoff), ciExcluded, floorRefBW, 100*attBelow, 100*attAbove)
 
 	dossier := schema.ValidityDossier{
@@ -208,10 +236,12 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 			OutcomeTimestamp:       "2019-01-24", // revised 2017/18 tables published
 			RunningVariableVintage: "KS4 2015/16 revised performance tables (Progress 8)",
 			DecisionRound:          "Progress 8 floor standard, 2016 (assessed on 2015/16 results)",
-			Seed:                   int64Ptr(0), // deterministic; no RNG in the Phase-0 estimator
+			Seed:                   int64Ptr(smcSeed), // SMC seed; minting is deterministic given it
 			ToolVersions: map[string]string{
 				"go":                 runtime.Version(),
 				"openaction2outcome": schema.SchemaVersion,
+				"stochadex":          stochadexVersion(),
+				"smc":                fmt.Sprintf("particles=%d,rounds=%d", smcParticles, smcRounds),
 			},
 			OutcomeRealized: true,
 		},
@@ -287,6 +317,27 @@ func nearCutoffSample(obs []schema.Observation, cutoff float64) []schema.Observa
 	}
 	sort.Slice(near, func(i, j int) bool { return near[i].UnitID < near[j].UnitID })
 	return near
+}
+
+// toQuantiles evaluates the BMA posterior at the given probabilities.
+func toQuantiles(bma sbi.BMAResult, ps []float64) []schema.Quantile {
+	out := make([]schema.Quantile, 0, len(ps))
+	for _, pv := range bma.Quantiles(ps) {
+		out = append(out, schema.Quantile{P: pv[0], Value: pv[1]})
+	}
+	return out
+}
+
+// stochadexVersion reports the resolved stochadex module version for provenance.
+func stochadexVersion() string {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, d := range info.Deps {
+			if d.Path == "github.com/umbralcalc/stochadex" {
+				return d.Version
+			}
+		}
+	}
+	return "unknown"
 }
 
 func sweepToSchema(sw []rdd.SweepPoint) []schema.SweepPoint {
