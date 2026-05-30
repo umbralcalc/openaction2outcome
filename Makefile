@@ -20,6 +20,9 @@ validate:                    ## check every mark against the schema
 score:                       ## score the committed example submission
 	$(CLI) score --submission examples/submission.example.json --out scores/example.scores.json
 
+study:                       ## run the calibration study (plug-in vs SBI coverage of truth)
+	$(CLI) study --out scores/calibration-study.json
+
 test:                        ## unit + real-data integration tests (offline)
 	go test ./...
 

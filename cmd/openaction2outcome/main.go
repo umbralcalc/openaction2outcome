@@ -24,6 +24,7 @@ import (
 
 	"github.com/umbralcalc/openaction2outcome/internal/ingest"
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
+	"github.com/umbralcalc/openaction2outcome/internal/sbi"
 	"github.com/umbralcalc/openaction2outcome/internal/seam"
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
 	"github.com/umbralcalc/openaction2outcome/pkg/score"
@@ -44,6 +45,8 @@ func main() {
 		err = cmdBuild(os.Args[2:])
 	case "fetch":
 		err = cmdFetch(os.Args[2:])
+	case "study":
+		err = cmdStudy(os.Args[2:])
 	case "-h", "--help", "help":
 		usage()
 		return
@@ -63,6 +66,7 @@ func usage() {
 
 usage:
   openaction2outcome fetch [--raw DIR] [--cache DIR] [--publish-config FILE]
+  openaction2outcome study [--problems N] [--seed N] [--out FILE]
   openaction2outcome build --seam NAME [--raw DIR] [--cache DIR] [--dist DIR] [--marks DIR]
   openaction2outcome validate [--marks DIR]
   openaction2outcome score --submission FILE [--marks DIR] [--out FILE]
@@ -117,6 +121,41 @@ func loadPublishConfig(path string) (publish.Config, error) {
 		return cfg, err
 	}
 	return cfg, nil
+}
+
+// cmdStudy runs the headline calibration study (BRIEF §4): across synthetic RDD
+// problems with known truth, the plug-in's sampling-only intervals under-cover
+// while the SBI hybrid-BMA intervals track nominal coverage. Deterministic.
+func cmdStudy(args []string) error {
+	fs := flag.NewFlagSet("study", flag.ExitOnError)
+	problems := fs.Int("problems", 100, "number of synthetic problems")
+	n := fs.Int("n", 400, "units per problem")
+	seed := fs.Int64("seed", 100, "base RNG seed")
+	out := fs.String("out", "scores/calibration-study.json", "output path")
+	particles := fs.Int("particles", 1200, "SMC particles per spec")
+	rounds := fs.Int("rounds", 5, "SMC rounds per spec")
+	fs.Parse(args)
+
+	fmt.Printf("running calibration study: %d problems x %d specs (this takes a minute)...\n",
+		*problems, len(sbi.DefaultFloorSpecs()))
+	study := sbi.RunCalibrationStudy(*problems, *n, 0.3, 0.3, sbi.DefaultFloorSpecs(), *seed,
+		sbi.SMCConfig{NumParticles: *particles, NumRounds: *rounds, Seed: 1})
+
+	b, err := json.MarshalIndent(study, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(*out, append(b, '\n'), 0o644); err != nil {
+		return err
+	}
+	fmt.Printf("\nnominal  plug-in-cov  sbi-cov   plug-w   sbi-w\n")
+	for i, L := range study.Levels {
+		fmt.Printf("%5.2f      %.3f       %.3f    %.3f    %.3f\n",
+			L, study.PlugIn.Coverage[i], study.SBI.Coverage[i],
+			study.PlugIn.MeanWidth[i], study.SBI.MeanWidth[i])
+	}
+	fmt.Printf("\nwrote %s\n", *out)
+	return nil
 }
 
 func cmdFetch(args []string) error {

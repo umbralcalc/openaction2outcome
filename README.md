@@ -1,4 +1,4 @@
-# OpenAction2Outcome
+# OpenAction2Outcome Datasets
 
 **An open causal yardstick mapping institutional decisions to verified outcomes.**
 
@@ -111,6 +111,28 @@ go run ./cmd/openaction2outcome score --submission submission.json --out my.scor
 The committed [examples/submission.example.json](examples/submission.example.json)
 and its [expected scores](scores/example.scores.json) let you confirm you are
 using the tool correctly.
+
+### The headline finding — plug-in methods fail calibration (BRIEF §4)
+
+A plug-in RDD that reports only **sampling** SE is systematically over-confident,
+because it omits the **identification** uncertainty (bandwidth / order / kernel
+choice) the SBI marks correctly include. The committed calibration study
+([scores/calibration-study.json](scores/calibration-study.json), reproduce with
+`make study`) demonstrates it against **known truth** — 100 synthetic RDD
+problems with a planted effect and side-dependent curvature, scoring each
+method's interval by whether it covers the *true* effect (not the SBI estimate,
+so the test isn't circular):
+
+| nominal coverage | plug-in (sampling SE only) | SBI (hybrid model-averaged) |
+|--:|--:|--:|
+| 50% | 0.32 | 0.41 |
+| 80% | 0.57 | 0.75 |
+| 90% | 0.72 | 0.86 |
+| 95% | **0.80** | **0.92** |
+
+The plug-in under-covers the truth at every level; the SBI intervals — wider,
+because they fold in identification uncertainty — roughly halve the calibration
+error. This is the result the yardstick exists to make measurable.
 
 ### How a model is scored (two independent tracks)
 

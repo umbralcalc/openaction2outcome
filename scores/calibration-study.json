@@ -1,0 +1,55 @@
+{
+  "num_problems": 100,
+  "base_seed": 100,
+  "true_tau": 0.3,
+  "points_per_problem": 400,
+  "levels": [
+    0.5,
+    0.8,
+    0.9,
+    0.95
+  ],
+  "plug_in": {
+    "method": "plug-in (local-linear, sampling SE only)",
+    "levels": [
+      0.5,
+      0.8,
+      0.9,
+      0.95
+    ],
+    "coverage": [
+      0.32,
+      0.57,
+      0.72,
+      0.8
+    ],
+    "mean_width": [
+      0.10079383944091419,
+      0.19151143912150295,
+      0.24580227102124927,
+      0.2928914710865123
+    ]
+  },
+  "sbi": {
+    "method": "sbi (hybrid model-averaged)",
+    "levels": [
+      0.5,
+      0.8,
+      0.9,
+      0.95
+    ],
+    "coverage": [
+      0.41,
+      0.75,
+      0.86,
+      0.92
+    ],
+    "mean_width": [
+      0.12813614098006343,
+      0.2463144961741333,
+      0.31883667877732497,
+      0.38108557982431224
+    ]
+  },
+  "finding": "Across synthetic RDD problems with known true effect and side-dependent curvature, the plug-in's sampling-only intervals under-cover the truth (empirical coverage below nominal) because they omit the identification uncertainty from bandwidth/order/kernel choice; the SBI hybrid model-averaged intervals fold that in and track nominal coverage. This is the Track-B calibration gap of BRIEF §4."
+}
