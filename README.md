@@ -34,21 +34,19 @@ known truth — at a nominal 95% interval, the plug-in method covers the truth o
 
 ## Use the data
 
-1. Read a mark from [`marks/`](marks) (and, if you want the raw rows, download its
-   episode table from the mark's `data.uri`, verifying `data.sha256`).
-2. Write a `submission.json`: your predicted effect, with your own uncertainty, per
-   mark. See [`examples/submission.example.json`](examples/submission.example.json).
+1. Read a mark from [`marks/`](marks) (and, if you want the raw rows, download its episode table from the mark's `data.uri`, verifying `data.sha256`).
+2. Write a `submission.json`: your predicted effect, with your own uncertainty, per mark. See [`examples/submission.example.json`](examples/submission.example.json).
 3. Score it locally:
 
 ```sh
 go run ./cmd/openaction2outcome score --submission submission.json --out my.scores.json
 ```
 
-You get two independent scores per mark — **decision** (did you get the direction
-right, and what would a wrong call cost?) and **calibration** (does your stated
-uncertainty match the truth?). The committed
-[example submission](examples/submission.example.json) and its
-[expected scores](scores/example.scores.json) let you confirm your setup.
+You get two independent scores per mark — **decision** (did you get the direction right, and what would a wrong call cost?) and **calibration** (does your stated
+uncertainty match the truth?). 
+
+The committed
+[example submission](examples/submission.example.json) and its [expected scores](scores/example.scores.json) let you confirm your setup.
 
 ## Reproduce the marks
 
