@@ -1,15 +1,15 @@
 {
   "model_name": "example-plugin-baseline",
-  "schema_version": "0.2.0",
+  "schema_version": "0.3.0",
   "mark_scores": [
     {
       "mark_id": "floor-standards-p8-2016",
-      "track_a": {
+      "decision": {
         "mark_sign_known": false,
         "sign_correct": true,
         "regret": 0
       },
-      "track_b": {
+      "calibration": {
         "intervals_overlap": true,
         "overlap_fraction": 0.2528843187306913,
         "cramer_distance": 0.01597210717617447,

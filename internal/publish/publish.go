@@ -1,7 +1,7 @@
 // Package publish handles the object-storage side of the offline pipeline: the
 // publishing config (the public base URL of the bucket) and writing the
 // per-mark analysis-ready episode table as a deterministic, content-addressed
-// artifact staged for upload (DEV_PLAN §5). Nothing here talks to the network;
+// artifact staged for upload. Nothing here talks to the network;
 // uploading the staged artifacts is a separate, credentialed step.
 package publish
 

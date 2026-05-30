@@ -212,7 +212,7 @@ func normalCDF(z float64) float64 {
 	return 0.5 * math.Erfc(-z/math.Sqrt2)
 }
 
-// DefaultFloorSpecs is the specification grid for the floor-standards seam:
+// DefaultFloorSpecs is the specification grid for the floor-standards series:
 // bandwidth x polynomial order x kernel.
 func DefaultFloorSpecs() []Spec {
 	bandwidths := []float64{0.4, 0.5, 0.6, 0.7, 0.8}

@@ -15,7 +15,7 @@ func gaussianMark(id string, mu, sd float64) schema.Mark {
 	return schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
 		ID:            id,
-		Seam:          schema.SeamAreaFunding,
+		Series:        schema.SeriesAreaFunding,
 		RDDType:       schema.Sharp,
 		Design: schema.Design{
 			Cutoff:    0,
@@ -43,30 +43,30 @@ func pred(mu, sd float64) schema.Prediction {
 	}
 }
 
-func TestTrackASignAndRegret(t *testing.T) {
+func TestDecisionSignAndRegret(t *testing.T) {
 	m := gaussianMark("m1", 2.0, 0.3) // sign-known positive
 	// Model points the right way.
-	a := scoreTrackA(m, pred(1.5, 0.4))
+	a := scoreDecision(m, pred(1.5, 0.4))
 	if !a.MarkSignKnown || !a.SignCorrect || a.Regret != 0 {
 		t.Fatalf("expected sign-known, correct, zero regret; got %+v", a)
 	}
 	// Model points the wrong way -> regret = |mark central|.
-	a = scoreTrackA(m, pred(-1.0, 0.4))
+	a = scoreDecision(m, pred(-1.0, 0.4))
 	if a.SignCorrect || a.Regret != 2.0 {
 		t.Fatalf("expected wrong sign with regret 2.0; got %+v", a)
 	}
 	// Mark whose interval straddles zero: sign unknown, no decision to get wrong.
 	mUnsure := gaussianMark("m2", 0.1, 1.0)
-	a = scoreTrackA(mUnsure, pred(-5, 0.1))
+	a = scoreDecision(mUnsure, pred(-5, 0.1))
 	if a.MarkSignKnown || !a.SignCorrect || a.Regret != 0 {
 		t.Fatalf("expected sign-unknown free pass; got %+v", a)
 	}
 }
 
-func TestTrackBOverlapAndCramer(t *testing.T) {
+func TestCalibrationOverlapAndCramer(t *testing.T) {
 	m := gaussianMark("m1", 2.0, 0.5)
 	// Identical prediction: full overlap, ~zero Cramér distance, PIT ~ 0.5.
-	b := scoreTrackB(m, pred(2.0, 0.5), Options{})
+	b := scoreCalibration(m, pred(2.0, 0.5), Options{})
 	if !b.IntervalsOverlap {
 		t.Fatal("identical distributions should overlap")
 	}
@@ -81,7 +81,7 @@ func TestTrackBOverlapAndCramer(t *testing.T) {
 	}
 
 	// Far-away, confident prediction: disjoint intervals, larger Cramér distance.
-	far := scoreTrackB(m, pred(10.0, 0.5), Options{})
+	far := scoreCalibration(m, pred(10.0, 0.5), Options{})
 	if far.IntervalsOverlap {
 		t.Fatal("distant intervals should be disjoint")
 	}
@@ -96,12 +96,12 @@ func TestConfidentlyWrong(t *testing.T) {
 	opt := Options{MarkNarrowWidth: 1.0, ModelNarrowWidth: 1.0}
 
 	// Narrow model, badly wrong centre -> flagged.
-	b := scoreTrackB(m, pred(-3.0, 0.1), opt)
+	b := scoreCalibration(m, pred(-3.0, 0.1), opt)
 	if !b.ConfidentlyWrong {
 		t.Fatal("narrow-and-wrong model vs narrow-and-known mark should be confidently wrong")
 	}
 	// Wide (humble) model that misses the centre -> NOT flagged (it admitted doubt).
-	b = scoreTrackB(m, pred(-3.0, 5.0), opt)
+	b = scoreCalibration(m, pred(-3.0, 5.0), opt)
 	if b.ConfidentlyWrong {
 		t.Fatal("a wide, uncertain model must not be flagged confidently wrong")
 	}

@@ -13,15 +13,15 @@ package schema
 // SchemaVersion is the version of the Mark/Submission schema. It is written
 // into every emitted Mark and is checked by the evaluator. Bump on any
 // breaking change to the wire format.
-const SchemaVersion = "0.2.0"
+const SchemaVersion = "0.3.0"
 
-// Seam identifies which institutional-decision family a mark belongs to.
-type Seam string
+// Series identifies which institutional-decision family a mark belongs to.
+type Series string
 
 const (
-	SeamAreaFunding    Seam = "area-funding"    // local authority × deprivation/eligibility cutoff
-	SeamFloorStandards Seam = "floor-standards" // school × performance floor
-	SeamSHMI           Seam = "shmi"            // NHS trust × mortality banding (fuzzy)
+	SeriesAreaFunding    Series = "area-funding"    // local authority × deprivation/eligibility cutoff
+	SeriesFloorStandards Series = "floor-standards" // school × performance floor
+	SeriesSHMI           Series = "shmi"            // NHS trust × mortality banding (fuzzy)
 )
 
 // RDDType distinguishes sharp assignment (crossing the cutoff deterministically

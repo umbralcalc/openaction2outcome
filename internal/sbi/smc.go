@@ -1,5 +1,5 @@
-// Package sbi is the Phase-1 simulation-based-inference estimator for a mark's
-// honest interval. It replaces the Phase-0 plug-in fit with a Bayesian
+// Package sbi is the simulation-based-inference estimator for a mark's
+// honest interval. It replaces the plug-in fit with a Bayesian
 // model-averaging posterior over the discontinuity effect tau:
 //
 //   - the local-polynomial RDD model is fit on each specification in a grid
@@ -12,7 +12,7 @@
 //     between-spec (identification) variance.
 //
 // That between-spec term is the identification uncertainty a plug-in method
-// (fixed spec, sampling SE only) omits — the reason it under-covers on Track B.
+// (fixed spec, sampling SE only) omits — the reason it under-covers, failing calibration.
 //
 // For speed each spec's data is compressed to the sufficient statistics of the
 // kernel-weighted normal regression (A = Phi' W Phi, b = Phi' W y, c0 = y' W y),

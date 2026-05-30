@@ -47,7 +47,7 @@ Public read URL = `publish.json:base_url` + `/` + the bucket key.
 openaction2outcome fetch
 
 # 2. mint: writes the slim mark to marks/ and stages the episode table under dist/
-openaction2outcome build --seam floor-standards
+openaction2outcome build --series floor-standards
 
 # 3. upload the staged per-mark artifacts
 rclone copy dist/marks r2:openaction2outcome/marks --progress

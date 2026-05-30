@@ -1,14 +1,18 @@
 {
-  "schema_version": "0.2.0",
+  "schema_version": "0.3.0",
   "model_name": "example-plugin-baseline",
-  "model_detail": "Illustrative submission: a plug-in style prediction that reports a narrow, sampling-only interval. Shows the submission wire format and how an over-confident interval is scored on Track B.",
+  "model_detail": "Illustrative submission: a plug-in style prediction that reports a narrow, sampling-only interval. Shows the submission format and how an over-confident interval scores on calibration.",
   "predictions": [
     {
       "mark_id": "floor-standards-p8-2016",
       "effect": {
         "central": 0.05,
         "std_dev": 0.02,
-        "interval": { "level": 0.95, "lower": 0.0108, "upper": 0.0892 }
+        "interval": {
+          "level": 0.95,
+          "lower": 0.0108,
+          "upper": 0.0892
+        }
       }
     }
   ]

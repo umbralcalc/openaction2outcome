@@ -6,7 +6,7 @@ import (
 )
 
 // Submission is what a model under test produces: for each mark it is scored
-// on, a predicted effect carrying the model's *own* uncertainty (BRIEF §4).
+// on, a predicted effect carrying the model's *own* uncertainty.
 // The evaluator compares each Prediction's Distribution against the matching
 // Mark's honest interval on Tracks A and B.
 type Submission struct {
@@ -21,13 +21,13 @@ type Prediction struct {
 	MarkID string `json:"mark_id"`
 
 	// Effect is the model's predicted effect (value(action) - value(alternative)
-	// at the cutoff) with its own uncertainty. Scored on Track B and, via its
-	// sign, on Track A.
+	// at the cutoff) with its own uncertainty. Used for the calibration score
+	// and, via its sign, the decision score.
 	Effect Distribution `json:"effect"`
 
 	// ValueAction and ValueAlternative are optional explicit decision values; if
-	// supplied they let Track A score decision regret directly rather than via
-	// the effect sign alone.
+	// supplied they let the decision score use the model's own values directly
+	// rather than infer the call from the effect sign alone.
 	ValueAction      *float64 `json:"value_action,omitempty"`
 	ValueAlternative *float64 `json:"value_alternative,omitempty"`
 }

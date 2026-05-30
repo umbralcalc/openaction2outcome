@@ -11,7 +11,7 @@ import (
 //
 // The width of a Mark's Distribution is meant to absorb *identification*
 // uncertainty (bandwidth, polynomial order, kernel) and not only sampling
-// error — that is the whole point of the instrument (BRIEF §3, §4). The
+// error — that is the whole point of the instrument. The
 // representation is deliberately redundant so that both cheap (interval-only)
 // and rich (sample-based, for CRPS) consumers are served:
 //
@@ -63,7 +63,7 @@ type Quantile struct {
 // effect distribution to its identification sources. Fields are in the same
 // units as the variance contribution; nil means "not separately quantified".
 // The headline claim of the yardstick is that Specification + Bandwidth are
-// non-trivial — that is why plug-in (Sampling-only) methods fail Track B.
+// non-trivial — that is why plug-in (Sampling-only) methods fail the calibration score.
 type UncertaintyBudget struct {
 	Sampling      *float64 `json:"sampling,omitempty"`
 	Bandwidth     *float64 `json:"bandwidth,omitempty"`

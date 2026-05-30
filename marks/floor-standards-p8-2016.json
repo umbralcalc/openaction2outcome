@@ -1,7 +1,7 @@
 {
-  "schema_version": "0.2.0",
+  "schema_version": "0.3.0",
   "id": "floor-standards-p8-2016",
-  "seam": "floor-standards",
+  "series": "floor-standards",
   "domain": "Education",
   "unit_type": "school",
   "rdd_type": "sharp",
@@ -821,7 +821,7 @@
   },
   "dossier": {
     "density": {
-      "method": "binned-density-discontinuity (McCrary-style, Phase-0 simplified)",
+      "method": "binned-density-discontinuity (McCrary-style)",
       "statistic": 6.187878787878837,
       "p_value": 0.3806860651532179,
       "passed": true,
@@ -912,7 +912,7 @@
       }
     ],
     "admitted": true,
-    "notes": "Phase-1 SBI: Bayesian model average over 20 specs (bandwidth x order x kernel) via stochadex SMC (4000 particles, 8 rounds). Honest interval [-0.0544, 0.2557] (sd 0.0729) decomposes into sampling sd 0.0311 and identification sd 0.0659. For comparison, the plug-in local-linear interval is [-0.0627, 0.1055] (sd 0.0429) — narrower because it ignores between-spec identification uncertainty; this is the gap a model that reports only sampling SE should fail on Track B. Design is effectively sharp: of 302 schools below -0.5, only 1 are excluded by the floor's CI condition (P8CIUPP\u003e=0). DIFFERENTIAL ATTRITION CAVEAT: within +/-0.5 of the cutoff, 21.5% of below-floor schools vs 11.3% of above-floor schools lack a linked 2017/18 P8 (sponsored academies are re-issued a new URN). This attrition is correlated with treatment and biases the complete-case estimate; it is the dominant threat to this mark and motivates the Phase-2 attrition-aware treatment."
+    "notes": "SBI: Bayesian model average over 20 specs (bandwidth x order x kernel) via stochadex SMC (4000 particles, 8 rounds). Honest interval [-0.0544, 0.2557] (sd 0.0729) decomposes into sampling sd 0.0311 and identification sd 0.0659. For comparison, the plug-in local-linear interval is [-0.0627, 0.1055] (sd 0.0429) — narrower because it ignores between-spec identification uncertainty; this is the gap a model that reports only sampling SE should fail the calibration score. Design is effectively sharp: of 302 schools below -0.5, only 1 are excluded by the floor's CI condition (P8CIUPP\u003e=0). DIFFERENTIAL ATTRITION CAVEAT: within +/-0.5 of the cutoff, 21.5% of below-floor schools vs 11.3% of above-floor schools lack a linked 2017/18 P8 (sponsored academies are re-issued a new URN). This attrition is correlated with treatment and biases the complete-case estimate; it is the dominant threat to this mark and motivates a future attrition-aware treatment."
   },
   "provenance": {
     "sources": [
@@ -947,7 +947,7 @@
     "seed": 1,
     "tool_versions": {
       "go": "go1.25.2",
-      "openaction2outcome": "0.2.0",
+      "openaction2outcome": "0.3.0",
       "smc": "particles=4000,rounds=8",
       "stochadex": "v0.0.0-20260529062707-b3fa54eb7212"
     },

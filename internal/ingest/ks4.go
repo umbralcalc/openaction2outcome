@@ -1,8 +1,7 @@
-// Package ingest holds per-seam loaders plus the fetch-to-cache step. Inputs are
+// Package ingest holds per-series loaders plus the fetch-to-cache step. Inputs are
 // NOT vendored into git: data/raw holds only SOURCE.json pointers, and the bytes
 // are fetched on demand into a gitignored cache (data/cache) and verified
-// against the recorded SHA-256 (DEV_PLAN §3, with object-storage publishing per
-// §5). Loaders are pure functions over the cached bytes.
+// against the recorded SHA-256. Loaders are pure functions over the cached bytes.
 package ingest
 
 import (

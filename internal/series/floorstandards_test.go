@@ -1,4 +1,4 @@
-package seam
+package series
 
 import (
 	"os"
@@ -51,8 +51,8 @@ func TestBuildFloorStandardsRealData(t *testing.T) {
 	if err := m.Validate(); err != nil {
 		t.Fatalf("minted mark invalid: %v", err)
 	}
-	if m.Seam != schema.SeamFloorStandards || m.RDDType != schema.Sharp {
-		t.Fatalf("unexpected seam/type: %s/%s", m.Seam, m.RDDType)
+	if m.Series != schema.SeriesFloorStandards || m.RDDType != schema.Sharp {
+		t.Fatalf("unexpected series/type: %s/%s", m.Series, m.RDDType)
 	}
 	if m.Effect.Interval == nil {
 		t.Fatal("mark must carry an honest interval")
