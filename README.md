@@ -1,43 +1,36 @@
-# OpenAction2Outcome Datasets
+# The OpenAction2Outcome Datasets
 
 **Real-world reference points for testing models that predict the effects of decisions.**
 
-If your model answers "what would happen if we did X?" — a world model, a
-model-based policy, a digital twin, an LLM reasoning about consequences — you need
-to know when it's right. Usually you can't: real-world counterfactual ground truth
+If your model answers "what would happen if we did X?" (a world model, a model-based policy, a digital twin, an LLM reasoning about consequences) you need to know when it's right. 
+
+Usually you can't: real-world counterfactual ground truth
 is rarely available, so people fall back on simulators.
 
-This dataset provides that ground truth. It collects real public-sector decisions
-where an institution crossed a published threshold (a school's performance score,
-a hospital's mortality rating, an area's deprivation rank), which triggered an
-action, and where the true effect of that action can be recovered — because units
-that *just* crossed the line are comparable to those that *just* didn't (regression
-discontinuity). Each reference point ships with an **honest interval**: a central
-estimate plus a range that's truthful about what's actually uncertain.
+These datasets provide that ground truth.
 
-You can check two things against it: does your model get the **effect** right, and
-is its **confidence** honest?
+OpenAction2Outcome is a collection of datasets tracking real-world decisions and their measured outcomes.
+
+In each case an institution crossed a published threshold (a school's performance score, a hospital's mortality rating, an area's deprivation rank), which triggered an action, and where the true effect of that action can be recovered — because units that *just* crossed the line are comparable to those that *just* didn't (regression discontinuity).
+
+Each reference point ships with an **honest interval**: a central estimate plus a range that's truthful about what's actually uncertain.
+
+You can check two things against it: does your model get the **effect** right, and is its **confidence** honest?
 
 ## What's in it
 
-- **Marks** — the reference points. Small JSON files in [`marks/`](marks); one per
-  decision. Each gives the setup, the effect as a distribution, the evidence it
-  passed, and full provenance. See the [data dictionary](docs/schema.md).
-- **Dossiers** — a readable write-up of each mark's validity checks, in
-  [`dossiers/`](dossiers).
-- **Episode tables** — the per-unit data behind each mark, in object storage
-  (referenced from the mark by URL + hash). Only needed if you want the raw rows.
-- **Scorer** — a small Go package ([`pkg/score`](pkg/score)) that grades a model's
-  predictions. Nothing is hosted; you run it locally.
+- **Marks** - the reference points. Small JSON files in [`marks/`](marks); one per decision. Each gives the setup, the effect as a distribution, the evidence it passed, and full provenance. See the [data dictionary](docs/schema.md).
+- **Dossiers** — a readable write-up of each mark's validity checks, in [`dossiers/`](dossiers).
+- **Episode tables** — the per-unit data behind each mark, in object storage (referenced from the mark by URL + hash). Only needed if you want the raw rows.
+- **Scorer** — a small Go package ([`pkg/score`](pkg/score)) that grades a model's predictions. Nothing is hosted; you run it locally.
 
 ## The finding it's built to show
 
-A method that reports only its *sampling* error looks confident but is wrong too
-often — it ignores how much the answer depends on modelling choices. A method that
-accounts for that is honestly less certain, and better calibrated. The committed
-[calibration study](scores/calibration-study.json) (`make study`) shows it against
-known truth — at a nominal 95% interval, the plug-in method covers the truth only
-80% of the time, the model-averaged method 92%.
+A method that reports only its *sampling* error looks confident but is wrong too often — it ignores how much the answer depends on modelling choices. A method that
+accounts for that is honestly less certain, and better calibrated. 
+
+The committed [calibration study](scores/calibration-study.json) (`make study`) shows it against
+known truth — at a nominal 95% interval, the plug-in method covers the truth only 80% of the time, the model-averaged method 92%.
 
 ## Use the data
 
