@@ -72,14 +72,29 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <td>The kind of institution, e.g. <code>school</code>, <code>nhs-trust</code>, <code>local-authority</code>.</td>
 </tr>
 <tr>
+<td><code>category</code></td>
+<td>string</td>
+<td><code>identified</code> (design-based truth — a pin) or <code>bridge</code> (simulator-bridged interpolation between anchors — a span). Empty reads as <code>identified</code>. The two are never pooled in scoring.</td>
+</tr>
+<tr>
+<td><code>truth_source</code></td>
+<td>string</td>
+<td><code>identified</code> for design-based marks, <code>simulator-bridged</code> for bridge marks. The hard provenance line.</td>
+</tr>
+<tr>
 <td><code>rdd_type</code></td>
 <td>string</td>
-<td><code>sharp</code> (crossing the cutoff always triggers the action) or <code>fuzzy</code> (it changes the probability).</td>
+<td><code>sharp</code> (crossing the cutoff always triggers the action) or <code>fuzzy</code> (it changes the probability). Identified marks only.</td>
 </tr>
 <tr>
 <td><code>design</code></td>
 <td>object</td>
-<td>What is being estimated — see below.</td>
+<td>What is being estimated — see below. Identified marks only.</td>
+</tr>
+<tr>
+<td><code>bridge</code></td>
+<td>object</td>
+<td>Bridge-specific fields (anchors, query point, simulator, kernel, coherence) — see below. Bridge marks only.</td>
 </tr>
 <tr>
 <td><code>context</code></td>
@@ -108,6 +123,55 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 </tr>
 </tbody>
 </table>
+<h3><code>bridge</code> (bridge marks only)</h3>
+<p>A bridge mark estimates a mechanism's effect at a <code>query_point</code> that lies strictly <strong>between</strong> identified anchors. Interpolation only; the boundary to identified truth is made unmissable here.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mechanism</code></td>
+<td>string</td>
+<td>The shared effect-curve mechanism id all anchors lie on.</td>
+</tr>
+<tr>
+<td><code>policy_variable</code></td>
+<td>string</td>
+<td>What <code>x</code> is: <code>cutoff level</code>, <code>intensity</code>, <code>dose</code>, <code>time</code>, <code>rank</code>.</td>
+</tr>
+<tr>
+<td><code>query_point</code></td>
+<td>number</td>
+<td>The <code>x</code> this mark estimates the effect τ at. Always strictly inside the anchor hull.</td>
+</tr>
+<tr>
+<td><code>anchors</code></td>
+<td>array</td>
+<td><code>≥2</code> <code>{mark_id, policy_point}</code> references to identified marks; must <strong>bracket</strong> <code>query_point</code> (one each side).</td>
+</tr>
+<tr>
+<td><code>simulator</code></td>
+<td>object</td>
+<td>stochadex <code>{model_id, version, seed, input_hashes}</code> — re-mintable byte-for-byte.</td>
+</tr>
+<tr>
+<td><code>discrepancy_kernel</code></td>
+<td>object</td>
+<td>GP covariance <code>{family, params, jitter}</code> — the trust-decay assumption, shipped openly.</td>
+</tr>
+<tr>
+<td><code>anchor_coherence</code></td>
+<td>object</td>
+<td><code>{same_population, same_regime, same_outcome_construct, justification}</code> — the mandatory argument that anchors share one mechanism.</td>
+</tr>
+</tbody>
+</table>
+<p>The bridge mark's <code>dossier.bridge</code> records the leave-one-anchor-out (LOAO) coverage (the headline credibility number), the kernel-sensitivity table, the bracketing check, and the admission verdict.</p>
 <h3><code>design</code></h3>
 <table>
 <thead>

@@ -60,6 +60,25 @@ type Options struct {
 	MarkNarrowWidth float64
 	// ModelNarrowWidth: a model prediction with interval width <= this is "narrow".
 	ModelNarrowWidth float64
+
+	// Categories restricts scoring to marks of these categories. Empty means all
+	// categories. This lets a consumer opt into identified-only for a maximally
+	// defensible test, bridge-only, or both — with full visibility (excluded
+	// marks are reported, never silently dropped).
+	Categories []schema.Category
+}
+
+// wantsCategory reports whether the options admit a mark of the given category.
+func (o Options) wantsCategory(c schema.Category) bool {
+	if len(o.Categories) == 0 {
+		return true
+	}
+	for _, want := range o.Categories {
+		if want == c {
+			return true
+		}
+	}
+	return false
 }
 
 func (o Options) markNarrow() float64 {

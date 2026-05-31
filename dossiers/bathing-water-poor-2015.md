@@ -1,6 +1,6 @@
 # bathing-water-poor-2015
 
-**Series:** bathing-water  ·  **Domain:** Environment  ·  **Unit:** bathing-water  ·  **Design:** sharp RDD  ·  **Status:** ADMITTED
+**Category:** identified (design-based truth — a pin)  ·  **Series:** bathing-water  ·  **Domain:** Environment  ·  **Unit:** bathing-water  ·  **Design:** sharp RDD  ·  **Status:** ADMITTED
 
 ## The decision
 
@@ -81,4 +81,4 @@ Point-in-time order: context as-of `2015-12-31` ≤ decision `2016-03-01` < outc
 - Bathing-water annual compliance classifications + E. coli / intestinal enterococci percentile statistics, England 2015-2024 (revised Bathing Water Directive) — Environment Agency (Defra). Licence: Open Government Licence v3.0. SHA-256 `faec1609564a1a170f62aed3846f4a33ba5e92ce8995cc1027fad5d2554bc0cc`.
 - Bathing-water per-sample microbiology (E. coli / intestinal enterococci counts + discountable flag) for near-cutoff sites, England 2015-2024 — Environment Agency (Defra). Licence: Open Government Licence v3.0. SHA-256 `95a104b64d07ab5b0c69199ff00b529b2d6b03629b57e4971c093032bc9f0fe2`.
 
-**Reproducibility:** go go1.25.2, openaction2outcome 0.4.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.
+**Reproducibility:** go go1.25.2, openaction2outcome 0.5.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.

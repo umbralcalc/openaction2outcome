@@ -4,6 +4,57 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.3.0 — 2026-05-31
+
+Adds a second, clearly-separated category of mark — the **bridge mark** — and the
+machinery to mint and score it. Bridge marks estimate a mechanism's effect at a
+point bracketed by real identified anchors, using a stochadex simulator plus a
+Gaussian-process discrepancy pinned to those anchors (Kennedy–O'Hagan calibration).
+Interpolation only; the honest interval is the posterior, bounded and pinned at
+both ends. Existing marks are unchanged in value — they gain a `category` field.
+
+### Schema (`schema_version` 0.4.0 → 0.5.0)
+- New mark fields: `category` (`identified` | `bridge`, empty reads as
+  `identified`) and `truth_source` (`identified` | `simulator-bridged`) — the hard
+  pin/span provenance line, never pooled across categories.
+- New `bridge` block on bridge marks: `mechanism`, `policy_variable`, `query_point`,
+  `anchors[]` (≥2, must bracket the query), `simulator`, `discrepancy_kernel`,
+  `anchor_coherence`. **Bracketing is enforced in the data model** at validation
+  time — a non-bracketed query is rejected (no extrapolation path).
+- New `dossier.bridge` block: anchor-coherence echo, LOAO coverage (headline),
+  kernel-sensitivity table, bracketing flag, admission verdict.
+- The three committed identified marks are re-minted at 0.5.0 (byte-identical
+  values; only the new `category`/`truth_source` fields + version string change).
+
+### New machinery
+- **`internal/bridge`** — the simulator interface, two GP covariance kernels
+  (squared-exponential, Matérn-5/2), GP-discrepancy conditioning (reusing the
+  dense linear-algebra idiom from `internal/sbi`), SMC over the mechanism
+  parameters (the full weighted particle cloud), leave-one-anchor-out validation,
+  and kernel sensitivity. Validated against a synthetic mechanism with a *known*
+  effect curve (`study --bridge`): recovery and LOAO coverage track nominal.
+- **`internal/validity`** gains the bridge battery (anchor coherence + bracketing
+  as the hard gates; LOAO + kernel sensitivity as reported credibility numbers).
+- **`internal/dossier`** renders a distinct bridge dossier — pin/span picture, the
+  load-bearing kernel, the coherence justification, and LOAO as the headline.
+
+### Determinism: closed-form, not sampled
+- The discrepancy GP is conditioned in **closed form**, never sampled — the honest
+  interval is exact and re-mintable. `internal/bridge` ships three calibrators:
+  the modular cut (default), `CalibrateMarginal` (the *exact* joint — GP marginal
+  likelihood for θ plus analytic δ conditioning), and a stochadex-*sampled* joint.
+- New `study --bridge --compare` runs all three on identical known-truth problems
+  and is the committed evidence for the closed-form choice: the two closed-form
+  calibrators nearly coincide and track nominal coverage (recovery ≈ 1.0 at 95%),
+  while the sampled joint degenerates (recovery ≈ 0.25, intervals several-fold too
+  narrow) as its data-free discrepancy latents collapse under resampling. Sampling
+  the GP adds only Monte-Carlo error and degeneracy.
+
+### Scoring
+- `pkg/score` now reports **per-category, never pooled** (so strong identified
+  coverage cannot mask weak bridge coverage). New `--category identified|bridge|both`
+  flag on `score`; excluded marks are reported, never silently dropped.
+
 ## v1.2.0 — 2026-05-31
 
 Reworks the `episodes` distribution to match what is actually served: the rows are

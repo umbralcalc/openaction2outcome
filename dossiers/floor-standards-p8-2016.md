@@ -1,6 +1,6 @@
 # floor-standards-p8-2016
 
-**Series:** floor-standards  ·  **Domain:** Education  ·  **Unit:** school  ·  **Design:** sharp RDD  ·  **Status:** ADMITTED
+**Category:** identified (design-based truth — a pin)  ·  **Series:** floor-standards  ·  **Domain:** Education  ·  **Unit:** school  ·  **Design:** sharp RDD  ·  **Status:** ADMITTED
 
 ## The decision
 
@@ -77,4 +77,4 @@ Point-in-time order: context as-of `2016-08-25` ≤ decision `2017-01-19` < outc
 - Key Stage 4 (KS4) final performance tables — school-level data, 2015/16 — Department for Education (DfE). Licence: Open Government Licence v3.0. SHA-256 `01288f9a4e39a9ad7c4a3dd6e88445d34664ea2dc36bb28adbb09d1c57046dd6`.
 - Key Stage 4 (KS4) final performance tables — school-level data, 2017/18 — Department for Education (DfE). Licence: Open Government Licence v3.0. SHA-256 `6f0a6f5bb1154f94afe2463c25498e91700a5d561a80f19f8f2923d3f0e5bb6e`.
 
-**Reproducibility:** go go1.25.2, openaction2outcome 0.4.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.
+**Reproducibility:** go go1.25.2, openaction2outcome 0.5.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.

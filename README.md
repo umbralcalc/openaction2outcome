@@ -28,6 +28,38 @@ There are only **two datasets**, normalised on `mark_id`:
 
 Plus, for convenience: **dossiers** — a readable write-up of each mark's validity checks, in [`dossiers/`](dossiers); and a **scorer** — a small Go package ([`pkg/score`](pkg/score)) that grades a model's predictions (nothing is hosted; you run it locally).
 
+## Two kinds of mark: pins and bridges
+
+Every mark carries a `category`, and the two are **never pooled**:
+
+- **`identified`** — the design-based marks above (sharp/fuzzy RDD). Real
+  counterfactual truth at a clean cutoff. These are the **pins**. `truth_source` =
+  `identified`.
+- **`bridge`** — a calibrated estimate of a mechanism's effect at a point on its
+  effect-curve where *no clean cutoff exists*, but which is **bracketed by real
+  identified anchors on both sides**. A stochadex simulator carries the mechanism;
+  a Gaussian-process discrepancy term, pinned to the anchors, spans between them.
+  The honest interval is the posterior: narrow at the pins, wider between them,
+  always **bounded** because the query is bracketed (interpolation only — no
+  extrapolation, by design). These are the **span**. `truth_source` =
+  `simulator-bridged`.
+
+**The pin/span discipline is absolute.** A bridge mark's provenance makes the
+boundary unmissable: its dossier ships the bracketing anchors, the load-bearing
+covariance kernel (the trust-decay assumption), the anchor-coherence justification,
+and a headline **leave-one-anchor-out (LOAO) coverage** number. The simulator is
+never the source of truth — the anchors are. A consumer can always filter the
+collection to `category == identified` and never see a simulated quantity laundered
+as ground truth.
+
+Bridge marks change *what we harvest*: not one isolated experiment per policy, but
+a **family of identified anchors on one mechanism** that a simulator can bridge —
+reopening confounder-heavy domains (epidemiology, environmental regulation,
+economic/clinical thresholds) that single-RDD scope excluded. The bridge machinery
+(`internal/bridge`) is validated against synthetic mechanisms with a *known* effect
+curve (`make study` → `study --bridge`); the first real bridge mark lands once a
+mechanism in the collection has ≥2 bracketing anchors.
+
 ## The finding it's built to show
 
 A method that reports only its *sampling* error looks confident but is wrong too often — it ignores how much the answer depends on modelling choices. A method that
@@ -47,7 +79,7 @@ go run ./cmd/openaction2outcome score --submission submission.json --out my.scor
 ```
 
 You get two independent scores per mark — **decision** (did you get the direction right, and what would a wrong call cost?) and **calibration** (does your stated
-uncertainty match the truth?). 
+uncertainty match the truth?). Results are **broken out per category and never pooled** — so strong coverage on the identified pins can't mask weak coverage on the bridges. Use `--category identified` for a maximally-defensible test, `--category bridge` for the simulator-bridged estimates, or `both` (default).
 
 The committed
 [example submission](examples/submission.example.json) and its [expected scores](scores/example.scores.json) let you confirm your setup.
@@ -63,6 +95,25 @@ make validate   # check every mark against the schema
 make study      # re-run the calibration study
 ```
 
+The bridge machinery has its own known-truth study — recovery of a synthetic
+mechanism's effect curve between anchors, plus leave-one-anchor-out coverage:
+
+```sh
+go run ./cmd/openaction2outcome study --bridge --out scores/bridge-study.json
+```
+
+The discrepancy GP is conditioned in **closed form**, not sampled. `--compare`
+shows why: it runs three calibrators on identical problems — the modular cut
+(shipped default), the *exact* closed-form joint (GP marginal likelihood for θ +
+analytic δ conditioning), and a stochadex-*sampled* joint. The first two nearly
+coincide and track nominal coverage; the sampled joint degenerates (the data-free
+query-innovation latent collapses under SMC resampling) and badly under-covers —
+the empirical case for the closed form.
+
+```sh
+go run ./cmd/openaction2outcome study --bridge --compare --out scores/bridge-compare.json
+```
+
 ## Layout
 
 ```
@@ -70,7 +121,8 @@ cmd/openaction2outcome   CLI: fetch, build, validate, score, study, export, site
 internal/ingest          load + cache the frozen open-data inputs
 internal/rdd             plug-in local-linear estimator (comparison baseline)
 internal/sbi             model-averaged estimator (the honest interval)
-internal/validity        manipulation / continuity / placebo / robustness checks
+internal/bridge          simulator + GP-discrepancy bridge calibration (bridge marks)
+internal/validity        manipulation / continuity / placebo / robustness + bridge checks
 internal/dossier         render a mark to a readable dossier
 internal/series          per-series minting
 internal/publish         publishing config + per-mark episode-table writer

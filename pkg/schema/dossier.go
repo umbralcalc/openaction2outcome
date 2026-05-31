@@ -27,6 +27,12 @@ type ValidityDossier struct {
 	// probability at the cutoff. Nil for sharp marks.
 	FirstStage *FirstStageResult `json:"first_stage,omitempty"`
 
+	// Bridge holds the bridge-specific validity battery (anchor coherence, LOAO,
+	// kernel sensitivity, bracketing). Present iff the mark's category is bridge;
+	// nil for identified marks. It is pure description — the computation lives in
+	// internal/bridge — so the schema stays dependency-light.
+	Bridge *BridgeChecks `json:"bridge,omitempty"`
+
 	// SeamSpecificChecks holds validity checks unique to a particular series that
 	// fall outside the standard battery — e.g. the bathing-water abnormal-sample-
 	// exclusion sensitivity (the analogue of a manipulation check, since extreme-
@@ -76,4 +82,57 @@ type FirstStageResult struct {
 	StdErr *float64 `json:"std_err,omitempty"`
 	FStat  *float64 `json:"f_stat,omitempty"`
 	Passed bool     `json:"passed"`
+}
+
+// BridgeChecks is the bridge-specific validity battery, the analogue of the
+// manipulation check for identified marks. Everything here is description; the
+// computation lives in internal/bridge and internal/validity.
+type BridgeChecks struct {
+	// Coherence echoes the structured anchor-coherence justification (mandatory).
+	Coherence AnchorCoherence `json:"anchor_coherence"`
+
+	// BracketingOK records that the query point lies strictly between anchors on
+	// the policy variable (also enforced in Mark.Validate).
+	BracketingOK bool `json:"bracketing_ok"`
+
+	// LOAOCoverage is the headline leave-one-anchor-out coverage: the fraction of
+	// held-out anchors whose own identified posterior fell within the bridge's
+	// predicted interval. This is the bridge analogue of the identified marks'
+	// calibration study.
+	LOAOCoverage float64   `json:"loao_coverage"`
+	LOAOLevel    float64   `json:"loao_level"`
+	LOAO         []LOAORow `json:"loao,omitempty"`
+
+	// KernelSensitivity reports how much τ(query) and its interval move under
+	// alternative covariance kernels; Flagged is set when the movement is large
+	// enough that the estimate is kernel-driven.
+	KernelSensitivity []KernelSensitivityRow `json:"kernel_sensitivity,omitempty"`
+	KernelFlagged     bool                   `json:"kernel_flagged"`
+
+	// Admitted is the bridge verdict; Notes explains it.
+	Admitted bool   `json:"admitted"`
+	Notes    string `json:"notes,omitempty"`
+}
+
+// LOAORow is one leave-one-anchor-out trial: the held-out anchor, the interval
+// the bridge predicted for its position, and whether the anchor's own posterior
+// was covered. Endpoint anchors cannot be held out without breaking bracketing
+// and are reported as skipped.
+type LOAORow struct {
+	HeldMarkID    string  `json:"held_mark_id"`
+	PolicyPoint   float64 `json:"policy_point"`
+	AnchorCentral float64 `json:"anchor_central"`
+	PredLower     float64 `json:"pred_lower"`
+	PredUpper     float64 `json:"pred_upper"`
+	Covered       bool    `json:"covered"`
+	Skipped       bool    `json:"skipped,omitempty"` // true for endpoint anchors
+	SkipReason    string  `json:"skip_reason,omitempty"`
+}
+
+// KernelSensitivityRow is τ(query) and its interval under one covariance kernel.
+type KernelSensitivityRow struct {
+	Kernel  string  `json:"kernel"`
+	Central float64 `json:"central"`
+	Lower   float64 `json:"lower"`
+	Upper   float64 `json:"upper"`
 }

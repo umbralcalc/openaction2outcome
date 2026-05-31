@@ -23,6 +23,59 @@
 <p>All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
 separately inside each mark).</p>
+<h2>v1.3.0 — 2026-05-31</h2>
+<p>Adds a second, clearly-separated category of mark — the <strong>bridge mark</strong> — and the
+machinery to mint and score it. Bridge marks estimate a mechanism's effect at a
+point bracketed by real identified anchors, using a stochadex simulator plus a
+Gaussian-process discrepancy pinned to those anchors (Kennedy–O'Hagan calibration).
+Interpolation only; the honest interval is the posterior, bounded and pinned at
+both ends. Existing marks are unchanged in value — they gain a <code>category</code> field.</p>
+<h3>Schema (<code>schema_version</code> 0.4.0 → 0.5.0)</h3>
+<ul>
+<li>New mark fields: <code>category</code> (<code>identified</code> | <code>bridge</code>, empty reads as
+<code>identified</code>) and <code>truth_source</code> (<code>identified</code> | <code>simulator-bridged</code>) — the hard
+pin/span provenance line, never pooled across categories.</li>
+<li>New <code>bridge</code> block on bridge marks: <code>mechanism</code>, <code>policy_variable</code>, <code>query_point</code>,
+<code>anchors[]</code> (≥2, must bracket the query), <code>simulator</code>, <code>discrepancy_kernel</code>,
+<code>anchor_coherence</code>. <strong>Bracketing is enforced in the data model</strong> at validation
+time — a non-bracketed query is rejected (no extrapolation path).</li>
+<li>New <code>dossier.bridge</code> block: anchor-coherence echo, LOAO coverage (headline),
+kernel-sensitivity table, bracketing flag, admission verdict.</li>
+<li>The three committed identified marks are re-minted at 0.5.0 (byte-identical
+values; only the new <code>category</code>/<code>truth_source</code> fields + version string change).</li>
+</ul>
+<h3>New machinery</h3>
+<ul>
+<li><strong><code>internal/bridge</code></strong> — the simulator interface, two GP covariance kernels
+(squared-exponential, Matérn-5/2), GP-discrepancy conditioning (reusing the
+dense linear-algebra idiom from <code>internal/sbi</code>), SMC over the mechanism
+parameters (the full weighted particle cloud), leave-one-anchor-out validation,
+and kernel sensitivity. Validated against a synthetic mechanism with a <em>known</em>
+effect curve (<code>study --bridge</code>): recovery and LOAO coverage track nominal.</li>
+<li><strong><code>internal/validity</code></strong> gains the bridge battery (anchor coherence + bracketing
+as the hard gates; LOAO + kernel sensitivity as reported credibility numbers).</li>
+<li><strong><code>internal/dossier</code></strong> renders a distinct bridge dossier — pin/span picture, the
+load-bearing kernel, the coherence justification, and LOAO as the headline.</li>
+</ul>
+<h3>Determinism: closed-form, not sampled</h3>
+<ul>
+<li>The discrepancy GP is conditioned in <strong>closed form</strong>, never sampled — the honest
+interval is exact and re-mintable. <code>internal/bridge</code> ships three calibrators:
+the modular cut (default), <code>CalibrateMarginal</code> (the <em>exact</em> joint — GP marginal
+likelihood for θ plus analytic δ conditioning), and a stochadex-<em>sampled</em> joint.</li>
+<li>New <code>study --bridge --compare</code> runs all three on identical known-truth problems
+and is the committed evidence for the closed-form choice: the two closed-form
+calibrators nearly coincide and track nominal coverage (recovery ≈ 1.0 at 95%),
+while the sampled joint degenerates (recovery ≈ 0.25, intervals several-fold too
+narrow) as its data-free discrepancy latents collapse under resampling. Sampling
+the GP adds only Monte-Carlo error and degeneracy.</li>
+</ul>
+<h3>Scoring</h3>
+<ul>
+<li><code>pkg/score</code> now reports <strong>per-category, never pooled</strong> (so strong identified
+coverage cannot mask weak bridge coverage). New <code>--category identified|bridge|both</code>
+flag on <code>score</code>; excluded marks are reported, never silently dropped.</li>
+</ul>
 <h2>v1.2.0 — 2026-05-31</h2>
 <p>Reworks the <code>episodes</code> distribution to match what is actually served: the rows are
 published <strong>per mark</strong> as one gzipped CSV each, not as a single unified file. The marks

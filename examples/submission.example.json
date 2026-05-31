@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3.0",
+  "schema_version": "0.5.0",
   "model_name": "example-plugin-baseline",
   "model_detail": "Illustrative submission: a plug-in style prediction that reports a narrow, sampling-only interval. Shows the submission format and how an over-confident interval scores on calibration.",
   "predictions": [

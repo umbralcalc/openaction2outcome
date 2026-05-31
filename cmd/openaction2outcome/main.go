@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/umbralcalc/openaction2outcome/internal/bridge"
 	"github.com/umbralcalc/openaction2outcome/internal/dossier"
 	"github.com/umbralcalc/openaction2outcome/internal/episodes"
 	"github.com/umbralcalc/openaction2outcome/internal/hfexport"
@@ -140,7 +141,16 @@ func cmdStudy(args []string) error {
 	out := fs.String("out", "scores/calibration-study.json", "output path")
 	particles := fs.Int("particles", 1200, "SMC particles per spec")
 	rounds := fs.Int("rounds", 5, "SMC rounds per spec")
+	isBridge := fs.Bool("bridge", false, "run the bridge recovery + LOAO study instead of the RDD calibration study")
+	compare := fs.Bool("compare", false, "with --bridge: compare modular vs exact-joint vs sampled-joint calibrators")
 	fs.Parse(args)
+
+	if *isBridge {
+		if *compare {
+			return runBridgeComparison(*problems, *seed, *particles, *rounds, *out)
+		}
+		return runBridgeStudy(*problems, *seed, *particles, *rounds, *out)
+	}
 
 	fmt.Printf("running calibration study: %d problems x %d specs (this takes a minute)...\n",
 		*problems, len(sbi.DefaultFloorSpecs()))
@@ -162,6 +172,66 @@ func cmdStudy(args []string) error {
 	}
 	fmt.Printf("\nwrote %s\n", *out)
 	return nil
+}
+
+// runBridgeStudy runs the bridge machinery-validation study: across synthetic
+// mechanisms with a KNOWN true effect curve, the pinned GP-discrepancy posterior
+// recovers the truth between anchors and held-out anchors fall within the
+// predicted interval (LOAO). Reported separately from the RDD calibration study,
+// never pooled (the cardinal pin/span rule).
+func runBridgeStudy(problems int, seed int64, particles, rounds int, out string) error {
+	fmt.Printf("running bridge recovery study: %d synthetic problems (this takes a moment)...\n", problems)
+	study := bridge.RunBridgeRecoveryStudy(problems, seed,
+		bridge.SMCConfig{NumParticles: particles, NumRounds: rounds, Seed: 1})
+
+	b, err := json.MarshalIndent(study, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(out, append(b, '\n'), 0o644); err != nil {
+		return err
+	}
+	fmt.Printf("\nkernel=%s\nnominal  recovery-cov  loao-cov   recovery-w\n", study.Kernel)
+	for i, L := range study.Levels {
+		fmt.Printf("%5.2f      %.3f         %.3f      %.3f\n",
+			L, study.Recovery.Coverage[i], study.LOAO.Coverage[i], study.Recovery.MeanWidth[i])
+	}
+	fmt.Printf("\nwrote %s\n", out)
+	return nil
+}
+
+// runBridgeComparison runs the three calibrators (modular cut, exact closed-form
+// joint, stochadex-sampled joint) on identical synthetic problems and reports how
+// each recovers the known truth — the empirical answer to "why condition the GP
+// discrepancy in closed form rather than sample it through stochadex".
+func runBridgeComparison(problems int, seed int64, particles, rounds int, out string) error {
+	fmt.Printf("running bridge method comparison: %d problems x 3 calibrators...\n", problems)
+	cmp := bridge.RunBridgeComparison(problems, seed,
+		bridge.SMCConfig{NumParticles: particles, NumRounds: rounds, Seed: 1})
+
+	b, err := json.MarshalIndent(cmp, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(out, append(b, '\n'), 0o644); err != nil {
+		return err
+	}
+	fmt.Printf("\nkernel=%s  (recovery coverage of the KNOWN truth; nominal levels %v)\n", cmp.Kernel, cmp.Levels)
+	fmt.Printf("%-30s %s\n", "method", "coverage  /  mean width")
+	for _, m := range cmp.Methods {
+		fmt.Printf("%-30s %v\n", m.Method, fmtCov(m.Coverage))
+		fmt.Printf("%-30s %v\n", "", fmtCov(m.MeanWidth))
+	}
+	fmt.Printf("\n%s\n\nwrote %s\n", cmp.Finding, out)
+	return nil
+}
+
+func fmtCov(xs []float64) string {
+	s := ""
+	for _, x := range xs {
+		s += fmt.Sprintf("%6.3f ", x)
+	}
+	return s
 }
 
 // cmdExport assembles a Hugging Face-ready dataset directory (per-series JSONL +
@@ -292,7 +362,15 @@ func cmdValidate(args []string) error {
 		if err != nil {
 			return fmt.Errorf("%s: %w", p, err)
 		}
-		fmt.Printf("ok   %s  (%s, %s, admitted=%v)\n", filepath.Base(p), m.Series, m.RDDType, m.Dossier.Admitted)
+		design := string(m.RDDType)
+		admitted := m.Dossier.Admitted
+		if m.EffectiveCategory() == schema.CategoryBridge {
+			design = "bridge"
+			if m.Dossier.Bridge != nil {
+				admitted = m.Dossier.Bridge.Admitted
+			}
+		}
+		fmt.Printf("ok   %s  (%s, %s, %s, admitted=%v)\n", filepath.Base(p), m.EffectiveCategory(), m.Series, design, admitted)
 	}
 	fmt.Printf("validated %d mark(s)\n", len(paths))
 	return nil
@@ -303,10 +381,22 @@ func cmdScore(args []string) error {
 	marksDir := fs.String("marks", "marks", "directory of mark JSON files")
 	subPath := fs.String("submission", "", "submission JSON file (required)")
 	outPath := fs.String("out", "", "write full JSON report to this file (optional)")
+	category := fs.String("category", "both", "which marks to score: identified | bridge | both")
 	fs.Parse(args)
 
 	if *subPath == "" {
 		return fmt.Errorf("--submission is required")
+	}
+	var cats []schema.Category
+	switch *category {
+	case "identified":
+		cats = []schema.Category{schema.CategoryIdentified}
+	case "bridge":
+		cats = []schema.Category{schema.CategoryBridge}
+	case "both", "":
+		cats = nil // all categories; still reported separately, never pooled
+	default:
+		return fmt.Errorf("--category must be one of identified, bridge, both (got %q)", *category)
 	}
 	marks, err := loadMarks(*marksDir)
 	if err != nil {
@@ -316,7 +406,7 @@ func cmdScore(args []string) error {
 	if err != nil {
 		return err
 	}
-	rep := score.ScoreSubmission(marks, sub, score.Options{})
+	rep := score.ScoreSubmission(marks, sub, score.Options{Categories: cats})
 	fmt.Print(rep.String())
 
 	if *outPath != "" {

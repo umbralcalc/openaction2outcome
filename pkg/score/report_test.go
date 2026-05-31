@@ -78,3 +78,74 @@ func TestReportSummaryAndString(t *testing.T) {
 		t.Fatalf("report string should mention both scores:\n%s", s)
 	}
 }
+
+// bridgeMark is a minimal admissible bridge mark for scorer tests: it carries a
+// category, a truth_source, and a bracketed bridge block.
+func bridgeMark(id string, mu, sd float64) schema.Mark {
+	m := gaussianMark(id, mu, sd)
+	m.Category = schema.CategoryBridge
+	m.TruthSource = schema.TruthSimulatorBridged
+	m.RDDType = ""
+	m.Design = schema.Design{}
+	m.Bridge = &schema.BridgeSpec{
+		Mechanism:      "synthetic",
+		PolicyVariable: "x",
+		QueryPoint:     0.5,
+		Anchors: []schema.AnchorRef{
+			{MarkID: "lo", PolicyPoint: 0},
+			{MarkID: "hi", PolicyPoint: 1},
+		},
+		AnchorCoherence: schema.AnchorCoherence{Justification: "same mechanism"},
+	}
+	return m
+}
+
+func TestScoringNeverPoolsCategories(t *testing.T) {
+	// One identified mark the model nails, one bridge mark the model botches.
+	marks := []schema.Mark{
+		gaussianMark("id-a", 1, 0.2),
+		bridgeMark("br-a", -1, 0.2),
+	}
+	sub := schema.Submission{
+		SchemaVersion: schema.SchemaVersion,
+		ModelName:     "m",
+		Predictions: []schema.Prediction{
+			{MarkID: "id-a", Effect: pred(1, 0.2).Effect}, // identified: correct
+			{MarkID: "br-a", Effect: pred(1, 0.2).Effect}, // bridge: wrong sign
+		},
+	}
+	r := ScoreSubmission(marks, sub, Options{})
+	idS, ok1 := r.ByCategory[schema.CategoryIdentified]
+	brS, ok2 := r.ByCategory[schema.CategoryBridge]
+	if !ok1 || !ok2 {
+		t.Fatalf("expected both category summaries; got %v", r.ByCategory)
+	}
+	if idS.SignAccuracy != 1.0 {
+		t.Fatalf("identified sign accuracy should be 1.0; got %v", idS.SignAccuracy)
+	}
+	if brS.SignAccuracy != 0.0 {
+		t.Fatalf("bridge sign accuracy should be 0.0 (masked if pooled); got %v", brS.SignAccuracy)
+	}
+	if !strings.Contains(r.String(), "never pooled") {
+		t.Fatalf("mixed-category report must state it is not pooled:\n%s", r.String())
+	}
+}
+
+func TestCategoryFilterExcludesVisibly(t *testing.T) {
+	marks := []schema.Mark{gaussianMark("id-a", 1, 0.2), bridgeMark("br-a", -1, 0.2)}
+	sub := schema.Submission{
+		SchemaVersion: schema.SchemaVersion,
+		ModelName:     "m",
+		Predictions: []schema.Prediction{
+			{MarkID: "id-a", Effect: pred(1, 0.2).Effect},
+			{MarkID: "br-a", Effect: pred(1, 0.2).Effect},
+		},
+	}
+	r := ScoreSubmission(marks, sub, Options{Categories: []schema.Category{schema.CategoryIdentified}})
+	if _, ok := r.ByCategory[schema.CategoryBridge]; ok {
+		t.Fatalf("bridge marks should be filtered out")
+	}
+	if len(r.Skipped.CategoryFiltered) != 1 || r.Skipped.CategoryFiltered[0] != "br-a" {
+		t.Fatalf("filtered bridge mark must be reported, not silently dropped; got %v", r.Skipped.CategoryFiltered)
+	}
+}

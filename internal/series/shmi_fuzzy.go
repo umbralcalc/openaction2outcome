@@ -169,6 +169,8 @@ func BuildSHMIFuzzy(rawDir, cacheDir, distDir string, cfg publish.Config) (schem
 
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
+		Category:      schema.CategoryIdentified,
+		TruthSource:   schema.TruthIdentified,
 		ID:            shmiFuzzyMarkID,
 		Series:        schema.SeriesSHMI,
 		Domain:        "Health",

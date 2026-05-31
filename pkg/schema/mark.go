@@ -24,6 +24,20 @@ type Mark struct {
 	UnitType      string  `json:"unit_type"`
 	RDDType       RDDType `json:"rdd_type"`
 
+	// Category separates identified (design-based, the pins) from bridge
+	// (simulator-bridged interpolation, the span). An empty value reads as
+	// `identified` so marks minted before this field keep validating.
+	Category Category `json:"category,omitempty"`
+
+	// TruthSource is the hard provenance line: `identified` for design-based
+	// marks, `simulator-bridged` for bridge marks. Never aggregated across
+	// categories. Empty reads as `identified`.
+	TruthSource TruthSource `json:"truth_source,omitempty"`
+
+	// Bridge carries the bridge-specific fields (anchors, query point, simulator,
+	// kernel, coherence). Present iff Category is `bridge`; nil for identified.
+	Bridge *BridgeSpec `json:"bridge,omitempty"`
+
 	// Design fixes the estimand: the running variable, the cutoff, the action
 	// and its counterfactual, and the outcome definition.
 	Design Design `json:"design"`
@@ -142,6 +156,79 @@ func (m Mark) Validate() error {
 	default:
 		return fmt.Errorf("mark %q: unknown series %q", m.ID, m.Series)
 	}
+
+	// Category and truth_source are normalised: an empty value reads as
+	// identified (so marks minted before these fields keep validating). The
+	// pin/span discipline is then enforced per category.
+	cat := m.EffectiveCategory()
+	if err := m.validateProvenanceLine(cat); err != nil {
+		return err
+	}
+
+	if err := m.Effect.Validate(); err != nil {
+		return fmt.Errorf("mark %q effect: %w", m.ID, err)
+	}
+	if m.Effect.Interval == nil {
+		return fmt.Errorf("mark %q: effect must carry an honest interval", m.ID)
+	}
+	if err := m.Provenance.Validate(); err != nil {
+		return fmt.Errorf("mark %q provenance: %w", m.ID, err)
+	}
+
+	switch cat {
+	case CategoryBridge:
+		if err := m.validateBridge(); err != nil {
+			return err
+		}
+	default: // identified
+		if err := m.validateIdentified(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// EffectiveCategory returns the mark's category, treating an empty value as
+// identified (so marks minted before the field reads as identified). Consumers
+// — notably the scorer — use this to keep the two categories strictly separated.
+func (m Mark) EffectiveCategory() Category {
+	if m.Category == "" {
+		return CategoryIdentified
+	}
+	return m.Category
+}
+
+// validateProvenanceLine enforces the hard truth_source line: it must be empty
+// (read as identified) or match the category. A bridge mark must never claim
+// identified truth, and an identified mark must never claim simulator-bridged.
+func (m Mark) validateProvenanceLine(cat Category) error {
+	switch m.TruthSource {
+	case "":
+		// empty reads as identified; only valid for identified marks
+		if cat == CategoryBridge {
+			return fmt.Errorf("mark %q: bridge mark must set truth_source=%q", m.ID, TruthSimulatorBridged)
+		}
+	case TruthIdentified:
+		if cat == CategoryBridge {
+			return fmt.Errorf("mark %q: bridge mark cannot claim truth_source=%q", m.ID, TruthIdentified)
+		}
+	case TruthSimulatorBridged:
+		if cat != CategoryBridge {
+			return fmt.Errorf("mark %q: only a bridge mark may set truth_source=%q", m.ID, TruthSimulatorBridged)
+		}
+	default:
+		return fmt.Errorf("mark %q: unknown truth_source %q", m.ID, m.TruthSource)
+	}
+	return nil
+}
+
+// validateIdentified checks the invariants specific to a design-based mark: a
+// known RDD type and direction, a first stage for fuzzy marks, no bridge block,
+// and assignment-consistent sample rows.
+func (m Mark) validateIdentified() error {
+	if m.Bridge != nil {
+		return fmt.Errorf("mark %q: identified mark must not carry a bridge block", m.ID)
+	}
 	switch m.RDDType {
 	case Sharp, Fuzzy:
 	default:
@@ -152,24 +239,55 @@ func (m Mark) Validate() error {
 	default:
 		return fmt.Errorf("mark %q: unknown direction %q", m.ID, m.Design.Direction)
 	}
-	if err := m.Effect.Validate(); err != nil {
-		return fmt.Errorf("mark %q effect: %w", m.ID, err)
-	}
-	if m.Effect.Interval == nil {
-		return fmt.Errorf("mark %q: effect must carry an honest interval", m.ID)
-	}
 	// A fuzzy mark's admission depends on a real first stage.
 	if m.RDDType == Fuzzy && m.Dossier.FirstStage == nil {
 		return fmt.Errorf("mark %q: fuzzy mark requires a first-stage result in its dossier", m.ID)
-	}
-	if err := m.Provenance.Validate(); err != nil {
-		return fmt.Errorf("mark %q provenance: %w", m.ID, err)
 	}
 	// Assignment consistency of the inline sample rows (if any).
 	for i, o := range m.Sample {
 		if err := m.checkAssignment(o); err != nil {
 			return fmt.Errorf("mark %q sample row %d (%s): %w", m.ID, i, o.UnitID, err)
 		}
+	}
+	return nil
+}
+
+// validateBridge enforces the bridge data-model invariants: a bridge block, >=2
+// anchors, a mandatory coherence justification, and — the load-bearing one —
+// that the query point is strictly bracketed by anchors on the policy variable.
+// Bracketing is enforced HERE (in the data model), not left to dossier
+// discretion: there is no extrapolation path to fall back to.
+func (m Mark) validateBridge() error {
+	b := m.Bridge
+	if b == nil {
+		return fmt.Errorf("mark %q: bridge mark requires a bridge block", m.ID)
+	}
+	if b.Mechanism == "" {
+		return fmt.Errorf("mark %q: bridge mark requires a mechanism id", m.ID)
+	}
+	if len(b.Anchors) < 2 {
+		return fmt.Errorf("mark %q: bridge mark requires >=2 anchors (got %d)", m.ID, len(b.Anchors))
+	}
+	if b.AnchorCoherence.Justification == "" {
+		return fmt.Errorf("mark %q: bridge mark requires an anchor-coherence justification", m.ID)
+	}
+	// Bracketing: at least one anchor strictly below and one strictly above the
+	// query point on the policy variable (interpolation only).
+	var below, above bool
+	for _, a := range b.Anchors {
+		if a.MarkID == "" {
+			return fmt.Errorf("mark %q: bridge anchor has empty mark_id", m.ID)
+		}
+		switch {
+		case a.PolicyPoint < b.QueryPoint:
+			below = true
+		case a.PolicyPoint > b.QueryPoint:
+			above = true
+		}
+	}
+	if !below || !above {
+		return fmt.Errorf("mark %q: query_point %g is not strictly bracketed by anchors (below=%v above=%v); extrapolation is out of scope",
+			m.ID, b.QueryPoint, below, above)
 	}
 	return nil
 }

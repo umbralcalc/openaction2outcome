@@ -12,9 +12,22 @@ type Report struct {
 	ModelName     string      `json:"model_name"`
 	SchemaVersion string      `json:"schema_version"`
 	MarkScores    []MarkScore `json:"mark_scores"`
-	Summary       Summary     `json:"summary"`
+
+	// Summary aggregates every scored mark. It is a convenience for the common
+	// single-category case; when more than one category is in scope it must NOT
+	// be read as the headline — that would pool identified and bridge marks and
+	// let strong identified coverage mask weak bridge coverage. Use ByCategory.
+	Summary Summary `json:"summary"`
+
+	// ByCategory holds a separate summary per mark category (identified / bridge),
+	// never pooled. This is the headline: a consumer scoring a model gets a
+	// per-category breakdown so the bridge calibration can never hide behind the
+	// identified one.
+	ByCategory map[schema.Category]Summary `json:"by_category"`
+
 	// Skipped lists marks present in the corpus that the submission did not
-	// predict, and predictions that referenced no known mark.
+	// predict, predictions that referenced no known mark, and marks excluded by
+	// the category filter.
 	Skipped Skipped `json:"skipped"`
 }
 
@@ -48,6 +61,16 @@ type CalibrationPoint struct {
 type Skipped struct {
 	UnpredictedMarks   []string `json:"unpredicted_marks,omitempty"`
 	UnmatchedPredicted []string `json:"unmatched_predictions,omitempty"`
+	// CategoryFiltered lists marks excluded because their category was not in the
+	// caller's requested set (so the exclusion is visible, never silent).
+	CategoryFiltered []string `json:"category_filtered,omitempty"`
+}
+
+// SummaryByCategory holds one category-summary keyed by category, attached to a
+// MarkScore so a per-mark consumer knows which category bucket it landed in.
+type categorised struct {
+	cat   schema.Category
+	score MarkScore
 }
 
 // ScoreSubmission evaluates a submission against the supplied marks. Marks are
@@ -72,13 +95,24 @@ func ScoreSubmission(marks []schema.Mark, sub schema.Submission, opt Options) Re
 	}
 	sort.Strings(ids)
 
+	// Score each predicted mark, tagging it with its category so summaries are
+	// computed per category and never pooled.
+	var scored []categorised
 	for _, id := range ids {
+		m := markByID[id]
+		cat := m.EffectiveCategory()
+		if !opt.wantsCategory(cat) {
+			r.Skipped.CategoryFiltered = append(r.Skipped.CategoryFiltered, id)
+			continue
+		}
 		p, ok := predByID[id]
 		if !ok {
 			r.Skipped.UnpredictedMarks = append(r.Skipped.UnpredictedMarks, id)
 			continue
 		}
-		r.MarkScores = append(r.MarkScores, ScoreMark(markByID[id], p, opt))
+		ms := ScoreMark(m, p, opt)
+		r.MarkScores = append(r.MarkScores, ms)
+		scored = append(scored, categorised{cat: cat, score: ms})
 	}
 	for _, p := range sub.Predictions {
 		if _, ok := markByID[p.MarkID]; !ok {
@@ -86,6 +120,16 @@ func ScoreSubmission(marks []schema.Mark, sub schema.Submission, opt Options) Re
 		}
 	}
 
+	// Per-category summaries (the headline; never pooled) plus a convenience
+	// aggregate over all scored marks for the common single-category case.
+	r.ByCategory = make(map[schema.Category]Summary)
+	byCat := make(map[schema.Category][]MarkScore)
+	for _, c := range scored {
+		byCat[c.cat] = append(byCat[c.cat], c.score)
+	}
+	for cat, scores := range byCat {
+		r.ByCategory[cat] = summarise(scores)
+	}
 	r.Summary = summarise(r.MarkScores)
 	return r
 }
@@ -151,19 +195,35 @@ func calibrationCurve(pits []float64) []CalibrationPoint {
 	return out
 }
 
-// String renders a compact human-readable summary for CLI output.
+// String renders a compact human-readable summary for CLI output. The two mark
+// categories are reported separately and never pooled — pooling would let strong
+// identified coverage mask weak bridge coverage.
 func (r Report) String() string {
-	s := r.Summary
-	out := fmt.Sprintf("model=%q marks_scored=%d\n", r.ModelName, s.NumMarksScored)
-	out += fmt.Sprintf("  Decision: sign_accuracy=%.3f (over %d sign-known) total_regret=%.4g mean_regret=%.4g\n",
-		s.SignAccuracy, s.NumSignKnown, s.TotalRegret, s.MeanRegret)
-	out += fmt.Sprintf("  Calibration: overlap_rate=%.3f mean_overlap_frac=%.3f mean_cramer=%.4g confidently_wrong=%d\n",
-		s.OverlapRate, s.MeanOverlapFraction, s.MeanCramerDistance, s.NumConfidentlyWrong)
+	out := fmt.Sprintf("model=%q marks_scored=%d\n", r.ModelName, r.Summary.NumMarksScored)
+
+	// Deterministic category order: identified first (the pins), then bridge.
+	for _, cat := range []schema.Category{schema.CategoryIdentified, schema.CategoryBridge} {
+		s, ok := r.ByCategory[cat]
+		if !ok {
+			continue
+		}
+		out += fmt.Sprintf("  [%s] marks=%d\n", cat, s.NumMarksScored)
+		out += fmt.Sprintf("    Decision: sign_accuracy=%.3f (over %d sign-known) total_regret=%.4g mean_regret=%.4g\n",
+			s.SignAccuracy, s.NumSignKnown, s.TotalRegret, s.MeanRegret)
+		out += fmt.Sprintf("    Calibration: overlap_rate=%.3f mean_overlap_frac=%.3f mean_cramer=%.4g confidently_wrong=%d\n",
+			s.OverlapRate, s.MeanOverlapFraction, s.MeanCramerDistance, s.NumConfidentlyWrong)
+	}
+	if len(r.ByCategory) > 1 {
+		out += "  (categories reported separately; never pooled)\n"
+	}
 	if len(r.Skipped.UnpredictedMarks) > 0 {
 		out += fmt.Sprintf("  skipped (unpredicted marks): %v\n", r.Skipped.UnpredictedMarks)
 	}
 	if len(r.Skipped.UnmatchedPredicted) > 0 {
 		out += fmt.Sprintf("  skipped (unmatched predictions): %v\n", r.Skipped.UnmatchedPredicted)
+	}
+	if len(r.Skipped.CategoryFiltered) > 0 {
+		out += fmt.Sprintf("  skipped (category filter): %v\n", r.Skipped.CategoryFiltered)
 	}
 	return out
 }

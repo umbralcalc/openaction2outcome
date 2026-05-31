@@ -176,6 +176,8 @@ func BuildSHMI(rawDir, cacheDir, distDir string, cfg publish.Config) (schema.Mar
 
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
+		Category:      schema.CategoryIdentified,
+		TruthSource:   schema.TruthIdentified,
 		ID:            shmiMarkID,
 		Series:        schema.SeriesSHMI,
 		Domain:        "Health",

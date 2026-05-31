@@ -243,6 +243,8 @@ func BuildBathingWater(rawDir, cacheDir, distDir string, cfg publish.Config) (sc
 
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
+		Category:      schema.CategoryIdentified,
+		TruthSource:   schema.TruthIdentified,
 		ID:            bwMarkID,
 		Series:        schema.SeriesBathingWater,
 		Domain:        "Environment",

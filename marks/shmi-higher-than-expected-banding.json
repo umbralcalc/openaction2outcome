@@ -1,10 +1,12 @@
 {
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "id": "shmi-higher-than-expected-banding",
   "series": "shmi",
   "domain": "Health",
   "unit_type": "nhs-trust",
   "rdd_type": "sharp",
+  "category": "identified",
+  "truth_source": "identified",
   "design": {
     "running_variable": {
       "name": "shmi_minus_od_upper",
@@ -861,7 +863,7 @@
     "seed": 1,
     "tool_versions": {
       "go": "go1.25.2",
-      "openaction2outcome": "0.4.0",
+      "openaction2outcome": "0.5.0",
       "smc": "particles=4000,rounds=8",
       "stochadex": "v0.0.0-20260529062707-b3fa54eb7212"
     },

@@ -1,6 +1,6 @@
 # shmi-higher-than-expected-banding
 
-**Series:** shmi  ·  **Domain:** Health  ·  **Unit:** nhs-trust  ·  **Design:** sharp RDD  ·  **Status:** ADMITTED
+**Category:** identified (design-based truth — a pin)  ·  **Series:** shmi  ·  **Domain:** Health  ·  **Unit:** nhs-trust  ·  **Design:** sharp RDD  ·  **Status:** ADMITTED
 
 ## The decision
 
@@ -73,4 +73,4 @@ Point-in-time order: context as-of `2018-04-01` ≤ decision `2024-03-31` < outc
 
 - Summary Hospital-level Mortality Indicator (SHMI) — historical trust-level data (release Oct 2024 - Sep 2025) — NHS England (NHS Digital). Licence: Open Government Licence v3.0. SHA-256 `0e67d902cab0084c9f7a61a67de4e8b94f21b06b45cfeb1c50982f48f45e2a5f`.
 
-**Reproducibility:** go go1.25.2, openaction2outcome 0.4.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.
+**Reproducibility:** go go1.25.2, openaction2outcome 0.5.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.

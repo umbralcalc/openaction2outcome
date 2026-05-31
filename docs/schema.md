@@ -29,13 +29,32 @@ width is honest about how much is genuinely uncertain), not a single number.
 | `series` | string | Which group of marks this belongs to: `floor-standards`, `shmi`, or `area-funding`. |
 | `domain` | string | Human label, e.g. `Education`. |
 | `unit_type` | string | The kind of institution, e.g. `school`, `nhs-trust`, `local-authority`. |
-| `rdd_type` | string | `sharp` (crossing the cutoff always triggers the action) or `fuzzy` (it changes the probability). |
-| `design` | object | What is being estimated — see below. |
+| `category` | string | `identified` (design-based truth — a pin) or `bridge` (simulator-bridged interpolation between anchors — a span). Empty reads as `identified`. The two are never pooled in scoring. |
+| `truth_source` | string | `identified` for design-based marks, `simulator-bridged` for bridge marks. The hard provenance line. |
+| `rdd_type` | string | `sharp` (crossing the cutoff always triggers the action) or `fuzzy` (it changes the probability). Identified marks only. |
+| `design` | object | What is being estimated — see below. Identified marks only. |
+| `bridge` | object | Bridge-specific fields (anchors, query point, simulator, kernel, coherence) — see below. Bridge marks only. |
 | `context` | object | Pre-decision information a model is allowed to use. |
 | `sample` | array | A small inline excerpt of episode rows nearest the cutoff, for quick inspection (the full rows are in the `episodes` dataset, keyed by this mark's `id`). |
 | `effect` | object | The mark itself: the effect distribution — see below. |
 | `dossier` | object | The validity checks the mark passed — see below. |
 | `provenance` | object | Sources, licences, timestamps, and reproducibility metadata. |
+
+### `bridge` (bridge marks only)
+
+A bridge mark estimates a mechanism's effect at a `query_point` that lies strictly **between** identified anchors. Interpolation only; the boundary to identified truth is made unmissable here.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `mechanism` | string | The shared effect-curve mechanism id all anchors lie on. |
+| `policy_variable` | string | What `x` is: `cutoff level`, `intensity`, `dose`, `time`, `rank`. |
+| `query_point` | number | The `x` this mark estimates the effect τ at. Always strictly inside the anchor hull. |
+| `anchors` | array | `≥2` `{mark_id, policy_point}` references to identified marks; must **bracket** `query_point` (one each side). |
+| `simulator` | object | stochadex `{model_id, version, seed, input_hashes}` — re-mintable byte-for-byte. |
+| `discrepancy_kernel` | object | GP covariance `{family, params, jitter}` — the trust-decay assumption, shipped openly. |
+| `anchor_coherence` | object | `{same_population, same_regime, same_outcome_construct, justification}` — the mandatory argument that anchors share one mechanism. |
+
+The bridge mark's `dossier.bridge` records the leave-one-anchor-out (LOAO) coverage (the headline credibility number), the kernel-sensitivity table, the bracketing check, and the admission verdict.
 
 ### `design`
 

@@ -193,6 +193,8 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
+		Category:      schema.CategoryIdentified,
+		TruthSource:   schema.TruthIdentified,
 		ID:            markID,
 		Series:        schema.SeriesFloorStandards,
 		Domain:        "Education",

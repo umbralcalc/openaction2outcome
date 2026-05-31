@@ -13,8 +13,18 @@ import (
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
 )
 
-// Render returns the Markdown dossier for a mark.
+// Render returns the Markdown dossier for a mark. Bridge marks get a distinct
+// dossier (pin/span picture, kernel, coherence, LOAO) so a reader can never
+// mistake a simulator-bridged estimate for an identified one.
 func Render(m schema.Mark) string {
+	if m.EffectiveCategory() == schema.CategoryBridge {
+		return renderBridge(m)
+	}
+	return renderIdentified(m)
+}
+
+// renderIdentified renders the dossier for a design-based (RDD) mark.
+func renderIdentified(m schema.Mark) string {
 	var b strings.Builder
 	w := func(format string, a ...any) { fmt.Fprintf(&b, format, a...) }
 
@@ -23,7 +33,7 @@ func Render(m schema.Mark) string {
 	if !m.Dossier.Admitted {
 		verdict = "NOT ADMITTED"
 	}
-	w("**Series:** %s  ·  **Domain:** %s  ·  **Unit:** %s  ·  **Design:** %s RDD  ·  **Status:** %s\n\n",
+	w("**Category:** identified (design-based truth — a pin)  ·  **Series:** %s  ·  **Domain:** %s  ·  **Unit:** %s  ·  **Design:** %s RDD  ·  **Status:** %s\n\n",
 		m.Series, m.Domain, m.UnitType, m.RDDType, verdict)
 
 	// Design.
