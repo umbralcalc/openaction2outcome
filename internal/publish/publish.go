@@ -20,11 +20,10 @@ import (
 
 // Config is publish.json: where published artifacts are served from.
 type Config struct {
-	BaseURL        string `json:"base_url"`
-	Bucket         string `json:"bucket"`
-	RawPrefix      string `json:"raw_prefix"`
-	MarksPrefix    string `json:"marks_prefix"`
-	DatasetsPrefix string `json:"datasets_prefix"`
+	BaseURL     string `json:"base_url"`
+	Bucket      string `json:"bucket"`
+	RawPrefix   string `json:"raw_prefix"`
+	MarksPrefix string `json:"marks_prefix"`
 }
 
 // LoadConfig reads publish.json.
@@ -43,29 +42,26 @@ func LoadConfig(path string) (Config, error) {
 	if c.RawPrefix == "" {
 		c.RawPrefix = "raw"
 	}
-	if c.DatasetsPrefix == "" {
-		c.DatasetsPrefix = "datasets"
-	}
 	return c, nil
 }
 
-// DatasetObjectKey is the bucket key for a published derived dataset (e.g. the
-// unified row-by-row episodes table). Datasets are not per-mark; they live under
-// their own prefix.
-func (c Config) DatasetObjectKey(name string) string {
-	return c.datasetsPrefix() + "/" + name
+// MarkObjectKey is the bucket key for a per-mark published artifact (e.g. that
+// mark's episodes.csv.gz). The episode rows are published per mark — one file
+// each — under the marks prefix, not as a single unified dataset object.
+func (c Config) MarkObjectKey(markID, name string) string {
+	return c.marksPrefix() + "/" + markID + "/" + name
 }
 
-// DatasetArtifactURL is the public download URL for a published dataset artifact.
-func (c Config) DatasetArtifactURL(name string) string {
-	return strings.TrimRight(c.BaseURL, "/") + "/" + c.DatasetObjectKey(name)
+// MarkArtifactURL is the public download URL for a per-mark published artifact.
+func (c Config) MarkArtifactURL(markID, name string) string {
+	return strings.TrimRight(c.BaseURL, "/") + "/" + c.MarkObjectKey(markID, name)
 }
 
-func (c Config) datasetsPrefix() string {
-	if c.DatasetsPrefix == "" {
-		return "datasets"
+func (c Config) marksPrefix() string {
+	if c.MarksPrefix == "" {
+		return "marks"
 	}
-	return c.DatasetsPrefix
+	return c.MarksPrefix
 }
 
 // WrittenArtifact describes a staged artifact: its local staging path, content

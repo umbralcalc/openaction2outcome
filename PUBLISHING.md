@@ -6,16 +6,17 @@ pointers, and the example submission/scores. The **bulky bytes** live in **objec
 storage** (Cloudflare R2, chosen for zero egress fees) and are referenced by URL +
 SHA-256, so changing where they are served does not affect integrity.
 
-Only **two datasets** are published, normalised on `mark_id`: the marks (metadata, in
-git) and the unified `episodes` dataset (the per-unit rows, in R2). The per-mark
-episode tables under `dist/marks` are a build intermediate that feeds the episodes
-reshape — they are **not** uploaded.
+Only **two datasets** are published, normalised on the mark `id`: the marks (metadata, in
+git) and the `episodes` dataset (the per-unit rows, in R2). The episode rows are published
+**per mark** — one gzipped CSV each — so `dist/marks/<id>/episodes.csv.gz` is what gets
+uploaded (not a build intermediate any more). The same per-mark files are also mirrored
+into the Hugging Face dataset (same schema); there is no unioned re-encoding anywhere.
 
 ## What gets published where
 
 | Artifact | Bucket key | Referenced by |
 |---|---|---|
-| Unified row-by-row `episodes` dataset | `datasets/episodes.parquet` | `datasets/episodes.manifest.json` (`uri` + `sha256`) |
+| Per-mark `episodes` rows (one gzipped CSV each) | `marks/<id>/episodes.csv.gz` | `datasets/episodes.manifest.json` (`marks[]`: `uri` + `sha256` + `bytes` + `rows`) |
 | Frozen raw input (reproducibility; e.g. KS4 CSV, IMD xlsx) | `raw/<source_id>/<file>` (`r2_object_key` in `SOURCE.json`) | `data/raw/<id>/SOURCE.json` |
 
 Public read URL = `publish.json:base_url` + `/` + the bucket key. (The marks are the
@@ -51,31 +52,32 @@ second dataset, but they live in git, not object storage.)
 # 1. fetch inputs into the local cache (verifies SHA-256)
 openaction2outcome fetch
 
-# 2. mint every series: writes the slim marks to marks/ and stages each mark's
-#    episode rows under dist/marks/ (a build intermediate, not published as-is)
+# 2. mint every series: writes the slim marks to marks/ and each mark's episode
+#    rows to dist/marks/<id>/episodes.csv.gz (this file is what gets uploaded)
 openaction2outcome build --series floor-standards   # ... and shmi, bathing-water
 
-# 3. reshape the staged rows into the one episodes dataset + write its manifest
-openaction2outcome export        # -> dist/hf/episodes/episodes.parquet + datasets/episodes.manifest.json
+# 3. write the per-mark episodes manifest (+ mirror the CSVs into the Hugging Face dir)
+openaction2outcome export        # -> datasets/episodes.manifest.json (+ dist/hf/...)
 
-# 4. upload (just these two): the episodes dataset, and the frozen raw inputs
-./scripts/publish.sh             # rclone-copies episodes.parquet + data/cache, then verifies hashes
+# 4. upload: each mark's episodes.csv.gz, and the frozen raw inputs
+./scripts/publish.sh             # rclone-copies dist/marks/*/episodes.csv.gz + data/cache, then verifies hashes
 ```
 
 Because artifacts are content-addressed, re-uploading an unchanged mint is a no-op
-(same bytes, same hash). The episodes manifest records the exact SHA-256, so a
+(same bytes, same hash). The manifest records each per-mark file's exact SHA-256, so a
 consumer's download is verified on arrival.
 
 ## Consumer's view
 
 A model author never needs the mint. They:
 1. read the marks from git (the metadata),
-2. download the `episodes` dataset (one Parquet, from `datasets/episodes.manifest.json`)
-   and filter on `mark_id` for the rows they want to train/validate on,
+2. download a mark's `episodes.csv.gz` (its `uri`/`sha256` are in
+   `datasets/episodes.manifest.json` under `marks[]`) for the rows they want to
+   train/validate on, and verify the hash,
 3. produce a `submission.json` and run `openaction2outcome score --submission ...`.
 
-No account, no server, nothing hosted by us beyond one static object-storage file
-(plus the frozen-input mirror for reproducibility).
+No account, no server, nothing hosted by us beyond a handful of static object-storage
+files (plus the frozen-input mirror for reproducibility).
 
 # Publishing to Hugging Face Datasets
 
@@ -111,14 +113,12 @@ ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]
 These per-series configs are the mark-level view (metadata + effect distribution).
 The per-unit rows are not in them — they are in the **`episodes` config**.
 
-`make hf` also writes `dist/hf/episodes/episodes.parquet`: every mark's rows reshaped
-into one row-per-unit table, loadable as the `episodes` config
-(`load_dataset(..., "episodes")`). The *same bytes* are the object-storage `episodes`
-dataset (`datasets/episodes.parquet`) — content-addressed by the SHA-256 recorded in
-`datasets/episodes.manifest.json`, and regenerated deterministically by `make hf` from
-the staged episode rows and the marks. So Hugging Face carries the same two datasets the
-project stores — the marks (the per-series configs) and `episodes` — joined on `mark_id`.
-See [specs/4_EPISODES_DATASET_SPEC.md](specs/4_EPISODES_DATASET_SPEC.md).
+`make hf` (i.e. `export`) also mirrors each mark's `episodes.csv.gz` into
+`dist/hf/episodes/<id>.csv.gz` — the **same files** served from object storage, same
+schema, no unioned re-encoding. A Hugging Face user loads one mark's rows with
+`load_dataset(repo, data_files="episodes/<id>.csv.gz")` (or `hf_hub_download`). So Hugging
+Face carries both datasets joined on the mark `id` — the marks (the per-series configs)
+and the per-mark episode rows — one row shape everywhere.
 
 # The documentation site (GitHub Pages)
 
@@ -138,7 +138,7 @@ the calibration study, and `datasets/episodes.manifest.json`, and writes a
 self-contained static site into `docs/`:
 
 - **`index.html`** — the landing page; coverage cards are generated from the marks.
-- **`downloads.html`** — download buttons for the `episodes` Parquet (URL + SHA-256 from
+- **`downloads.html`** — a per-mark `episodes.csv.gz` download (URL + SHA-256 + size from
   the manifest), a generated `downloads/marks.zip` (content-addressed), the Hugging Face
   mirror, and a table of the frozen raw inputs (from each `data/raw/*/SOURCE.json`,
   preferring the object-store mirror URL when `publish.json:base_url` is configured).

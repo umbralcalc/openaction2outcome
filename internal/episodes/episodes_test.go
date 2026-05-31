@@ -1,10 +1,10 @@
 package episodes
 
 import (
+	"bytes"
+	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/parquet-go/parquet-go"
 
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
@@ -39,132 +39,32 @@ func stageMark(t *testing.T, distDir, id string, series schema.Series, header []
 
 var testHeader = []string{"unit_id", "unit_name", "running_value", "assigned", "treated", "outcome", "cov_a", "cov_b"}
 
-func TestBuildMapping(t *testing.T) {
+func TestCopyToHF(t *testing.T) {
 	dist := t.TempDir()
-	rows := [][]string{
-		{"u1", "Unit One", "-0.8", "true", "true", "0.2", "1.5", "10"},
-		{"u2", "Unit Two", "-0.2", "false", "false", "", "2.5", ""},
-	}
-	m := stageMark(t, dist, "m1", schema.SeriesFloorStandards, testHeader, rows)
-
-	rs, err := Build([]schema.Mark{m}, dist)
-	if err != nil {
-		t.Fatalf("Build: %v", err)
-	}
-	if len(rs) != 2 {
-		t.Fatalf("got %d rows, want 2", len(rs))
-	}
-	r1, r2 := rs[0], rs[1] // sorted by (series, mark_id, unit_id)
-
-	if r1.UnitID != "u1" || r1.MarkID != "m1" || r1.Series != "floor-standards" {
-		t.Errorf("r1 identity wrong: %+v", r1)
-	}
-	if got := r1.DistanceToCutoff; got < -0.3001 || got > -0.2999 { // -0.8 - (-0.5)
-		t.Errorf("r1 distance_to_cutoff = %v, want -0.3", got)
-	}
-	if !r1.Assigned || r1.Treated == nil || !*r1.Treated {
-		t.Errorf("r1 action wrong: assigned=%v treated=%v", r1.Assigned, r1.Treated)
-	}
-	if r1.Action != "flagged" || r1.Alternative != "not flagged" {
-		t.Errorf("r1 action labels wrong: %q / %q", r1.Action, r1.Alternative)
-	}
-	if !r1.OutcomeObserved || r1.Outcome == nil || *r1.Outcome != 0.2 {
-		t.Errorf("r1 outcome wrong: observed=%v outcome=%v", r1.OutcomeObserved, r1.Outcome)
-	}
-	if len(r1.Covariates) != 2 || r1.Covariates[0].Name != "cov_a" || r1.Covariates[0].Value != 1.5 || r1.Covariates[1].Name != "cov_b" {
-		t.Errorf("r1 covariates wrong (want key-sorted cov_a,cov_b): %+v", r1.Covariates)
-	}
-	if r1.EffectCentral != 0.08 || r1.EffectLower != -0.1 || r1.EffectUpper != 0.3 || r1.EffectIntervalLevel != 0.95 || r1.EffectStdDev != 0.12 {
-		t.Errorf("r1 effect summary wrong: %+v", r1)
-	}
-
-	// u2: no outcome -> unobserved; cov_b absent -> only cov_a.
-	if r2.OutcomeObserved || r2.Outcome != nil {
-		t.Errorf("r2 should have no outcome: observed=%v outcome=%v", r2.OutcomeObserved, r2.Outcome)
-	}
-	if len(r2.Covariates) != 1 || r2.Covariates[0].Name != "cov_a" {
-		t.Errorf("r2 covariates should be only cov_a: %+v", r2.Covariates)
-	}
-}
-
-func TestCovariateKeysSubset(t *testing.T) {
-	dist := t.TempDir()
-	rows := [][]string{{"u1", "U", "-0.8", "true", "true", "0.2", "1.5", "10"}}
-	m := stageMark(t, dist, "m1", schema.SeriesFloorStandards, testHeader, rows)
-	rs, err := Build([]schema.Mark{m}, dist)
-	if err != nil {
-		t.Fatalf("Build: %v", err)
-	}
-	allowed := map[string]bool{}
-	for _, c := range m.Context.CovariateNames {
-		allowed[c] = true
-	}
-	for _, row := range rs {
-		if row.MarkID != "m1" {
-			t.Errorf("unexpected mark_id %q", row.MarkID)
-		}
-		for _, e := range row.Covariates {
-			if !allowed[e.Name] {
-				t.Errorf("covariate %q not in mark covariate_names", e.Name)
-			}
-		}
-	}
-}
-
-func TestWriteParquetDeterministic(t *testing.T) {
-	dist := t.TempDir()
-	rows := [][]string{
+	m := stageMark(t, dist, "m1", schema.SeriesFloorStandards, testHeader, [][]string{
 		{"u1", "U1", "-0.8", "true", "true", "0.2", "1.5", "10"},
-		{"u2", "U2", "-0.2", "false", "false", "", "2.5", ""},
-	}
-	m := stageMark(t, dist, "m1", schema.SeriesFloorStandards, testHeader, rows)
-	rs, err := Build([]schema.Mark{m}, dist)
-	if err != nil {
-		t.Fatalf("Build: %v", err)
-	}
-	wa1, err := WriteParquet(filepath.Join(t.TempDir(), "a.parquet"), rs)
-	if err != nil {
-		t.Fatalf("WriteParquet 1: %v", err)
-	}
-	wa2, err := WriteParquet(filepath.Join(t.TempDir(), "b.parquet"), rs)
-	if err != nil {
-		t.Fatalf("WriteParquet 2: %v", err)
-	}
-	if wa1.SHA256 != wa2.SHA256 {
-		t.Errorf("parquet not byte-deterministic: %s != %s", wa1.SHA256, wa2.SHA256)
-	}
-}
+	})
 
-func TestParquetRoundTrip(t *testing.T) {
-	dist := t.TempDir()
-	rows := [][]string{
-		{"u1", "U1", "-0.8", "true", "true", "0.2", "1.5", "10"},
-		{"u2", "U2", "-0.2", "false", "false", "", "2.5", ""},
-	}
-	m := stageMark(t, dist, "m1", schema.SeriesFloorStandards, testHeader, rows)
-	rs, err := Build([]schema.Mark{m}, dist)
+	hf := t.TempDir()
+	written, err := CopyToHF([]schema.Mark{m}, dist, hf)
 	if err != nil {
-		t.Fatalf("Build: %v", err)
+		t.Fatalf("CopyToHF: %v", err)
 	}
-	p := filepath.Join(t.TempDir(), "e.parquet")
-	if _, err := WriteParquet(p, rs); err != nil {
-		t.Fatalf("WriteParquet: %v", err)
+	if len(written) != 1 || written[0] != filepath.Join("episodes", "m1.csv.gz") {
+		t.Fatalf("written = %v, want [episodes/m1.csv.gz]", written)
 	}
-	got, err := parquet.ReadFile[Row](p)
+	// The HF copy must be byte-identical to the staged object-storage file —
+	// same schema, same bytes, no unioned re-encoding.
+	src, err := os.ReadFile(filepath.Join(dist, "marks", "m1", stagedTableName))
 	if err != nil {
-		t.Fatalf("ReadFile: %v", err)
+		t.Fatal(err)
 	}
-	if len(got) != len(rs) {
-		t.Fatalf("round-trip row count %d != %d", len(got), len(rs))
+	dst, err := os.ReadFile(filepath.Join(hf, "episodes", "m1.csv.gz"))
+	if err != nil {
+		t.Fatalf("read HF copy: %v", err)
 	}
-	if got[0].UnitID != "u1" || got[0].Outcome == nil || *got[0].Outcome != 0.2 {
-		t.Errorf("round-trip r0 wrong: %+v", got[0])
-	}
-	if len(got[0].Covariates) != 2 || got[0].Covariates[0].Name != "cov_a" {
-		t.Errorf("round-trip covariates wrong: %+v", got[0].Covariates)
-	}
-	if got[1].Outcome != nil {
-		t.Errorf("round-trip r1 outcome should be nil: %v", got[1].Outcome)
+	if !bytes.Equal(src, dst) {
+		t.Error("HF episodes copy differs from the staged object-storage file")
 	}
 }
 
@@ -172,5 +72,44 @@ func TestLoadTableMissing(t *testing.T) {
 	m := schema.Mark{ID: "nope"}
 	if _, _, err := LoadTable(m, t.TempDir()); err == nil {
 		t.Fatal("expected not-staged error, got nil")
+	}
+}
+
+func TestNewManifestPerMark(t *testing.T) {
+	dist := t.TempDir()
+	m1 := stageMark(t, dist, "m1", schema.SeriesFloorStandards, testHeader, [][]string{
+		{"u1", "Unit One", "-0.8", "true", "true", "0.2", "1.5", "10"},
+		{"u2", "Unit Two", "-0.2", "false", "false", "", "2.5", "20"},
+	})
+	m2 := stageMark(t, dist, "m2", schema.SeriesSHMI, testHeader, [][]string{
+		{"u3", "Unit Three", "-0.4", "false", "false", "0.5", "3.5", "30"},
+	})
+
+	cfg := publish.Config{BaseURL: "https://ex.test/", MarksPrefix: "marks"}
+	mf, err := NewManifest([]schema.Mark{m1, m2}, dist, cfg)
+	if err != nil {
+		t.Fatalf("NewManifest: %v", err)
+	}
+	if mf.Format != "csv.gz" {
+		t.Errorf("format = %q, want csv.gz", mf.Format)
+	}
+	if mf.TotalRows != 3 {
+		t.Errorf("total rows = %d, want 3", mf.TotalRows)
+	}
+	if len(mf.Marks) != 2 {
+		t.Fatalf("got %d mark artifacts, want 2", len(mf.Marks))
+	}
+	a := mf.Marks[0] // sorted by mark_id
+	if a.MarkID != "m1" || a.Rows != 2 {
+		t.Errorf("artifact[0] = %+v, want m1 with 2 rows", a)
+	}
+	if a.URI != "https://ex.test/marks/m1/episodes.csv.gz" {
+		t.Errorf("artifact[0] uri = %q", a.URI)
+	}
+	if len(a.SHA256) != 64 || a.Bytes == 0 {
+		t.Errorf("artifact[0] must carry a sha256 + size, got sha=%q bytes=%d", a.SHA256, a.Bytes)
+	}
+	if got := a.Covariates; len(got) != 2 || got[0] != "cov_a" || got[1] != "cov_b" {
+		t.Errorf("artifact[0] covariates = %v, want [cov_a cov_b]", got)
 	}
 }

@@ -23,6 +23,42 @@
 <p>All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
 separately inside each mark).</p>
+<h2>v1.3.0 — 2026-05-31</h2>
+<p>Drops the unioned <code>episodes</code> Parquet — the dataset is now per-mark <code>csv.gz</code> everywhere,
+including Hugging Face. The marks and the row <em>values</em> are unchanged.</p>
+<h3>Distribution</h3>
+<ul>
+<li><strong>Removed the unioned <code>episodes</code> Parquet</strong> (and the <code>parquet-go</code> dependency, with its
+whole indirect chain). It was a convenience mirror carrying a second, denormalised
+schema (<code>mark_id</code>/<code>series</code>/<code>cutoff</code>/<code>distance_to_cutoff</code>/<code>action</code>/<code>effect_*</code> inlined);
+everything it held is derivable from the per-mark CSV + the mark JSON.</li>
+<li><strong>Hugging Face now mirrors the same per-mark CSVs</strong> at <code>episodes/&lt;id&gt;.csv.gz</code> — one row
+shape everywhere. Load one mark with <code>load_dataset(repo, data_files=&quot;episodes/&lt;id&gt;.csv.gz&quot;)</code>
+(or <code>huggingface_hub.hf_hub_download</code>). The <code>episodes</code> config is gone; the per-series
+mark configs are unchanged.</li>
+<li><code>export</code> now mirrors each mark's <code>episodes.csv.gz</code> into the Hugging Face dir instead of
+reshaping a Parquet.</li>
+</ul>
+<h2>v1.2.0 — 2026-05-31</h2>
+<p>Corrects the <code>episodes</code> distribution model to match what is actually served: the rows
+are published <strong>per mark</strong>, not as one unified file. The marks and the row <em>values</em> are
+unchanged.</p>
+<h3>Storage / dataset (per-mark <code>episodes</code>)</h3>
+<ul>
+<li>The <code>episodes</code> dataset is now published as <strong>one gzipped CSV per mark</strong> in object
+storage at <code>marks/&lt;id&gt;/episodes.csv.gz</code> (columns: <code>unit_id</code>, <code>unit_name</code>,
+<code>running_value</code>, <code>assigned</code>, <code>treated</code>, <code>outcome</code>, + the mark's covariates). A mark's
+file <em>is</em> its rows; the per-mark design (<code>cutoff</code>/<code>direction</code>/<code>action</code>) and the full
+effect distribution are read from the mark JSON, joined on the mark <code>id</code>.</li>
+<li><strong><code>datasets/episodes.manifest.json</code></strong> is now a per-mark listing: <code>marks[]</code> with each
+file's <code>uri</code> + <code>sha256</code> + <code>bytes</code> + <code>rows</code> + <code>covariates</code>, so every download is
+individually verifiable. (Previously it pointed at a single unified Parquet URL that was
+never actually served.)</li>
+<li><code>scripts/publish.sh</code> uploads and verifies each <code>marks/&lt;id&gt;/episodes.csv.gz</code>.</li>
+<li>The unioned <strong>Parquet</strong> is now only the loadable Hugging Face <code>episodes</code> config (a
+convenience mirror with <code>mark_id</code>/<code>series</code>/<code>cutoff</code>/<code>distance_to_cutoff</code>/<code>effect_*</code>
+inlined) — it is no longer the object-storage dataset. <em>(Removed entirely in v1.3.0.)</em></li>
+</ul>
 <h2>v1.1.0 — 2026-05-31</h2>
 <p>Adds a documentation website. No dataset, schema, or scorer changes — the marks and the
 <code>episodes</code> dataset are byte-identical to v1.0.0.</p>
@@ -30,7 +66,7 @@ separately inside each mark).</p>
 <ul>
 <li><strong>Static GitHub Pages site</strong> (<code>make site</code> → <code>openaction2outcome site</code>): generates a
 self-contained website into the committed <code>docs/</code> folder — a landing page (coverage
-cards generated from the marks), a downloads page (the <code>episodes</code> Parquet with its
+cards generated from the marks), a downloads page (per-mark <code>episodes.csv.gz</code> with their
 SHA-256, a content-addressed <code>marks.zip</code>, the Hugging Face mirror, and the frozen
 raw-input table), the rendered schema and changelog docs, and a page per mark dossier.
 Generated offline and deterministically from artifacts already in the repo, so it can't
@@ -63,9 +99,10 @@ feeding the episodes reshape.</li>
 </ul>
 <h3>Storage</h3>
 <ul>
-<li>Object storage now holds just the <code>episodes</code> Parquet plus the frozen raw-input mirror
+<li>Object storage now holds just the <code>episodes</code> dataset plus the frozen raw-input mirror
 (reproducibility). The mark-level Hugging Face records drop the <code>episode_table_*</code>
-fields. See <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/specs/4_EPISODES_DATASET_SPEC.md">specs/4_EPISODES_DATASET_SPEC.md</a>.</li>
+fields. (Superseded by v1.2.0: the <code>episodes</code> dataset is published per mark, not as a
+single unified file.)</li>
 </ul>
 <h2>v0.2.0 — 2026-05-31</h2>
 <p>Adds a third series and the first environmental-domain mark, taking the

@@ -4,6 +4,44 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.3.0 — 2026-05-31
+
+Drops the unioned `episodes` Parquet — the dataset is now per-mark `csv.gz` everywhere,
+including Hugging Face. The marks and the row *values* are unchanged.
+
+### Distribution
+- **Removed the unioned `episodes` Parquet** (and the `parquet-go` dependency, with its
+  whole indirect chain). It was a convenience mirror carrying a second, denormalised
+  schema (`mark_id`/`series`/`cutoff`/`distance_to_cutoff`/`action`/`effect_*` inlined);
+  everything it held is derivable from the per-mark CSV + the mark JSON.
+- **Hugging Face now mirrors the same per-mark CSVs** at `episodes/<id>.csv.gz` — one row
+  shape everywhere. Load one mark with `load_dataset(repo, data_files="episodes/<id>.csv.gz")`
+  (or `huggingface_hub.hf_hub_download`). The `episodes` config is gone; the per-series
+  mark configs are unchanged.
+- `export` now mirrors each mark's `episodes.csv.gz` into the Hugging Face dir instead of
+  reshaping a Parquet.
+
+## v1.2.0 — 2026-05-31
+
+Corrects the `episodes` distribution model to match what is actually served: the rows
+are published **per mark**, not as one unified file. The marks and the row *values* are
+unchanged.
+
+### Storage / dataset (per-mark `episodes`)
+- The `episodes` dataset is now published as **one gzipped CSV per mark** in object
+  storage at `marks/<id>/episodes.csv.gz` (columns: `unit_id`, `unit_name`,
+  `running_value`, `assigned`, `treated`, `outcome`, + the mark's covariates). A mark's
+  file *is* its rows; the per-mark design (`cutoff`/`direction`/`action`) and the full
+  effect distribution are read from the mark JSON, joined on the mark `id`.
+- **`datasets/episodes.manifest.json`** is now a per-mark listing: `marks[]` with each
+  file's `uri` + `sha256` + `bytes` + `rows` + `covariates`, so every download is
+  individually verifiable. (Previously it pointed at a single unified Parquet URL that was
+  never actually served.)
+- `scripts/publish.sh` uploads and verifies each `marks/<id>/episodes.csv.gz`.
+- The unioned **Parquet** is now only the loadable Hugging Face `episodes` config (a
+  convenience mirror with `mark_id`/`series`/`cutoff`/`distance_to_cutoff`/`effect_*`
+  inlined) — it is no longer the object-storage dataset. *(Removed entirely in v1.3.0.)*
+
 ## v1.1.0 — 2026-05-31
 
 Adds a documentation website. No dataset, schema, or scorer changes — the marks and the
@@ -12,7 +50,7 @@ Adds a documentation website. No dataset, schema, or scorer changes — the mark
 ### Documentation site
 - **Static GitHub Pages site** (`make site` → `openaction2outcome site`): generates a
   self-contained website into the committed `docs/` folder — a landing page (coverage
-  cards generated from the marks), a downloads page (the `episodes` Parquet with its
+  cards generated from the marks), a downloads page (per-mark `episodes.csv.gz` with their
   SHA-256, a content-addressed `marks.zip`, the Hugging Face mirror, and the frozen
   raw-input table), the rendered schema and changelog docs, and a page per mark dossier.
   Generated offline and deterministically from artifacts already in the repo, so it can't
@@ -44,9 +82,10 @@ storage).
   feeding the episodes reshape.
 
 ### Storage
-- Object storage now holds just the `episodes` Parquet plus the frozen raw-input mirror
+- Object storage now holds just the `episodes` dataset plus the frozen raw-input mirror
   (reproducibility). The mark-level Hugging Face records drop the `episode_table_*`
-  fields. See [specs/4_EPISODES_DATASET_SPEC.md](specs/4_EPISODES_DATASET_SPEC.md).
+  fields. (Superseded by v1.2.0: the `episodes` dataset is published per mark, not as a
+  single unified file.)
 
 ## v0.2.0 — 2026-05-31
 

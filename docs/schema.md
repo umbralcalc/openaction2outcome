@@ -7,7 +7,7 @@ Go types it describes live in [`pkg/schema`](../pkg/schema); the version string 
 There are three things to know about:
 
 1. **A mark** — one causally-validated reference point (a JSON file in [`marks/`](../marks)). This is the *metadata*.
-2. **The `episodes` dataset** — the per-unit rows behind every mark, unioned into one table (a Parquet in object storage), joined to the marks on `mark_id`.
+2. **The `episodes` dataset** — the per-unit rows behind every mark, in object storage as one gzipped CSV per mark, joined to the marks on the mark `id`.
 3. **A submission** — what you send to be scored, and the score you get back.
 
 There are only ever those two datasets — the marks (metadata, in git) and the
@@ -89,33 +89,37 @@ mark byte-for-byte.
 
 ## 2. The `episodes` dataset
 
-The analysis-ready rows behind every mark, unioned into one table: one row per unit.
-It is **not** in git — it is a single Parquet in object storage, pointed to by
-[`datasets/episodes.manifest.json`](../datasets/episodes.manifest.json) (download URL +
-SHA-256, so you can verify your download). You only need it if you want to train or
-refit on the rows; scoring a model does not require it. Filter on `mark_id` to get one
-mark's rows. Loadable from Hugging Face as the `episodes` config.
+The analysis-ready rows behind every mark: one row per unit. It is **not** in git — it
+lives in object storage, published **per mark** (one gzipped CSV each), pointed to by
+[`datasets/episodes.manifest.json`](../datasets/episodes.manifest.json). The manifest
+lists every mark's file with its download URL + SHA-256 + size, so each download is
+verifiable. You only need it if you want to train or refit on the rows; scoring a model
+does not require it. A mark's file *is* its rows — download `marks/<id>/episodes.csv.gz`.
+(The same per-mark files are also mirrored into the Hugging Face dataset at
+`episodes/<id>.csv.gz` — same schema — so an HF user can load one mark's rows with
+`load_dataset(repo, data_files="episodes/<id>.csv.gz")`.)
 
-It is the **(state, action, reward)** view, in this dataset's own terms — the unit's
-context before the decision, what was done, and the outcome that followed:
+Each per-mark CSV is the **(state, action, reward)** view, in this dataset's own terms —
+the unit's context before the decision, what was done, and the outcome that followed:
 
 | Column | Role | Meaning |
 |---|---|---|
-| `mark_id` | join | Which mark this row belongs to — the join key to the mark's metadata + full effect. |
-| `series` | join | The mark's series. |
 | `unit_id` | id | Stable identifier for the institution (e.g. school URN). |
 | `unit_name` | id | Human-readable name. |
 | `running_value` | state | The running variable at decision time. |
-| `cutoff` | state | The mark's threshold. |
-| `distance_to_cutoff` | state | `running_value − cutoff` (signed). |
-| `direction` | state | Which side of the cutoff is treated. |
-| `covariates` | state | The pre-decision covariates, as a key-sorted list of `{name, value}` (those in the mark's `context.covariate_names`). |
 | `assigned` | action | `true` if the running value puts the unit on the action side of the cutoff. |
-| `treated` | action | Whether the action was actually received (can differ from `assigned` under fuzzy designs); null if unknown. |
-| `action`, `alternative` | action | The textual action and its counterfactual (from the mark). |
-| `outcome` | reward | The later observed outcome; null when unobserved. |
-| `outcome_observed` | reward | `false` when the unit has no linked outcome (e.g. attrition). |
-| `effect_central`, `effect_lower`, `effect_upper`, `effect_interval_level`, `effect_std_dev` | — | A scalar summary of the mark's effect, inlined for convenience. The full posterior (quantiles, samples) stays in the mark — join on `mark_id`. |
+| `treated` | action | Whether the action was actually received (can differ from `assigned` under fuzzy designs); empty if unknown. |
+| `outcome` | reward | The later observed outcome; empty when the unit has no linked outcome (e.g. attrition). |
+| *(covariates)* | state | One further column per pre-decision covariate (those in the mark's `context.covariate_names`; listed per mark in the manifest). |
+
+These are the per-unit, per-mark columns. Everything else is **constant for the mark** and
+is read from the mark JSON, joined on the mark `id`: the threshold (`design.cutoff`), the
+treated side (`design.direction`), the textual `action`/`alternative`, and the full
+`effect` distribution. `distance_to_cutoff` is just `running_value − cutoff`.
+
+> Hugging Face carries the **same per-mark CSVs** (mirrored at `episodes/<id>.csv.gz`),
+> not a separate unioned table — one row shape everywhere. The mark-level metadata + effect
+> distribution are the per-series configs (`floor-standards`, `shmi`, `bathing-water`).
 
 ---
 

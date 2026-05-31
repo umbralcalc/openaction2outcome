@@ -98,7 +98,7 @@ func Generate(cfg Config) error {
 	}
 
 	// Downloads.
-	dlBody, err := cfg.renderDownloads(marks, cards, zipBytes, zipSum)
+	dlBody, err := cfg.renderDownloads(marks, zipBytes, zipSum)
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,15 @@ type sourceRow struct {
 	Bytes                                                         int64
 }
 
-func (cfg Config) renderDownloads(marks []schema.Mark, cards []markCard, zipBytes []byte, zipSum string) (template.HTML, error) {
+// episodeFile is one mark's published episode artifact, read from the manifest.
+// The episode rows are stored per mark (one gzipped CSV each), not as a single
+// unified file; the manifest records each file's URL, hash, and size.
+type episodeFile struct {
+	ID, Series, EffectStr, URL, SHA256, Bytes string
+	Rows                                      int
+}
+
+func (cfg Config) renderDownloads(marks []schema.Mark, zipBytes []byte, zipSum string) (template.HTML, error) {
 	man, err := loadManifest(cfg.ManifestPath)
 	if err != nil {
 		return "", fmt.Errorf("load manifest: %w", err)
@@ -225,15 +233,30 @@ func (cfg Config) renderDownloads(marks []schema.Mark, cards []markCard, zipByte
 	if err != nil {
 		return "", err
 	}
+
+	// One download per mark, taken straight from the manifest so the URL, hash,
+	// and size match what is actually served.
+	effects := map[string]string{}
+	for _, m := range marks {
+		effects[m.ID] = effectStr(m.Effect)
+	}
+	eps := make([]episodeFile, 0, len(man.Marks))
+	for _, a := range man.Marks {
+		eps = append(eps, episodeFile{
+			ID: a.MarkID, Series: a.Series, EffectStr: effects[a.MarkID],
+			URL: a.URI, SHA256: a.SHA256, Bytes: humanBytes(a.Bytes), Rows: a.Rows,
+		})
+	}
+
 	return renderTemplate("downloads", downloadsTmpl, map[string]any{
-		"Manifest":     man,
-		"SeriesJoined": strings.Join(man.Series, ", "),
-		"Marks":        cards,
-		"MarksZip":     map[string]any{"Count": len(marks), "Bytes": int64(len(zipBytes)), "SHA256": zipSum},
-		"Sources":      sources,
-		"RepoURL":      cfg.RepoURL,
-		"HFURL":        cfg.hfURL(),
-		"HFRepo":       cfg.HFRepo,
+		"EpisodeFiles":     eps,
+		"EpisodeTotalRows": man.TotalRows,
+		"ColumnsJoined":    strings.Join(man.CoreColumns, ", "),
+		"MarksZip":         map[string]any{"Count": len(marks), "Bytes": int64(len(zipBytes)), "SHA256": zipSum},
+		"Sources":          sources,
+		"RepoURL":          cfg.RepoURL,
+		"HFURL":            cfg.hfURL(),
+		"HFRepo":           cfg.HFRepo,
 	})
 }
 

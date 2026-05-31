@@ -20,21 +20,57 @@
 </header>
 <main class="content">
 <h1>Datasets &amp; downloads</h1>
-<p>Two datasets, normalised on <code>mark_id</code>: the <strong>marks</strong> (metadata, in git) and the unified
-   <strong><code>episodes</code></strong> dataset (the per-unit rows, in object storage). Everything is referenced by
-   URL + SHA-256, so a download is verifiable on arrival.</p>
+<p>Two datasets, normalised on <code>mark_id</code>: the <strong>marks</strong> (metadata, in git) and the
+   <strong><code>episodes</code></strong> rows (per-unit, in object storage). The episode rows are published
+   <strong>per mark</strong> &mdash; one gzipped CSV for each mark &mdash; so a mark's rows <em>are</em> its file.</p>
 
 <div class="download">
   <h3>The <code>episodes</code> dataset <span class="badge">primary</span></h3>
-  <p>Every mark's per-unit rows, unioned into one row-per-unit <em>(state, action, reward)</em> table. One Parquet;
-     filter on <code>mark_id</code> for a single mark's rows. The same bytes load from Hugging Face as the
-     <code>episodes</code> config.</p>
-  <p class="meta">
-    3879 rows · 200.0 KB · Parquet<br>
-    SHA-256 <code>825022ea6303ec3f17e2fe5f97a59dd4fad9b4f0e76053027eb7253c066ecfeb</code><br>
-    Series: bathing-water, floor-standards, shmi
-  </p>
-  <div class="actions"><a class="btn" href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/datasets/episodes.parquet">Download episodes.parquet</a></div>
+  <p>Each unit's <em>(state, action, reward)</em> row: its context before the decision (<code>running_value</code>
+     and the mark's covariates), what was done (<code>assigned</code>/<code>treated</code>), and the <code>outcome</code>
+     that followed. Published <strong>per mark</strong> as a gzipped CSV; join its rows to the mark JSON on the mark id
+     for the design (cutoff, direction, action) and the full effect distribution.</p>
+  <p class="meta">3879 rows total across 3 marks · one gzipped CSV per mark<br>
+     Columns: unit_id, unit_name, running_value, assigned, treated, outcome <em>(+ each mark's covariates)</em></p>
+  <table>
+    <thead><tr><th>Mark</th><th>Series</th><th>Effect</th><th>Rows</th><th>Download</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td><code>bathing-water-poor-2015</code><br><a href="dossiers/bathing-water-poor-2015.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/bathing-water-poor-2015.json">mark JSON</a></td>
+        <td>bathing-water</td>
+        <td>−0.0947 · 95% CI [−0.4068, 0.2451]</td>
+        <td>413</td>
+        <td>
+          <a class="btn secondary" href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/bathing-water-poor-2015/episodes.csv.gz">episodes.csv.gz</a> <span class="meta">12.5 KB</span>
+          <br><span class="meta">SHA-256 <code>c8d2e34b886d64cc16e8f2eefc163221bb0c34c8d55b79bf675d5a302a237e02</code></span>
+        </td>
+      </tr>
+    
+      <tr>
+        <td><code>floor-standards-p8-2016</code><br><a href="dossiers/floor-standards-p8-2016.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/floor-standards-p8-2016.json">mark JSON</a></td>
+        <td>floor-standards</td>
+        <td>0.0284 · 95% CI [−0.0544, 0.2557]</td>
+        <td>3098</td>
+        <td>
+          <a class="btn secondary" href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/floor-standards-p8-2016/episodes.csv.gz">episodes.csv.gz</a> <span class="meta">60.5 KB</span>
+          <br><span class="meta">SHA-256 <code>f2458f3df85381e1cd61b5f4d859940b1efcbc4dda6c672b22d1a20818a22005</code></span>
+        </td>
+      </tr>
+    
+      <tr>
+        <td><code>shmi-higher-than-expected-banding</code><br><a href="dossiers/shmi-higher-than-expected-banding.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/shmi-higher-than-expected-banding.json">mark JSON</a></td>
+        <td>shmi</td>
+        <td>−0.0131 · 95% CI [−0.0658, 0.0177]</td>
+        <td>368</td>
+        <td>
+          <a class="btn secondary" href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/shmi-higher-than-expected-banding/episodes.csv.gz">episodes.csv.gz</a> <span class="meta">8.4 KB</span>
+          <br><span class="meta">SHA-256 <code>bdf9ef119fff440dd07684f6dad139abfc9fd8f47d9ad5cc35d77476605f915c</code></span>
+        </td>
+      </tr>
+    
+    </tbody>
+  </table>
 </div>
 
 <div class="download">
@@ -47,39 +83,12 @@
     <a class="btn" href="downloads/marks.zip">Download all marks (zip)</a>
     <a class="btn secondary" href="https://github.com/umbralcalc/openaction2outcome/tree/main/marks">Browse on GitHub</a>
   </div>
-  <table>
-    <thead><tr><th>Mark</th><th>Series</th><th>Effect</th><th></th></tr></thead>
-    <tbody>
-    
-      <tr>
-        <td><code>bathing-water-poor-2015</code></td>
-        <td>bathing-water</td>
-        <td>−0.0947 · 95% CI [−0.4068, 0.2451]</td>
-        <td><a href="dossiers/bathing-water-poor-2015.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/bathing-water-poor-2015.json">JSON</a></td>
-      </tr>
-    
-      <tr>
-        <td><code>floor-standards-p8-2016</code></td>
-        <td>floor-standards</td>
-        <td>0.0284 · 95% CI [−0.0544, 0.2557]</td>
-        <td><a href="dossiers/floor-standards-p8-2016.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/floor-standards-p8-2016.json">JSON</a></td>
-      </tr>
-    
-      <tr>
-        <td><code>shmi-higher-than-expected-banding</code></td>
-        <td>shmi</td>
-        <td>−0.0131 · 95% CI [−0.0658, 0.0177]</td>
-        <td><a href="dossiers/shmi-higher-than-expected-banding.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/shmi-higher-than-expected-banding.json">JSON</a></td>
-      </tr>
-    
-    </tbody>
-  </table>
 </div>
 
 <div class="download">
   <h3>Hugging Face mirror</h3>
-  <p>Both datasets are mirrored to Hugging Face Datasets &mdash; the per-series mark configs plus the
-     <code>episodes</code> config &mdash; for discovery and one-line loading.</p>
+  <p>The marks are also mirrored to Hugging Face Datasets as one config per series, for discovery and
+     one-line loading.</p>
   <pre><code>from datasets import load_dataset
 ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</code></pre>
   <div class="actions"><a class="btn secondary" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">Open on Hugging Face &rarr;</a></div>

@@ -31,16 +31,23 @@ if [ "$VERIFY_ONLY" -eq 0 ]; then
     echo "error: rclone remote '${REMOTE}:' not configured (see PUBLISHING.md)" >&2
     exit 1
   fi
-  # Only two datasets are published: the episodes dataset (rows) and the frozen
-  # raw inputs (reproducibility). The marks (metadata) live in git, not R2. The
-  # per-mark episode tables under dist/marks are a build intermediate and are NOT
-  # uploaded — their rows ship inside the unified episodes dataset, keyed by mark_id.
-  if [ -f dist/hf/episodes/episodes.parquet ]; then
-    echo ">> uploading episodes dataset  -> ${REMOTE}:${BUCKET}/datasets/episodes.parquet"
-    rclone copyto dist/hf/episodes/episodes.parquet "${REMOTE}:${BUCKET}/datasets/episodes.parquet" --progress
-  else
-    echo "warning: dist/hf/episodes/episodes.parquet not found (run \`make hf\` first)" >&2
-  fi
+  # The episodes dataset is published per mark: one gzipped CSV each, under
+  # marks/<id>/episodes.csv.gz (the exact object key is recorded in the manifest).
+  # The marks metadata itself lives in git, not R2. The same per-mark CSVs are also
+  # mirrored into the Hugging Face dataset (pushed with huggingface-cli, not here).
+  while IFS=$'\t' read -r id key; do
+    [ -z "$id" ] && continue
+    src="dist/marks/${id}/episodes.csv.gz"
+    if [ -f "$src" ]; then
+      echo ">> uploading ${id} episodes -> ${REMOTE}:${key}"
+      rclone copyto "$src" "${REMOTE}:${key}" --progress
+    else
+      echo "warning: ${src} not found (run \`make build SERIES=${id%%-*}...\` first)" >&2
+    fi
+  done < <(python3 -c "import json
+d=json.load(open('datasets/episodes.manifest.json')); base='$BASE'; bucket='$BUCKET'
+for m in d.get('marks',[]):
+    print(m['mark_id']+chr(9)+bucket+'/'+m['uri'][len(base)+1:])")
   echo ">> mirroring frozen inputs     -> ${REMOTE}:${BUCKET}/raw"
   rclone copy data/cache "${REMOTE}:${BUCKET}/raw" --progress
 fi
@@ -51,7 +58,7 @@ echo ">> verifying published artifacts resolve and match recorded hashes"
 fail=0
 sha256() { shasum -a 256 "$1" | cut -d' ' -f1; }
 
-# Datasets (the row-by-row episodes Parquet): full hash check.
+# Episodes dataset (one gzipped CSV per mark): full hash check of each file.
 while IFS=$'\t' read -r uri want; do
   [ -z "$uri" ] && continue
   tmp="$(mktemp)"
@@ -69,7 +76,8 @@ while IFS=$'\t' read -r uri want; do
 done < <(python3 -c "import glob,json
 for p in sorted(glob.glob('datasets/*.manifest.json')):
     d=json.load(open(p))
-    if d.get('uri') and d.get('sha256'): print(d['uri']+chr(9)+d['sha256'])")
+    for m in d.get('marks',[]):
+        if m.get('uri') and m.get('sha256'): print(m['uri']+chr(9)+m['sha256'])")
 
 # Frozen-input mirror: HEAD check (files can be large).
 while IFS= read -r url; do

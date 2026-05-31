@@ -40,7 +40,7 @@ verify:                      ## verify live artifacts resolve + match hashes (no
 clean:                       ## remove staged upload artifacts
 	rm -rf dist
 
-hf:                          ## export HF dataset dir (dist/hf): per-series marks + row-by-row episodes.parquet + manifest
+hf:                          ## export HF dataset dir (dist/hf): per-series marks + per-mark episodes.csv.gz; writes the manifest
 	$(CLI) export
 
 site:                        ## generate the static GitHub Pages site into docs/ (commit it; Pages serves docs/)

@@ -19,12 +19,12 @@ Each reference point ships with an **honest interval**: a central estimate plus 
 
 You can check two things against it: does your model get the **effect** right, and is its **confidence** honest?
 
-## What does it look like?
+## What's in it
 
 There are only **two datasets**, normalised on `mark_id`:
 
 - **Marks** — the reference points (the *metadata*). Small JSON files in [`marks/`](marks), in git; one per decision. Each gives the setup, the effect as a distribution, the evidence it passed, and full provenance. See the [data dictionary](docs/schema.md).
-- **`episodes` dataset** — the per-unit rows behind every mark, unioned into one row-per-unit **(state, action, reward)** table for model training: each unit's context before the decision (`covariates`, `running_value`/`distance_to_cutoff`), what was done (`assigned`/`treated`), and the `outcome` that followed. A single Parquet (loadable as the Hugging Face `episodes` config; the same bytes in object storage), pointed to by [`datasets/episodes.manifest.json`](datasets/episodes.manifest.json). Each row joins back to its mark's full calibrated effect on `mark_id`.
+- **`episodes` dataset** — the per-unit rows behind every mark: each unit's context before the decision (`running_value` + the mark's covariates), what was done (`assigned`/`treated`), and the `outcome` that followed — the **(state, action, reward)** view for model training. Published **per mark** as one gzipped CSV each in object storage, listed (with download URL + SHA-256 + size) in [`datasets/episodes.manifest.json`](datasets/episodes.manifest.json). A mark's file *is* its rows; join them to the mark JSON on its `id` for the design and the full calibrated effect. (The same per-mark files are mirrored on Hugging Face — same schema — so `load_dataset(repo, data_files="episodes/<id>.csv.gz")` loads one mark.)
 
 Plus, for convenience: **dossiers** — a readable write-up of each mark's validity checks, in [`dossiers/`](dossiers); and a **scorer** — a small Go package ([`pkg/score`](pkg/score)) that grades a model's predictions (nothing is hosted; you run it locally).
 
@@ -38,7 +38,7 @@ known truth — at a nominal 95% interval, the plug-in method covers the truth o
 
 ## Use the data
 
-1. Read a mark from [`marks/`](marks) (and, if you want the raw rows, download the `episodes` dataset from [`datasets/episodes.manifest.json`](datasets/episodes.manifest.json) and filter on `mark_id`, verifying the manifest `sha256`).
+1. Read a mark from [`marks/`](marks) (and, if you want the raw rows, download that mark's `episodes.csv.gz` — its URL + `sha256` are in [`datasets/episodes.manifest.json`](datasets/episodes.manifest.json) — and verify the hash).
 2. Write a `submission.json`: your predicted effect, with your own uncertainty, per mark. See [`examples/submission.example.json`](examples/submission.example.json).
 3. Score it locally:
 
@@ -66,16 +66,17 @@ make study      # re-run the calibration study
 ## Layout
 
 ```
-cmd/openaction2outcome   CLI: fetch, build, validate, score, study
+cmd/openaction2outcome   CLI: fetch, build, validate, score, study, export, site
 internal/ingest          load + cache the frozen open-data inputs
 internal/rdd             plug-in local-linear estimator (comparison baseline)
 internal/sbi             model-averaged estimator (the honest interval)
 internal/validity        manipulation / continuity / placebo / robustness checks
 internal/dossier         render a mark to a readable dossier
 internal/series          per-series minting
-internal/publish         publishing config + episode-table writer
+internal/publish         publishing config + per-mark episode-table writer
+internal/episodes        per-mark episodes manifest + mirror the CSVs into the HF dir
 internal/hfexport        flatten marks to a Hugging Face dataset (per-series JSONL)
-internal/sarexport       reshape episode tables into the row-by-row episodes Parquet
+internal/site            generate the static GitHub Pages site (docs/)
 pkg/schema   (public)    Mark + Submission types — standard library only
 pkg/score    (public)    the scorer — depends only on pkg/schema
 marks  dossiers  scores  examples  docs   the published outputs + reference

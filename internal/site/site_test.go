@@ -31,7 +31,7 @@ func genSite(t *testing.T) (root, out string) {
 		ManifestPath:  filepath.Join(root, "datasets", "episodes.manifest.json"),
 		RawDir:        filepath.Join(root, "data", "raw"),
 		PublishConfig: filepath.Join(root, "publish.json"),
-		LogoPath:      filepath.Join(root, "assets", "logo.png"),
+		LogoPath:      filepath.Join(root, "docs", "assets", "logo.png"),
 		OutDir:        out,
 		RepoURL:       "https://github.com/umbralcalc/openaction2outcome",
 		HFRepo:        "umbralcalc/openaction2outcome",
@@ -67,17 +67,24 @@ func TestGenerateWritesExpectedFiles(t *testing.T) {
 func TestDownloadsPageHasManifestData(t *testing.T) {
 	_, out := genSite(t)
 	dl := read(t, filepath.Join(out, "downloads.html"))
-	// The episodes manifest's content hash and URL must appear so a consumer can
-	// verify the download.
+	// Episode rows are published per mark as a gzipped CSV — the page must link
+	// each mark's actual artifact, plus the marks zip and the HF mirror.
 	for _, want := range []string{
-		"825022ea6303ec3f17e2fe5f97a59dd4fad9b4f0e76053027eb7253c066ecfeb",
-		"episodes.parquet",
+		"marks/bathing-water-poor-2015/episodes.csv.gz",
+		"marks/floor-standards-p8-2016/episodes.csv.gz",
+		"marks/shmi-higher-than-expected-banding/episodes.csv.gz",
+		// the bathing-water file's content hash, from the manifest (verifiable download)
+		"c8d2e34b886d64cc16e8f2eefc163221bb0c34c8d55b79bf675d5a302a237e02",
 		"huggingface.co/datasets/umbralcalc/openaction2outcome",
 		"downloads/marks.zip",
 	} {
 		if !strings.Contains(dl, want) {
 			t.Errorf("downloads.html missing %q", want)
 		}
+	}
+	// The non-existent unified Parquet must not be linked.
+	if strings.Contains(dl, "datasets/episodes.parquet") {
+		t.Error("downloads.html still links the non-existent unified episodes.parquet")
 	}
 }
 

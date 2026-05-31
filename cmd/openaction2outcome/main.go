@@ -166,9 +166,9 @@ func cmdStudy(args []string) error {
 
 // cmdExport assembles a Hugging Face-ready dataset directory (per-series JSONL +
 // Dataset Card) from the minted marks, staged for `huggingface-cli upload`. It
-// also reshapes the staged episode tables into the unified row-by-row
-// (state, action, reward) `episodes` Parquet — both as a loadable HF config and,
-// referenced by a slim manifest, as a content-addressed object-storage artifact.
+// writes the per-mark episodes manifest (the object-storage dataset is one gzipped
+// CSV per mark, listed with its sha256), and mirrors those same per-mark CSVs into
+// the Hugging Face directory so an HF user can load one mark's rows directly.
 func cmdExport(args []string) error {
 	fs := flag.NewFlagSet("export", flag.ExitOnError)
 	marksDir := fs.String("marks", "marks", "directory of mark JSON files")
@@ -195,22 +195,25 @@ func cmdExport(args []string) error {
 	}
 	fmt.Printf("exported %d mark(s) -> %s (README.md + per-series .jsonl)\n", len(marks), *out)
 
-	// Reshape the staged episode rows into the unified episodes dataset.
-	rows, err := episodes.Build(marks, *distDir)
+	// Write the per-mark episodes manifest (the object-storage dataset is one
+	// gzipped CSV per mark; the manifest lists each file + its hash).
+	mf, err := episodes.NewManifest(marks, *distDir, cfg)
 	if err != nil {
 		return err
 	}
-	parquetPath := filepath.Join(*out, "episodes", "episodes.parquet")
-	wa, err := episodes.WriteParquet(parquetPath, rows)
+	if err := episodes.WriteManifest(*manifestPath, mf); err != nil {
+		return err
+	}
+	fmt.Printf("wrote manifest %s (%d marks, %d rows total)\n", *manifestPath, len(mf.Marks), mf.TotalRows)
+
+	// Mirror the same per-mark CSVs into the Hugging Face dataset dir (same
+	// schema as object storage — no unioned re-encoding) so an HF user can pull a
+	// mark's rows directly.
+	written, err := episodes.CopyToHF(marks, *distDir, *out)
 	if err != nil {
 		return err
 	}
-	uri := cfg.DatasetArtifactURL("episodes.parquet")
-	if err := episodes.WriteManifest(*manifestPath, episodes.NewManifest(wa, uri, marks)); err != nil {
-		return err
-	}
-	fmt.Printf("exported episodes -> %s (%d rows, sha256=%s, %d bytes)\n", parquetPath, wa.Rows, wa.SHA256, wa.Bytes)
-	fmt.Printf("wrote manifest %s (uri=%s)\n", *manifestPath, uri)
+	fmt.Printf("mirrored %d per-mark episodes.csv.gz -> %s/episodes/\n", len(written), *out)
 	fmt.Printf("push with: huggingface-cli upload <user>/openaction2outcome %s . --repo-type dataset\n", *out)
 	return nil
 }

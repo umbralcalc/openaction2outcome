@@ -5,16 +5,14 @@
 // the outcome that followed. That is the (state, action, reward) view a model
 // trainer wants, named the way the rest of the project names things.
 //
-// It is a pure reshape: it reads the episode rows a build staged under dist/ (a
-// build intermediate), joins each row with its mark's design and a small scalar
-// effect summary, and writes one deterministic Parquet plus a slim git-tracked
-// manifest pointing at the object-storage copy.
-//
-// Only two artifacts are ever stored: the marks (metadata, in git) and this
-// episodes dataset (rows, in object storage). They join on the mark id — the rows
-// carry mark_id so the per-mark metadata is normalised out, not duplicated. The
-// full effect distribution stays in the mark; each row carries only mark_id (the
-// join key) plus a few scalar effect summaries for convenience.
+// The published form is per mark: each mark's rows are one gzipped CSV
+// (dist/marks/<id>/episodes.csv.gz) served from object storage at
+// marks/<id>/episodes.csv.gz, and the slim git-tracked manifest lists every
+// mark's file with its sha256 + size (see NewManifest). A consumer downloads a
+// mark's file and joins its rows to the mark JSON on the mark id for the design
+// (cutoff, direction, action) and the full effect distribution. The same per-mark
+// CSVs are mirrored into the Hugging Face dataset directory (same schema), so
+// there is one row shape everywhere — no unioned re-encoding.
 package episodes
 
 import (
@@ -28,10 +26,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
-
-	"github.com/parquet-go/parquet-go"
-	"github.com/parquet-go/parquet-go/compress/snappy"
 
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
@@ -49,73 +43,11 @@ var coreColumns = map[string]bool{
 	"assigned": true, "treated": true, "outcome": true,
 }
 
-// Covariate is one pre-treatment covariate of a unit's context. Covariates are
-// carried as a key-sorted list of these (rather than a Go map) so the Parquet
-// bytes are deterministic: Go map iteration order is randomised, which would
-// break content-addressing.
-type Covariate struct {
-	Name  string  `parquet:"name"`
-	Value float64 `parquet:"value"`
-}
-
-// Row is one unit's episode: its context before the decision (state), what was
-// done (action), and the outcome that followed (reward). It unions every series;
-// series-specific covariates live in Covariates.
-type Row struct {
-	MarkID string `parquet:"mark_id"`
-	Series string `parquet:"series"`
-
-	UnitID   string `parquet:"unit_id"`
-	UnitName string `parquet:"unit_name"`
-
-	// Context before the decision (the "state"): where the unit sat relative to
-	// the cutoff, plus its pre-treatment covariates.
-	RunningValue     float64     `parquet:"running_value"`
-	Cutoff           float64     `parquet:"cutoff"`
-	DistanceToCutoff float64     `parquet:"distance_to_cutoff"`
-	Direction        string      `parquet:"direction"`
-	Covariates       []Covariate `parquet:"covariates"`
-
-	// What was done (the "action"): the assigned side, the realized receipt
-	// (nullable under fuzzy assignment), and the textual action / counterfactual.
-	Assigned    bool   `parquet:"assigned"`
-	Treated     *bool  `parquet:"treated,optional"`
-	Action      string `parquet:"action"`
-	Alternative string `parquet:"alternative"`
-
-	// What followed (the "reward"): the later observed outcome. OutcomeObserved
-	// is false (and Outcome nil) when the unit has no linked outcome (e.g.
-	// attrition).
-	Outcome         *float64 `parquet:"outcome,optional"`
-	OutcomeObserved bool     `parquet:"outcome_observed"`
-
-	// Inlined scalar summary of the mark's effect (convenience only; the full
-	// posterior stays in the mark, joinable on mark_id).
-	EffectCentral       float64 `parquet:"effect_central"`
-	EffectLower         float64 `parquet:"effect_lower"`
-	EffectUpper         float64 `parquet:"effect_upper"`
-	EffectIntervalLevel float64 `parquet:"effect_interval_level"`
-	EffectStdDev        float64 `parquet:"effect_std_dev"`
-}
-
-// Columns is the column order of the Row Parquet schema, recorded in the manifest
-// so consumers can see the shape without reading the file. The covariates are
-// nested under "covariates" (a list of {name,value}).
-var Columns = []string{
-	"mark_id", "series", "unit_id", "unit_name",
-	"running_value", "cutoff", "distance_to_cutoff", "direction", "covariates",
-	"assigned", "treated", "action", "alternative",
-	"outcome", "outcome_observed",
-	"effect_central", "effect_lower", "effect_upper",
-	"effect_interval_level", "effect_std_dev",
-}
-
 // LoadTable reads the episode rows a build staged for the given mark under
 // distDir/marks/<id>/episodes.csv.gz and returns the parsed header and rows. It
 // is offline-first: the rows must already be staged (run `openaction2outcome
-// build` first). The staged file is a deterministic build intermediate, so it is
-// trusted by convention; the published artifacts (the marks in git, the episodes
-// Parquet by its manifest SHA) carry the integrity guarantees.
+// build` first). The staged file is the deterministic artifact that gets
+// published; the manifest records its SHA-256 so a consumer's download verifies.
 func LoadTable(m schema.Mark, distDir string) (header []string, rows [][]string, err error) {
 	p := filepath.Join(distDir, "marks", m.ID, stagedTableName)
 	f, err := os.Open(p)
@@ -141,139 +73,116 @@ func LoadTable(m schema.Mark, distDir string) (header []string, rows [][]string,
 	return all[0], all[1:], nil
 }
 
-// Build reshapes every mark's staged episode rows into the unified rows, sorted
-// deterministically by (series, mark_id, unit_id).
-func Build(marks []schema.Mark, distDir string) ([]Row, error) {
-	var out []Row
+// CopyToHF mirrors every mark's staged episodes.csv.gz into the Hugging Face
+// dataset directory at hfDir/episodes/<id>.csv.gz, so a Hugging Face user can pull
+// a mark's rows directly (same schema as the object-storage file). It returns the
+// repo-relative paths written, in mark order.
+func CopyToHF(marks []schema.Mark, distDir, hfDir string) ([]string, error) {
+	outDir := filepath.Join(hfDir, "episodes")
+	if err := os.MkdirAll(outDir, 0o755); err != nil {
+		return nil, err
+	}
+	var written []string
+	for _, m := range marks {
+		src := filepath.Join(distDir, "marks", m.ID, stagedTableName)
+		b, err := os.ReadFile(src)
+		if err != nil {
+			return nil, fmt.Errorf("mark %q episodes not staged at %s (run `openaction2outcome build`): %w", m.ID, src, err)
+		}
+		rel := filepath.Join("episodes", m.ID+".csv.gz")
+		if err := os.WriteFile(filepath.Join(hfDir, rel), b, 0o644); err != nil {
+			return nil, err
+		}
+		written = append(written, rel)
+	}
+	return written, nil
+}
+
+// CoreColumns are the fixed leading columns of every per-mark episodes.csv.gz,
+// in order. Each mark's file appends its own series-specific covariate columns
+// after these (recorded per mark in the manifest).
+var CoreColumns = []string{"unit_id", "unit_name", "running_value", "assigned", "treated", "outcome"}
+
+// MarkArtifact points at one mark's published episodes.csv.gz and carries enough
+// to download and verify it without re-running the mint.
+type MarkArtifact struct {
+	MarkID     string   `json:"mark_id"`
+	Series     string   `json:"series"`
+	URI        string   `json:"uri"`
+	SHA256     string   `json:"sha256"`
+	Bytes      int64    `json:"bytes"`
+	Rows       int      `json:"rows"`
+	Covariates []string `json:"covariates"`
+}
+
+// Manifest is the slim, git-tracked pointer to the published episodes dataset.
+// The episode rows are published per mark — one gzipped CSV each — so the
+// manifest lists every mark's artifact (URL + sha256 + size) rather than a single
+// unified file. Each row is (unit_id, unit_name, running_value, assigned,
+// treated, outcome, + the mark's covariates); join to the mark on its id for the
+// design (cutoff, direction, action) and the full effect distribution.
+type Manifest struct {
+	SchemaVersion string         `json:"schema_version"`
+	ID            string         `json:"id"`
+	Format        string         `json:"format"`
+	CoreColumns   []string       `json:"core_columns"`
+	TotalRows     int            `json:"total_rows"`
+	Series        []string       `json:"series"`
+	JoinKey       string         `json:"join_key"`
+	Outcome       string         `json:"outcome"`
+	Description   string         `json:"description"`
+	Marks         []MarkArtifact `json:"marks"`
+}
+
+// NewManifest assembles the per-mark episodes manifest by hashing each mark's
+// staged episodes.csv.gz under distDir and resolving its public URL from cfg.
+// The marks must already be built (their rows staged); the same bytes are what
+// publish.sh uploads, so the recorded sha256 verifies a consumer's download.
+func NewManifest(marks []schema.Mark, distDir string, cfg publish.Config) (Manifest, error) {
+	seen := map[string]bool{}
+	var series []string
+	arts := make([]MarkArtifact, 0, len(marks))
+	total := 0
 	for _, m := range marks {
 		header, rows, err := LoadTable(m, distDir)
 		if err != nil {
-			return nil, err
+			return Manifest{}, err
 		}
-		idx := columnIndex(header)
-		covCols := covariateColumns(header)
-		central, lower, upper, level, sd := effectSummary(m)
-		for _, r := range rows {
-			row := Row{
-				MarkID:              m.ID,
-				Series:              string(m.Series),
-				UnitID:              cell(r, idx, "unit_id"),
-				UnitName:            cell(r, idx, "unit_name"),
-				RunningValue:        parseFloat(cell(r, idx, "running_value")),
-				Cutoff:              m.Design.Cutoff,
-				Direction:           string(m.Design.Direction),
-				Covariates:          covariateEntries(r, idx, covCols),
-				Assigned:            cell(r, idx, "assigned") == "true",
-				Treated:             parseOptBool(cell(r, idx, "treated")),
-				Action:              m.Design.Action,
-				Alternative:         m.Design.Alternative,
-				EffectCentral:       central,
-				EffectLower:         lower,
-				EffectUpper:         upper,
-				EffectIntervalLevel: level,
-				EffectStdDev:        sd,
-			}
-			row.DistanceToCutoff = row.RunningValue - m.Design.Cutoff
-			if o := cell(r, idx, "outcome"); o != "" {
-				v := parseFloat(o)
-				row.Outcome = &v
-				row.OutcomeObserved = true
-			}
-			out = append(out, row)
+		path := filepath.Join(distDir, "marks", m.ID, stagedTableName)
+		sum, size, err := hashFileSize(path)
+		if err != nil {
+			return Manifest{}, err
 		}
-	}
-	sort.Slice(out, func(i, j int) bool {
-		if out[i].Series != out[j].Series {
-			return out[i].Series < out[j].Series
-		}
-		if out[i].MarkID != out[j].MarkID {
-			return out[i].MarkID < out[j].MarkID
-		}
-		return out[i].UnitID < out[j].UnitID
-	})
-	return out, nil
-}
-
-// WriteParquet writes the rows as a deterministic, single-row-group Parquet file
-// at path and returns its content hash and size. Determinism rests on: a pinned
-// CreatedBy string, a single row group, key-sorted covariate lists (built
-// upstream in Build), and a fixed compression codec.
-func WriteParquet(path string, rows []Row) (publish.WrittenArtifact, error) {
-	var wa publish.WrittenArtifact
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return wa, err
-	}
-	f, err := os.Create(path)
-	if err != nil {
-		return wa, err
-	}
-	w := parquet.NewGenericWriter[Row](f,
-		parquet.CreatedBy("openaction2outcome", schema.SchemaVersion, ""),
-		parquet.Compression(&snappy.Codec{}),
-		parquet.MaxRowsPerRowGroup(1<<62), // one row group: deterministic layout
-	)
-	if _, err := w.Write(rows); err != nil {
-		f.Close()
-		return wa, err
-	}
-	if err := w.Close(); err != nil {
-		f.Close()
-		return wa, err
-	}
-	if err := f.Close(); err != nil {
-		return wa, err
-	}
-	sum, size, err := hashFileSize(path)
-	if err != nil {
-		return wa, err
-	}
-	return publish.WrittenArtifact{Path: path, SHA256: sum, Bytes: size, Rows: len(rows)}, nil
-}
-
-// Manifest is the slim, git-tracked pointer to the published episodes dataset —
-// the dataset analogue of a mark: it carries enough to download and verify the
-// bytes without re-running the mint.
-type Manifest struct {
-	SchemaVersion string   `json:"schema_version"`
-	ID            string   `json:"id"`
-	Format        string   `json:"format"`
-	URI           string   `json:"uri"`
-	SHA256        string   `json:"sha256"`
-	Bytes         int64    `json:"bytes"`
-	Rows          int      `json:"rows"`
-	Columns       []string `json:"columns"`
-	Series        []string `json:"series"`
-	JoinKey       string   `json:"join_key"`
-	Outcome       string   `json:"outcome"`
-	Description   string   `json:"description"`
-}
-
-// NewManifest assembles the episodes manifest from a written artifact and the
-// marks it was built from.
-func NewManifest(wa publish.WrittenArtifact, uri string, marks []schema.Mark) Manifest {
-	seen := map[string]bool{}
-	var series []string
-	for _, m := range marks {
-		if s := string(m.Series); !seen[s] {
+		s := string(m.Series)
+		if !seen[s] {
 			seen[s] = true
 			series = append(series, s)
 		}
+		total += len(rows)
+		arts = append(arts, MarkArtifact{
+			MarkID:     m.ID,
+			Series:     s,
+			URI:        cfg.MarkArtifactURL(m.ID, stagedTableName),
+			SHA256:     sum,
+			Bytes:      size,
+			Rows:       len(rows),
+			Covariates: covariateColumns(header),
+		})
 	}
 	sort.Strings(series)
+	sort.Slice(arts, func(i, j int) bool { return arts[i].MarkID < arts[j].MarkID })
 	return Manifest{
 		SchemaVersion: schema.SchemaVersion,
 		ID:            "episodes",
-		Format:        "parquet",
-		URI:           uri,
-		SHA256:        wa.SHA256,
-		Bytes:         wa.Bytes,
-		Rows:          wa.Rows,
-		Columns:       Columns,
+		Format:        "csv.gz",
+		CoreColumns:   CoreColumns,
+		TotalRows:     total,
 		Series:        series,
-		JoinKey:       "mark_id -> the mark's id (and the per-series Hugging Face configs)",
-		Outcome:       "the later observed outcome; outcome_observed=false (outcome null) when a unit has no linked outcome",
-		Description:   "Every mark's episode rows, unioned: one row per unit, giving its context before the decision (covariates, running_value/distance_to_cutoff), what was done (assigned/treated), and the outcome that followed — the (state, action, reward) view for model training. The full effect distribution stays in the marks, joinable on mark_id.",
-	}
+		JoinKey:       "mark_id -> the mark's id (the file is keyed by mark; join its rows to the mark JSON, and to the per-series Hugging Face configs)",
+		Outcome:       "the later observed outcome; the outcome cell is empty when a unit has no linked outcome (e.g. attrition)",
+		Description:   "Each mark's per-unit episode rows, published as one gzipped CSV per mark: a unit's context before the decision (covariates, running_value), what was done (assigned/treated), and the outcome that followed — the (state, action, reward) view for model training. The design (cutoff, direction, action) and the full effect distribution stay in the mark JSON, joinable on the mark id.",
+		Marks:         arts,
+	}, nil
 }
 
 // WriteManifest writes the manifest as indented JSON (trailing newline) to path.
@@ -290,14 +199,6 @@ func WriteManifest(path string, mf Manifest) error {
 
 // --- helpers.
 
-func columnIndex(header []string) map[string]int {
-	idx := make(map[string]int, len(header))
-	for i, h := range header {
-		idx[h] = i
-	}
-	return idx
-}
-
 // covariateColumns returns the series-specific covariate column names in header
 // order (header minus the fixed core columns).
 func covariateColumns(header []string) []string {
@@ -308,53 +209,6 @@ func covariateColumns(header []string) []string {
 		}
 	}
 	return cols
-}
-
-// covariateEntries builds the key-sorted covariate list for one row, skipping
-// covariates that are empty (absent) for that unit.
-func covariateEntries(row []string, idx map[string]int, covCols []string) []Covariate {
-	var cv []Covariate
-	for _, c := range covCols {
-		v := cell(row, idx, c)
-		if v == "" {
-			continue
-		}
-		cv = append(cv, Covariate{Name: c, Value: parseFloat(v)})
-	}
-	sort.Slice(cv, func(i, j int) bool { return cv[i].Name < cv[j].Name })
-	return cv
-}
-
-func effectSummary(m schema.Mark) (central, lower, upper, level, sd float64) {
-	central = m.Effect.Central
-	if m.Effect.Interval != nil {
-		level, lower, upper = m.Effect.Interval.Level, m.Effect.Interval.Lower, m.Effect.Interval.Upper
-	}
-	if m.Effect.StdDev != nil {
-		sd = *m.Effect.StdDev
-	}
-	return
-}
-
-func cell(row []string, idx map[string]int, name string) string {
-	i, ok := idx[name]
-	if !ok || i >= len(row) {
-		return ""
-	}
-	return row[i]
-}
-
-func parseFloat(s string) float64 {
-	v, _ := strconv.ParseFloat(s, 64)
-	return v
-}
-
-func parseOptBool(s string) *bool {
-	if s == "" {
-		return nil
-	}
-	b := s == "true"
-	return &b
 }
 
 func hashFileSize(path string) (string, int64, error) {
