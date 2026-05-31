@@ -4,7 +4,12 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
-## Unreleased
+## v0.2.0 — 2026-05-31
+
+Adds a third series and the first environmental-domain mark, taking the
+collection to three domains (education + health + environment). Introduces
+seam-specific validity checks beyond the standard battery, debuting with the
+bathing-water abnormal-sample-exclusion sensitivity.
 
 ### Marks (admitted reference points)
 - **bathing-water-poor-2015** — sharp RDD on the English bathing-water Poor/Sufficient
