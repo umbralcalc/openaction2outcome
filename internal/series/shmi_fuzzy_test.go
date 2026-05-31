@@ -30,7 +30,8 @@ func TestBuildSHMIFuzzyRealData(t *testing.T) {
 	}
 
 	cfg := publish.Config{BaseURL: "https://example.test", MarksPrefix: "marks", RawPrefix: "raw"}
-	m, err := BuildSHMIFuzzy(rawDir, cacheDir, t.TempDir(), cfg)
+	distDir := t.TempDir()
+	m, err := BuildSHMIFuzzy(rawDir, cacheDir, distDir, cfg)
 	if err != nil {
 		t.Fatalf("build: %v", err)
 	}
@@ -53,8 +54,13 @@ func TestBuildSHMIFuzzyRealData(t *testing.T) {
 	if m.Effect.Interval == nil {
 		t.Error("the LATE must still carry an interval")
 	}
-	if m.Data.Rows < 100 {
-		t.Errorf("unexpectedly few acute trusts: %d", m.Data.Rows)
+	// Rows are staged as a build intermediate even for an unadmitted mark.
+	fi, err := os.Stat(filepath.Join(distDir, "marks", m.ID, "episodes.csv.gz"))
+	if err != nil {
+		t.Fatalf("episode rows not staged: %v", err)
+	}
+	if fi.Size() < 1024 {
+		t.Errorf("staged episode rows unexpectedly small: %d bytes", fi.Size())
 	}
 }
 

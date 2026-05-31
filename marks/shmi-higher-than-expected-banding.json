@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3.0",
+  "schema_version": "0.4.0",
   "id": "shmi-higher-than-expected-banding",
   "series": "shmi",
   "domain": "Health",
@@ -31,23 +31,6 @@
       "decision_shmi"
     ],
     "population": "368 pooled trust-years across non-overlapping reporting windows"
-  },
-  "data": {
-    "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/shmi-higher-than-expected-banding/episodes.csv.gz",
-    "sha256": "bdf9ef119fff440dd07684f6dad139abfc9fd8f47d9ad5cc35d77476605f915c",
-    "format": "csv.gz",
-    "rows": 368,
-    "bytes": 8606,
-    "columns": [
-      "unit_id",
-      "unit_name",
-      "running_value",
-      "assigned",
-      "treated",
-      "outcome",
-      "expected_deaths",
-      "decision_shmi"
-    ]
   },
   "sample": [
     {
@@ -878,7 +861,7 @@
     "seed": 1,
     "tool_versions": {
       "go": "go1.25.2",
-      "openaction2outcome": "0.3.0",
+      "openaction2outcome": "0.4.0",
       "smc": "particles=4000,rounds=8",
       "stochadex": "v0.0.0-20260529062707-b3fa54eb7212"
     },

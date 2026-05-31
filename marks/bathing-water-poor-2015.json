@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3.0",
+  "schema_version": "0.4.0",
   "id": "bathing-water-poor-2015",
   "series": "bathing-water",
   "domain": "Environment",
@@ -32,24 +32,6 @@
       "impacted_by_heavy_rain"
     ],
     "population": "413 designated bathing waters with a usable 2015 compliance margin"
-  },
-  "data": {
-    "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/bathing-water-poor-2015/episodes.csv.gz",
-    "sha256": "c8d2e34b886d64cc16e8f2eefc163221bb0c34c8d55b79bf675d5a302a237e02",
-    "format": "csv.gz",
-    "rows": 413,
-    "bytes": 12821,
-    "columns": [
-      "unit_id",
-      "unit_name",
-      "running_value",
-      "assigned",
-      "treated",
-      "outcome",
-      "ie_sample_count",
-      "is_inland",
-      "impacted_by_heavy_rain"
-    ]
   },
   "sample": [
     {
@@ -554,7 +536,7 @@
     "seed": 1,
     "tool_versions": {
       "go": "go1.25.2",
-      "openaction2outcome": "0.3.0",
+      "openaction2outcome": "0.4.0",
       "smc": "particles=4000,rounds=8",
       "stochadex": "v0.0.0-20260529062707-b3fa54eb7212"
     },

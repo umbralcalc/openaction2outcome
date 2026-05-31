@@ -119,18 +119,11 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 		return zero, fmt.Errorf("floor-standards: too few complete cases (%d) to estimate", len(estPts))
 	}
 
-	// Stage the analysis-ready episode table for publishing.
-	wa, err := publish.WriteEpisodesCSVGz(distDir, markID, "episodes.csv.gz", episodeColumns, episodeRows(episodes))
-	if err != nil {
+	// Stage the analysis-ready episode rows as a build intermediate. They are not
+	// published per-mark; the export step reshapes every mark's rows into the one
+	// `episodes` dataset, joinable on the mark ID.
+	if _, err := publish.WriteEpisodesCSVGz(distDir, markID, "episodes.csv.gz", episodeColumns, episodeRows(episodes)); err != nil {
 		return zero, err
-	}
-	data := schema.DataArtifact{
-		URI:     cfg.MarkArtifactURL(markID, "episodes.csv.gz"),
-		SHA256:  wa.SHA256,
-		Format:  "csv.gz",
-		Rows:    wa.Rows,
-		Bytes:   wa.Bytes,
-		Columns: episodeColumns,
 	}
 
 	// --- estimate the discontinuity.
@@ -225,7 +218,6 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 			CovariateNames: []string{"ks2_prior_attainment", "pct_disadvantaged_fsm", "ks4_cohort_size"},
 			Population:     fmt.Sprintf("%d mainstream secondary schools with a numeric 2015/16 Progress 8 score", len(schools16)),
 		},
-		Data:    data,
 		Sample:  nearCutoffSample(episodes, floorCutoff),
 		Effect:  effect,
 		Dossier: dossier,

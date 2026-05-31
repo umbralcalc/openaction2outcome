@@ -71,15 +71,14 @@ func TestBuildFloorStandardsRealData(t *testing.T) {
 			t.Fatalf("covariate %q has no statistic (degenerate/free-pass test)", c.Name)
 		}
 	}
-	// The episode table must be staged and content-addressed.
-	if m.Data.Rows < 2000 {
-		t.Fatalf("unexpectedly few episodes: %d", m.Data.Rows)
+	// The episode rows must be staged as a build intermediate (reshaped into the
+	// episodes dataset at export; not published per-mark).
+	fi, err := os.Stat(filepath.Join(distDir, "marks", m.ID, "episodes.csv.gz"))
+	if err != nil {
+		t.Fatalf("episode rows not staged: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(distDir, "marks", m.ID, "episodes.csv.gz")); err != nil {
-		t.Fatalf("episode sidecar not staged: %v", err)
-	}
-	if m.Data.SHA256 == "" || m.Data.URI == "" {
-		t.Fatal("data artifact must be content-addressed with a URL")
+	if fi.Size() < 1024 {
+		t.Fatalf("staged episode rows unexpectedly small: %d bytes", fi.Size())
 	}
 	// The inline near-cutoff sample must be small and consistent.
 	if len(m.Sample) == 0 || len(m.Sample) > sampleMaxRows {

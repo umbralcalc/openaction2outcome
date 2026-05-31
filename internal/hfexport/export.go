@@ -1,9 +1,10 @@
 // Package hfexport turns the minted marks into a Hugging Face-loadable dataset:
 // one flattened JSON record per mark, grouped into a file per series, plus the
 // Dataset Card. The flattened record carries everything a model evaluator needs
-// — the decision context, the effect distribution (central + interval +
-// quantiles + samples), and a link to the full episode table — while the
-// complete nested mark stays in the repo (referenced by mark_json_path).
+// — the decision context and the effect distribution (central + interval +
+// quantiles + samples) — while the complete nested mark stays in the repo
+// (referenced by mark_json_path). The per-unit rows behind every mark live in the
+// separate `episodes` config (see internal/episodes), joinable on the mark id.
 package hfexport
 
 import (
@@ -52,11 +53,6 @@ type Record struct {
 
 	Admitted bool `json:"admitted"`
 
-	EpisodeURL     string   `json:"episode_table_url"`
-	EpisodeSHA256  string   `json:"episode_table_sha256"`
-	EpisodeRows    int      `json:"episode_table_rows"`
-	EpisodeColumns []string `json:"episode_table_columns"`
-
 	ContextAsOf       string   `json:"context_asof"`
 	DecisionTimestamp string   `json:"decision_timestamp"`
 	OutcomeTimestamp  string   `json:"outcome_timestamp"`
@@ -87,8 +83,7 @@ func ToRecord(m schema.Mark) Record {
 		Outcome: m.Design.Outcome.Name, OutcomeDesc: m.Design.Outcome.Description, Estimand: m.Design.Estimand,
 		ContextDescription: m.Context.Description, Population: m.Context.Population, CovariateNames: m.Context.CovariateNames,
 		EffectCentral: m.Effect.Central, Samples: m.Effect.Samples,
-		Admitted:   m.Dossier.Admitted,
-		EpisodeURL: m.Data.URI, EpisodeSHA256: m.Data.SHA256, EpisodeRows: m.Data.Rows, EpisodeColumns: m.Data.Columns,
+		Admitted:    m.Dossier.Admitted,
 		ContextAsOf: m.Provenance.ContextAsOf, DecisionTimestamp: m.Provenance.DecisionTimestamp,
 		OutcomeTimestamp: m.Provenance.OutcomeTimestamp, OutcomeRealized: m.Provenance.OutcomeRealized,
 		MarkJSONPath: "marks/" + m.ID + ".json",

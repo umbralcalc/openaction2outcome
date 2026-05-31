@@ -40,5 +40,5 @@ verify:                      ## verify live artifacts resolve + match hashes (no
 clean:                       ## remove staged upload artifacts
 	rm -rf dist
 
-hf:                          ## export a Hugging Face-ready dataset dir (dist/hf)
+hf:                          ## export HF dataset dir (dist/hf): per-series marks + row-by-row episodes.parquet + manifest
 	$(CLI) export

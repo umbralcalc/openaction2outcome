@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3.0",
+  "schema_version": "0.4.0",
   "id": "floor-standards-p8-2016",
   "series": "floor-standards",
   "domain": "Education",
@@ -32,24 +32,6 @@
       "ks4_cohort_size"
     ],
     "population": "3098 mainstream secondary schools with a numeric 2015/16 Progress 8 score"
-  },
-  "data": {
-    "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/floor-standards-p8-2016/episodes.csv.gz",
-    "sha256": "f2458f3df85381e1cd61b5f4d859940b1efcbc4dda6c672b22d1a20818a22005",
-    "format": "csv.gz",
-    "rows": 3098,
-    "bytes": 61955,
-    "columns": [
-      "unit_id",
-      "unit_name",
-      "running_value",
-      "assigned",
-      "treated",
-      "outcome",
-      "ks2_prior_attainment",
-      "pct_disadvantaged_fsm",
-      "ks4_cohort_size"
-    ]
   },
   "sample": [
     {
@@ -947,7 +929,7 @@
     "seed": 1,
     "tool_versions": {
       "go": "go1.25.2",
-      "openaction2outcome": "0.3.0",
+      "openaction2outcome": "0.4.0",
       "smc": "particles=4000,rounds=8",
       "stochadex": "v0.0.0-20260529062707-b3fa54eb7212"
     },

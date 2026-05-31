@@ -21,6 +21,7 @@ import (
 	"github.com/umbralcalc/openaction2outcome/internal/hfexport"
 	"github.com/umbralcalc/openaction2outcome/internal/ingest"
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
+	"github.com/umbralcalc/openaction2outcome/internal/episodes"
 	"github.com/umbralcalc/openaction2outcome/internal/sbi"
 	"github.com/umbralcalc/openaction2outcome/internal/series"
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
@@ -159,14 +160,24 @@ func cmdStudy(args []string) error {
 }
 
 // cmdExport assembles a Hugging Face-ready dataset directory (per-series JSONL +
-// Dataset Card) from the minted marks, staged for `huggingface-cli upload`.
+// Dataset Card) from the minted marks, staged for `huggingface-cli upload`. It
+// also reshapes the staged episode tables into the unified row-by-row
+// (state, action, reward) `episodes` Parquet — both as a loadable HF config and,
+// referenced by a slim manifest, as a content-addressed object-storage artifact.
 func cmdExport(args []string) error {
 	fs := flag.NewFlagSet("export", flag.ExitOnError)
 	marksDir := fs.String("marks", "marks", "directory of mark JSON files")
 	cardPath := fs.String("card", "huggingface/README.md", "Dataset Card to ship as README.md")
 	out := fs.String("out", "dist/hf", "output directory (push this to Hugging Face)")
+	distDir := fs.String("dist", "dist", "directory holding the staged per-mark episode tables")
+	manifestPath := fs.String("manifest", "datasets/episodes.manifest.json", "git-tracked pointer to the published episodes dataset")
+	cfgPath := fs.String("publish-config", "publish.json", "publish config (object-store base URL)")
 	fs.Parse(args)
 
+	cfg, err := loadPublishConfig(*cfgPath)
+	if err != nil {
+		return err
+	}
 	marks, err := loadMarks(*marksDir)
 	if err != nil {
 		return err
@@ -178,6 +189,23 @@ func cmdExport(args []string) error {
 		return err
 	}
 	fmt.Printf("exported %d mark(s) -> %s (README.md + per-series .jsonl)\n", len(marks), *out)
+
+	// Reshape the staged episode rows into the unified episodes dataset.
+	rows, err := episodes.Build(marks, *distDir)
+	if err != nil {
+		return err
+	}
+	parquetPath := filepath.Join(*out, "episodes", "episodes.parquet")
+	wa, err := episodes.WriteParquet(parquetPath, rows)
+	if err != nil {
+		return err
+	}
+	uri := cfg.DatasetArtifactURL("episodes.parquet")
+	if err := episodes.WriteManifest(*manifestPath, episodes.NewManifest(wa, uri, marks)); err != nil {
+		return err
+	}
+	fmt.Printf("exported episodes -> %s (%d rows, sha256=%s, %d bytes)\n", parquetPath, wa.Rows, wa.SHA256, wa.Bytes)
+	fmt.Printf("wrote manifest %s (uri=%s)\n", *manifestPath, uri)
 	fmt.Printf("push with: huggingface-cli upload <user>/openaction2outcome %s . --repo-type dataset\n", *out)
 	return nil
 }
@@ -340,10 +368,10 @@ func cmdBuild(args []string) error {
 	if err := os.WriteFile(dossierPath, []byte(dossier.Render(mark)), 0o644); err != nil {
 		return err
 	}
-	fmt.Printf("minted %s (%s, admitted=%v, effect=%.4g [%.4g, %.4g], episodes=%d)\n",
+	fmt.Printf("minted %s (%s, admitted=%v, effect=%.4g [%.4g, %.4g])\n",
 		out, mark.Series, mark.Dossier.Admitted, mark.Effect.Central,
-		mark.Effect.Interval.Lower, mark.Effect.Interval.Upper, mark.Data.Rows)
-	fmt.Printf("staged  %s  (sha256=%s, %d bytes)\n", mark.Data.URI, mark.Data.SHA256, mark.Data.Bytes)
+		mark.Effect.Interval.Lower, mark.Effect.Interval.Upper)
+	fmt.Printf("staged  %s/marks/%s/episodes.csv.gz  (build intermediate; reshaped into the episodes dataset by `export`)\n", *distDir, mark.ID)
 	return nil
 }
 

@@ -64,12 +64,9 @@ The interval width separates into two sources:
 
 ## Data
 
-The analysis-ready episode table (one row per unit) is published separately:
+The analysis-ready rows (one per unit) live in the single published `episodes` dataset, alongside every other mark's rows. Recover this mark's rows by filtering on `mark_id == "floor-standards-p8-2016"`. The dataset's download URL and content hash are in `datasets/episodes.manifest.json`.
 
-- **URL:** https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/floor-standards-p8-2016/episodes.csv.gz
-- **SHA-256:** `f2458f3df85381e1cd61b5f4d859940b1efcbc4dda6c672b22d1a20818a22005`
-- **Rows:** 3098  ·  **Format:** csv.gz
-- **Columns:** unit_id, unit_name, running_value, assigned, treated, outcome, ks2_prior_attainment, pct_disadvantaged_fsm, ks4_cohort_size
+- **Covariates (state):** ks2_prior_attainment, pct_disadvantaged_fsm, ks4_cohort_size
 
 ## Provenance
 
@@ -80,4 +77,4 @@ Point-in-time order: context as-of `2016-08-25` ≤ decision `2017-01-19` < outc
 - Key Stage 4 (KS4) final performance tables — school-level data, 2015/16 — Department for Education (DfE). Licence: Open Government Licence v3.0. SHA-256 `01288f9a4e39a9ad7c4a3dd6e88445d34664ea2dc36bb28adbb09d1c57046dd6`.
 - Key Stage 4 (KS4) final performance tables — school-level data, 2017/18 — Department for Education (DfE). Licence: Open Government Licence v3.0. SHA-256 `6f0a6f5bb1154f94afe2463c25498e91700a5d561a80f19f8f2923d3f0e5bb6e`.
 
-**Reproducibility:** go go1.25.2, openaction2outcome 0.3.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.
+**Reproducibility:** go go1.25.2, openaction2outcome 0.4.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.

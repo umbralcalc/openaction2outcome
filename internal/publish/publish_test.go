@@ -16,17 +16,17 @@ func TestLoadConfigDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.MarksPrefix != "marks" || c.RawPrefix != "raw" {
+	if c.MarksPrefix != "marks" || c.RawPrefix != "raw" || c.DatasetsPrefix != "datasets" {
 		t.Errorf("missing prefixes should default: %+v", c)
 	}
 }
 
-func TestMarkURLs(t *testing.T) {
-	c := Config{BaseURL: "https://base.r2.dev/", Bucket: "b", MarksPrefix: "marks", RawPrefix: "raw"}
-	if got := c.MarkObjectKey("m1", "episodes.csv.gz"); got != "marks/m1/episodes.csv.gz" {
+func TestDatasetURLs(t *testing.T) {
+	c := Config{BaseURL: "https://base.r2.dev/", Bucket: "b", DatasetsPrefix: "datasets"}
+	if got := c.DatasetObjectKey("episodes.parquet"); got != "datasets/episodes.parquet" {
 		t.Errorf("object key: %q", got)
 	}
-	if got := c.MarkArtifactURL("m1", "episodes.csv.gz"); got != "https://base.r2.dev/marks/m1/episodes.csv.gz" {
+	if got := c.DatasetArtifactURL("episodes.parquet"); got != "https://base.r2.dev/datasets/episodes.parquet" {
 		t.Errorf("artifact URL (trailing slash should be trimmed): %q", got)
 	}
 }

@@ -22,7 +22,6 @@ func demoMark(id string, series schema.Series) schema.Mark {
 			Outcome: schema.Variable{Name: "later", Description: "later score"}, Estimand: "RD effect",
 		},
 		Context: schema.Context{Description: "schools", CovariateNames: []string{"prior"}},
-		Data:    schema.DataArtifact{URI: "https://x/e.csv.gz", SHA256: "abc", Rows: 100, Columns: []string{"unit_id"}},
 		Effect: schema.Distribution{
 			Central: 0.03, StdDev: f64(0.07),
 			Interval:          &schema.Interval{Level: 0.95, Lower: -0.05, Upper: 0.26},
@@ -47,8 +46,8 @@ func TestToRecord(t *testing.T) {
 	if r.SamplingSD < 0.03 || r.SamplingSD > 0.04 || r.IdentSD < 0.06 || r.IdentSD > 0.07 {
 		t.Errorf("uncertainty split sds wrong: sampling=%v ident=%v", r.SamplingSD, r.IdentSD)
 	}
-	if r.MarkJSONPath != "marks/m1.json" || r.EpisodeURL != "https://x/e.csv.gz" {
-		t.Errorf("links wrong: %+v", r)
+	if r.MarkJSONPath != "marks/m1.json" {
+		t.Errorf("mark json path wrong: %+v", r)
 	}
 }
 

@@ -24,7 +24,6 @@ func validMark() Mark {
 			Outcome:         Variable{Name: "score_later"},
 			Estimand:        "sharp RD effect",
 		},
-		Data:       DataArtifact{URI: "https://x/e.csv.gz", SHA256: "abc", Format: "csv.gz", Rows: 10},
 		Effect:     Distribution{Central: 0.1, Interval: &Interval{Level: 0.95, Lower: -0.1, Upper: 0.3}},
 		Dossier:    ValidityDossier{Admitted: true},
 		Provenance: goodProvenance(),
@@ -47,7 +46,7 @@ func TestMarkRoundTrip(t *testing.T) {
 		t.Fatalf("LoadMark: %v", err)
 	}
 	if got.ID != m.ID || got.Series != m.Series || got.Effect.Central != m.Effect.Central ||
-		got.Design.Cutoff != m.Design.Cutoff || got.Data.SHA256 != m.Data.SHA256 {
+		got.Design.Cutoff != m.Design.Cutoff {
 		t.Fatalf("round-trip mismatch:\n got %+v\nwant %+v", got, m)
 	}
 }
@@ -86,14 +85,6 @@ func TestMarkValidateEdgeCases(t *testing.T) {
 	bad = base
 	bad.Design.Direction = "sideways"
 	mustReject(t, bad, "unknown direction")
-
-	bad = base
-	bad.Data.SHA256 = ""
-	mustReject(t, bad, "data without hash")
-
-	bad = base
-	bad.Data.Rows = 0
-	mustReject(t, bad, "data with zero rows")
 
 	bad = base
 	bad.RDDType = Fuzzy // fuzzy needs a first stage

@@ -31,8 +31,16 @@ if [ "$VERIFY_ONLY" -eq 0 ]; then
     echo "error: rclone remote '${REMOTE}:' not configured (see PUBLISHING.md)" >&2
     exit 1
   fi
-  echo ">> uploading episode sidecars  -> ${REMOTE}:${BUCKET}/marks"
-  rclone copy dist/marks "${REMOTE}:${BUCKET}/marks" --progress
+  # Only two datasets are published: the episodes dataset (rows) and the frozen
+  # raw inputs (reproducibility). The marks (metadata) live in git, not R2. The
+  # per-mark episode tables under dist/marks are a build intermediate and are NOT
+  # uploaded — their rows ship inside the unified episodes dataset, keyed by mark_id.
+  if [ -f dist/hf/episodes/episodes.parquet ]; then
+    echo ">> uploading episodes dataset  -> ${REMOTE}:${BUCKET}/datasets/episodes.parquet"
+    rclone copyto dist/hf/episodes/episodes.parquet "${REMOTE}:${BUCKET}/datasets/episodes.parquet" --progress
+  else
+    echo "warning: dist/hf/episodes/episodes.parquet not found (run \`make hf\` first)" >&2
+  fi
   echo ">> mirroring frozen inputs     -> ${REMOTE}:${BUCKET}/raw"
   rclone copy data/cache "${REMOTE}:${BUCKET}/raw" --progress
 fi
@@ -43,7 +51,7 @@ echo ">> verifying published artifacts resolve and match recorded hashes"
 fail=0
 sha256() { shasum -a 256 "$1" | cut -d' ' -f1; }
 
-# Per-mark episode tables: full hash check (small files).
+# Datasets (the row-by-row episodes Parquet): full hash check.
 while IFS=$'\t' read -r uri want; do
   [ -z "$uri" ] && continue
   tmp="$(mktemp)"
@@ -59,8 +67,8 @@ while IFS=$'\t' read -r uri want; do
   fi
   rm -f "$tmp"
 done < <(python3 -c "import glob,json
-for p in sorted(glob.glob('marks/*.json')):
-    d=json.load(open(p)).get('data',{})
+for p in sorted(glob.glob('datasets/*.manifest.json')):
+    d=json.load(open(p))
     if d.get('uri') and d.get('sha256'): print(d['uri']+chr(9)+d['sha256'])")
 
 # Frozen-input mirror: HEAD check (files can be large).

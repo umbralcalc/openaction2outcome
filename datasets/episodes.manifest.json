@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.4.0",
+  "id": "episodes",
+  "format": "parquet",
+  "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/datasets/episodes.parquet",
+  "sha256": "825022ea6303ec3f17e2fe5f97a59dd4fad9b4f0e76053027eb7253c066ecfeb",
+  "bytes": 204793,
+  "rows": 3879,
+  "columns": [
+    "mark_id",
+    "series",
+    "unit_id",
+    "unit_name",
+    "running_value",
+    "cutoff",
+    "distance_to_cutoff",
+    "direction",
+    "covariates",
+    "assigned",
+    "treated",
+    "action",
+    "alternative",
+    "outcome",
+    "outcome_observed",
+    "effect_central",
+    "effect_lower",
+    "effect_upper",
+    "effect_interval_level",
+    "effect_std_dev"
+  ],
+  "series": [
+    "bathing-water",
+    "floor-standards",
+    "shmi"
+  ],
+  "join_key": "mark_id -\u003e the mark's id (and the per-series Hugging Face configs)",
+  "outcome": "the later observed outcome; outcome_observed=false (outcome null) when a unit has no linked outcome",
+  "description": "Every mark's episode rows, unioned: one row per unit, giving its context before the decision (covariates, running_value/distance_to_cutoff), what was done (assigned/treated), and the outcome that followed — the (state, action, reward) view for model training. The full effect distribution stays in the marks, joinable on mark_id."
+}

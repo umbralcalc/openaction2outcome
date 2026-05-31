@@ -112,13 +112,10 @@ func BuildSHMIFuzzy(rawDir, cacheDir, distDir string, cfg publish.Config) (schem
 		return zero, fmt.Errorf("shmi-fuzzy: too few complete cases (%d)", len(pts))
 	}
 
-	wa, err := publish.WriteEpisodesCSVGz(distDir, shmiFuzzyMarkID, "episodes.csv.gz", shmiFuzzyEpisodeColumns, shmiFuzzyEpisodeRows(episodes))
-	if err != nil {
+	// Stage the analysis-ready episode rows as a build intermediate (not published
+	// per-mark; reshaped into the one `episodes` dataset at export, joinable on ID).
+	if _, err := publish.WriteEpisodesCSVGz(distDir, shmiFuzzyMarkID, "episodes.csv.gz", shmiFuzzyEpisodeColumns, shmiFuzzyEpisodeRows(episodes)); err != nil {
 		return zero, err
-	}
-	data := schema.DataArtifact{
-		URI: cfg.MarkArtifactURL(shmiFuzzyMarkID, "episodes.csv.gz"), SHA256: wa.SHA256,
-		Format: "csv.gz", Rows: wa.Rows, Bytes: wa.Bytes, Columns: shmiFuzzyEpisodeColumns,
 	}
 
 	fuzzy := sbi.EstimateFuzzyBMA(pts, 0, sbi.DefaultSHMISpecs(), false,
@@ -197,7 +194,6 @@ func BuildSHMIFuzzy(rawDir, cacheDir, distDir string, cfg publish.Config) (schem
 			CovariateNames: []string{"expected_deaths", "decision_shmi"},
 			Population:     fmt.Sprintf("%d acute trusts in the %s window", len(episodes), shmiFuzzyDecisionWindow),
 		},
-		Data:    data,
 		Sample:  nearCutoffSample(episodes, 0),
 		Effect:  effect,
 		Dossier: dossier,

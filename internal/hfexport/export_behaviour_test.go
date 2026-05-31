@@ -68,7 +68,6 @@ func TestRecordRobustToMissingOptionalFields(t *testing.T) {
 		SchemaVersion: schema.SchemaVersion, ID: "bare", Series: schema.SeriesSHMI,
 		Domain: "Health", UnitType: "nhs-trust", RDDType: schema.Sharp,
 		Design: schema.Design{Direction: schema.AboveTreated, Cutoff: 0},
-		Data:   schema.DataArtifact{URI: "u", SHA256: "h", Rows: 1},
 		Effect: schema.Distribution{Central: 0.1, Interval: &schema.Interval{Level: 0.95, Lower: -0.1, Upper: 0.3}},
 	}
 	r := ToRecord(bare)

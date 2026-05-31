@@ -61,12 +61,9 @@ The interval width separates into two sources:
 
 ## Data
 
-The analysis-ready episode table (one row per unit) is published separately:
+The analysis-ready rows (one per unit) live in the single published `episodes` dataset, alongside every other mark's rows. Recover this mark's rows by filtering on `mark_id == "shmi-higher-than-expected-banding"`. The dataset's download URL and content hash are in `datasets/episodes.manifest.json`.
 
-- **URL:** https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/shmi-higher-than-expected-banding/episodes.csv.gz
-- **SHA-256:** `bdf9ef119fff440dd07684f6dad139abfc9fd8f47d9ad5cc35d77476605f915c`
-- **Rows:** 368  ·  **Format:** csv.gz
-- **Columns:** unit_id, unit_name, running_value, assigned, treated, outcome, expected_deaths, decision_shmi
+- **Covariates (state):** expected_deaths, decision_shmi
 
 ## Provenance
 
@@ -76,4 +73,4 @@ Point-in-time order: context as-of `2018-04-01` ≤ decision `2024-03-31` < outc
 
 - Summary Hospital-level Mortality Indicator (SHMI) — historical trust-level data (release Oct 2024 - Sep 2025) — NHS England (NHS Digital). Licence: Open Government Licence v3.0. SHA-256 `0e67d902cab0084c9f7a61a67de4e8b94f21b06b45cfeb1c50982f48f45e2a5f`.
 
-**Reproducibility:** go go1.25.2, openaction2outcome 0.3.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.
+**Reproducibility:** go go1.25.2, openaction2outcome 0.4.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.

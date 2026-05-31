@@ -68,12 +68,9 @@ The interval width separates into two sources:
 
 ## Data
 
-The analysis-ready episode table (one row per unit) is published separately:
+The analysis-ready rows (one per unit) live in the single published `episodes` dataset, alongside every other mark's rows. Recover this mark's rows by filtering on `mark_id == "bathing-water-poor-2015"`. The dataset's download URL and content hash are in `datasets/episodes.manifest.json`.
 
-- **URL:** https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/bathing-water-poor-2015/episodes.csv.gz
-- **SHA-256:** `c8d2e34b886d64cc16e8f2eefc163221bb0c34c8d55b79bf675d5a302a237e02`
-- **Rows:** 413  ·  **Format:** csv.gz
-- **Columns:** unit_id, unit_name, running_value, assigned, treated, outcome, ie_sample_count, is_inland, impacted_by_heavy_rain
+- **Covariates (state):** ie_sample_count, is_inland, impacted_by_heavy_rain
 
 ## Provenance
 
@@ -84,4 +81,4 @@ Point-in-time order: context as-of `2015-12-31` ≤ decision `2016-03-01` < outc
 - Bathing-water annual compliance classifications + E. coli / intestinal enterococci percentile statistics, England 2015-2024 (revised Bathing Water Directive) — Environment Agency (Defra). Licence: Open Government Licence v3.0. SHA-256 `faec1609564a1a170f62aed3846f4a33ba5e92ce8995cc1027fad5d2554bc0cc`.
 - Bathing-water per-sample microbiology (E. coli / intestinal enterococci counts + discountable flag) for near-cutoff sites, England 2015-2024 — Environment Agency (Defra). Licence: Open Government Licence v3.0. SHA-256 `95a104b64d07ab5b0c69199ff00b529b2d6b03629b57e4971c093032bc9f0fe2`.
 
-**Reproducibility:** go go1.25.2, openaction2outcome 0.3.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.
+**Reproducibility:** go go1.25.2, openaction2outcome 0.4.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.

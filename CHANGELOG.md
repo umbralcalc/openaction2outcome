@@ -4,6 +4,34 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## Unreleased
+
+Restructures distribution around the dataset model: there are now exactly **two
+datasets**, normalised on `mark_id` — the marks (metadata, in git) and a single
+row-per-unit `episodes` dataset (the rows, in object storage).
+
+### New dataset
+- **`episodes`** — every mark's per-unit rows, unioned into one table for model
+  training: each unit's context before the decision (`covariates`,
+  `running_value`/`distance_to_cutoff`/`direction`), what was done (`assigned`/`treated`,
+  `action`/`alternative`), and the `outcome` that followed (`outcome_observed` flags
+  attrition). The (state, action, reward) view, in the dataset's own terms. Published as
+  one deterministic, content-addressed Parquet (object storage) and loadable as the
+  Hugging Face `episodes` config; pointed to by `datasets/episodes.manifest.json`. Each
+  row carries `mark_id` (+ scalar `effect_*` summaries) to join back to the mark's full
+  effect distribution.
+
+### Schema (`schema_version` 0.3.0 → 0.4.0)
+- **Breaking:** removed the per-mark `data` artifact (`DataArtifact`). A mark is now pure
+  metadata; its rows live in the `episodes` dataset, recovered by filtering on the mark
+  `id`. Per-mark episode tables are no longer published — they are a build intermediate
+  feeding the episodes reshape.
+
+### Storage
+- Object storage now holds just the `episodes` Parquet plus the frozen raw-input mirror
+  (reproducibility). The mark-level Hugging Face records drop the `episode_table_*`
+  fields. See [specs/4_EPISODES_DATASET_SPEC.md](specs/4_EPISODES_DATASET_SPEC.md).
+
 ## v0.2.0 — 2026-05-31
 
 Adds a third series and the first environmental-domain mark, taking the

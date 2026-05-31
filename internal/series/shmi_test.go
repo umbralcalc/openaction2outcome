@@ -44,14 +44,16 @@ func TestBuildSHMIRealData(t *testing.T) {
 	if ub == nil || ub.Specification == nil || *ub.Specification <= 0 {
 		t.Fatalf("expected a non-trivial identification component, got %+v", ub)
 	}
-	// Pooled trust-years: a healthy number of episodes and a real near-cutoff sample.
-	if m.Data.Rows < 200 {
-		t.Fatalf("unexpectedly few pooled trust-years: %d", m.Data.Rows)
-	}
+	// Pooled trust-years: a real near-cutoff sample, with the rows staged as a
+	// build intermediate (reshaped into the episodes dataset at export).
 	if len(m.Sample) == 0 {
 		t.Fatal("expected a near-cutoff sample")
 	}
-	if _, err := os.Stat(filepath.Join(distDir, "marks", m.ID, "episodes.csv.gz")); err != nil {
-		t.Fatalf("episode sidecar not staged: %v", err)
+	fi, err := os.Stat(filepath.Join(distDir, "marks", m.ID, "episodes.csv.gz"))
+	if err != nil {
+		t.Fatalf("episode rows not staged: %v", err)
+	}
+	if fi.Size() < 1024 {
+		t.Fatalf("staged episode rows unexpectedly small: %d bytes", fi.Size())
 	}
 }

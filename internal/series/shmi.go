@@ -119,14 +119,10 @@ func BuildSHMI(rawDir, cacheDir, distDir string, cfg publish.Config) (schema.Mar
 		return zero, fmt.Errorf("shmi: too few linked trust-years (%d) to estimate", len(estPts))
 	}
 
-	// Stage the analysis-ready episode table.
-	wa, err := publish.WriteEpisodesCSVGz(distDir, shmiMarkID, "episodes.csv.gz", shmiEpisodeColumns, shmiEpisodeRows(episodes))
-	if err != nil {
+	// Stage the analysis-ready episode rows as a build intermediate (not published
+	// per-mark; reshaped into the one `episodes` dataset at export, joinable on ID).
+	if _, err := publish.WriteEpisodesCSVGz(distDir, shmiMarkID, "episodes.csv.gz", shmiEpisodeColumns, shmiEpisodeRows(episodes)); err != nil {
 		return zero, err
-	}
-	data := schema.DataArtifact{
-		URI: cfg.MarkArtifactURL(shmiMarkID, "episodes.csv.gz"), SHA256: wa.SHA256,
-		Format: "csv.gz", Rows: wa.Rows, Bytes: wa.Bytes, Columns: shmiEpisodeColumns,
 	}
 
 	// Model-averaged SBI estimate (the flagged side is ABOVE the cutoff).
@@ -205,7 +201,6 @@ func BuildSHMI(rawDir, cacheDir, distDir string, cfg publish.Config) (schema.Mar
 			CovariateNames: []string{"expected_deaths", "decision_shmi"},
 			Population:     fmt.Sprintf("%d pooled trust-years across non-overlapping reporting windows", len(episodes)),
 		},
-		Data:    data,
 		Sample:  nearCutoffSample(episodes, shmiCutoff),
 		Effect:  effect,
 		Dossier: dossier,

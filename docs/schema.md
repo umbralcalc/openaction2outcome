@@ -2,13 +2,16 @@
 
 This is the field-by-field reference for everything you download or submit. The
 Go types it describes live in [`pkg/schema`](../pkg/schema); the version string is
-`schema_version` (currently `0.3.0`).
+`schema_version` (currently `0.4.0`).
 
 There are three things to know about:
 
-1. **A mark** — one causally-validated reference point (a JSON file in [`marks/`](../marks)).
-2. **An episode table** — the per-unit data behind a mark (a gzipped CSV in object storage).
+1. **A mark** — one causally-validated reference point (a JSON file in [`marks/`](../marks)). This is the *metadata*.
+2. **The `episodes` dataset** — the per-unit rows behind every mark, unioned into one table (a Parquet in object storage), joined to the marks on `mark_id`.
 3. **A submission** — what you send to be scored, and the score you get back.
+
+There are only ever those two datasets — the marks (metadata, in git) and the
+episodes dataset (rows, in object storage) — normalised on `mark_id`.
 
 ---
 
@@ -29,8 +32,7 @@ width is honest about how much is genuinely uncertain), not a single number.
 | `rdd_type` | string | `sharp` (crossing the cutoff always triggers the action) or `fuzzy` (it changes the probability). |
 | `design` | object | What is being estimated — see below. |
 | `context` | object | Pre-decision information a model is allowed to use. |
-| `data` | object | Pointer to the episode table — see Episode table below. |
-| `sample` | array | A small inline excerpt of episode rows nearest the cutoff, for quick inspection. |
+| `sample` | array | A small inline excerpt of episode rows nearest the cutoff, for quick inspection (the full rows are in the `episodes` dataset, keyed by this mark's `id`). |
 | `effect` | object | The mark itself: the effect distribution — see below. |
 | `dossier` | object | The validity checks the mark passed — see below. |
 | `provenance` | object | Sources, licences, timestamps, and reproducibility metadata. |
@@ -85,32 +87,35 @@ mark byte-for-byte.
 
 ---
 
-## 2. Episode table
+## 2. The `episodes` dataset
 
-The analysis-ready data behind a mark: one row per unit. It is **not** in git —
-it is a gzipped CSV in object storage, referenced from the mark's `data` field by
-URL and SHA-256 so you can verify your download. You only need it if you want to
-train or refit on the raw rows; scoring a model does not require it.
+The analysis-ready rows behind every mark, unioned into one table: one row per unit.
+It is **not** in git — it is a single Parquet in object storage, pointed to by
+[`datasets/episodes.manifest.json`](../datasets/episodes.manifest.json) (download URL +
+SHA-256, so you can verify your download). You only need it if you want to train or
+refit on the rows; scoring a model does not require it. Filter on `mark_id` to get one
+mark's rows. Loadable from Hugging Face as the `episodes` config.
 
-| `data` field | Meaning |
-|---|---|
-| `uri` | Download URL. |
-| `sha256` | Content hash — verify after download. |
-| `format` | e.g. `csv.gz`. |
-| `rows` | Number of units. |
-| `columns` | Column names (also below). |
+It is the **(state, action, reward)** view, in this dataset's own terms — the unit's
+context before the decision, what was done, and the outcome that followed:
 
-Columns:
-
-| Column | Meaning |
-|---|---|
-| `unit_id` | Stable identifier for the institution (e.g. school URN). |
-| `unit_name` | Human-readable name. |
-| `running_value` | The running variable at decision time. |
-| `assigned` | `true` if the running value puts the unit on the action side of the cutoff. |
-| `treated` | Whether the action was actually received (can differ from `assigned` under fuzzy designs). |
-| `outcome` | The later outcome (blank if not linked). |
-| *(remaining columns)* | Pre-decision covariates listed in the mark's `context.covariate_names`. |
+| Column | Role | Meaning |
+|---|---|---|
+| `mark_id` | join | Which mark this row belongs to — the join key to the mark's metadata + full effect. |
+| `series` | join | The mark's series. |
+| `unit_id` | id | Stable identifier for the institution (e.g. school URN). |
+| `unit_name` | id | Human-readable name. |
+| `running_value` | state | The running variable at decision time. |
+| `cutoff` | state | The mark's threshold. |
+| `distance_to_cutoff` | state | `running_value − cutoff` (signed). |
+| `direction` | state | Which side of the cutoff is treated. |
+| `covariates` | state | The pre-decision covariates, as a key-sorted list of `{name, value}` (those in the mark's `context.covariate_names`). |
+| `assigned` | action | `true` if the running value puts the unit on the action side of the cutoff. |
+| `treated` | action | Whether the action was actually received (can differ from `assigned` under fuzzy designs); null if unknown. |
+| `action`, `alternative` | action | The textual action and its counterfactual (from the mark). |
+| `outcome` | reward | The later observed outcome; null when unobserved. |
+| `outcome_observed` | reward | `false` when the unit has no linked outcome (e.g. attrition). |
+| `effect_central`, `effect_lower`, `effect_upper`, `effect_interval_level`, `effect_std_dev` | — | A scalar summary of the mark's effect, inlined for convenience. The full posterior (quantiles, samples) stays in the mark — join on `mark_id`. |
 
 ---
 

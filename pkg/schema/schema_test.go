@@ -65,7 +65,6 @@ func TestMarkAssignmentConsistency(t *testing.T) {
 			Interval: &Interval{Level: 0.95, Lower: 0.3, Upper: 0.7},
 		},
 		Provenance: goodProvenance(),
-		Data:       DataArtifact{URI: "https://example/episodes.csv.gz", SHA256: "deadbeef", Format: "csv.gz", Rows: 2},
 		Sample: []Observation{
 			{UnitID: "la1", RunningValue: 12, Assigned: true},  // below cutoff -> treated
 			{UnitID: "la2", RunningValue: 55, Assigned: false}, // above cutoff -> control

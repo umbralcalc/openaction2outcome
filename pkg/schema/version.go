@@ -13,7 +13,7 @@ package schema
 // SchemaVersion is the version of the Mark/Submission schema. It is written
 // into every emitted Mark and is checked by the evaluator. Bump on any
 // breaking change to the wire format.
-const SchemaVersion = "0.3.0"
+const SchemaVersion = "0.4.0"
 
 // Series identifies which institutional-decision family a mark belongs to.
 type Series string

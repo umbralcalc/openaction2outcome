@@ -20,10 +20,11 @@ import (
 
 // Config is publish.json: where published artifacts are served from.
 type Config struct {
-	BaseURL     string `json:"base_url"`
-	Bucket      string `json:"bucket"`
-	RawPrefix   string `json:"raw_prefix"`
-	MarksPrefix string `json:"marks_prefix"`
+	BaseURL        string `json:"base_url"`
+	Bucket         string `json:"bucket"`
+	RawPrefix      string `json:"raw_prefix"`
+	MarksPrefix    string `json:"marks_prefix"`
+	DatasetsPrefix string `json:"datasets_prefix"`
 }
 
 // LoadConfig reads publish.json.
@@ -42,17 +43,29 @@ func LoadConfig(path string) (Config, error) {
 	if c.RawPrefix == "" {
 		c.RawPrefix = "raw"
 	}
+	if c.DatasetsPrefix == "" {
+		c.DatasetsPrefix = "datasets"
+	}
 	return c, nil
 }
 
-// MarkObjectKey is the bucket key for a per-mark artifact.
-func (c Config) MarkObjectKey(markID, name string) string {
-	return c.MarksPrefix + "/" + markID + "/" + name
+// DatasetObjectKey is the bucket key for a published derived dataset (e.g. the
+// unified row-by-row episodes table). Datasets are not per-mark; they live under
+// their own prefix.
+func (c Config) DatasetObjectKey(name string) string {
+	return c.datasetsPrefix() + "/" + name
 }
 
-// MarkArtifactURL is the public download URL for a per-mark artifact.
-func (c Config) MarkArtifactURL(markID, name string) string {
-	return strings.TrimRight(c.BaseURL, "/") + "/" + c.MarkObjectKey(markID, name)
+// DatasetArtifactURL is the public download URL for a published dataset artifact.
+func (c Config) DatasetArtifactURL(name string) string {
+	return strings.TrimRight(c.BaseURL, "/") + "/" + c.DatasetObjectKey(name)
+}
+
+func (c Config) datasetsPrefix() string {
+	if c.DatasetsPrefix == "" {
+		return "datasets"
+	}
+	return c.DatasetsPrefix
 }
 
 // WrittenArtifact describes a staged artifact: its local staging path, content
@@ -64,9 +77,10 @@ type WrittenArtifact struct {
 	Rows   int
 }
 
-// WriteEpisodesCSVGz writes the episode table to distDir/marks/<markID>/<name>
+// WriteEpisodesCSVGz writes a mark's episode rows to distDir/marks/<markID>/<name>
 // as deterministic gzip (no embedded name/mtime), returning its content hash and
-// size so the mark can reference it. Determinism keeps re-mints byte-identical.
+// size. This is a build intermediate consumed by the episodes export — it is not
+// published per-mark. Determinism keeps re-mints byte-identical.
 func WriteEpisodesCSVGz(distDir, markID, name string, header []string, rows [][]string) (WrittenArtifact, error) {
 	var wa WrittenArtifact
 	dir := filepath.Join(distDir, "marks", markID)

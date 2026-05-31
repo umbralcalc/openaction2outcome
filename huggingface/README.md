@@ -24,6 +24,10 @@ configs:
   data_files:
   - split: test
     path: bathing_water.jsonl
+- config_name: episodes
+  data_files:
+  - split: train
+    path: episodes/episodes.parquet
 ---
 
 # OpenAction2Outcome — real reference points for testing counterfactual models
@@ -73,10 +77,57 @@ mark["effect_central"], mark["effect_lower"], mark["effect_upper"]
 Each row carries the decision setup (`running_variable`, `cutoff`, `action`,
 `alternative`, `outcome`), the effect distribution (`effect_central`,
 `effect_lower/upper`, `effect_std_dev`, `effect_quantiles`, `effect_samples`, and
-the `effect_sampling_sd` vs `effect_identification_sd` split), the validity
-verdict (`admitted`), and a link to the full per-unit **episode table**
-(`episode_table_url` + `episode_table_sha256`) for those who want the raw rows.
+the `effect_sampling_sd` vs `effect_identification_sd` split), and the validity
+verdict (`admitted`). The per-unit rows behind each mark are not here — they live in
+the `episodes` config below, joinable on the mark `id`.
 Full field reference: [docs/schema.md](https://github.com/umbralcalc/openaction2outcome/blob/main/docs/schema.md).
+
+## The `episodes` config — one row per unit
+
+The marks above are the *mark-level* view (one row per decision, carrying the full
+effect distribution). The `episodes` config is the *unit-level* view: every unit of
+every series, unioned into one table for model training. It is the
+**(state, action, reward)** view, in the terms the rest of the dataset already uses —
+the unit's **context before the decision**, **what was done** to it, and the
+**outcome** that followed:
+
+```python
+ep = load_dataset("umbralcalc/openaction2outcome", "episodes")["train"]
+row = ep[0]
+row["covariates"]                  # context: [{'name': 'ks2_prior_attainment', 'value': ...}, ...]
+row["assigned"], row["treated"]    # what was done: assigned side / realized receipt
+row["outcome"], row["outcome_observed"]   # what followed (outcome null when unobserved)
+row["mark_id"]                     # join key back to the calibrated effect
+```
+
+Each row carries:
+
+- **context before the decision** (the *state*) — `running_value`, `cutoff`,
+  `distance_to_cutoff` (signed), `direction`, and `covariates`: a key-sorted list of
+  `{name, value}` pairs (the per-unit pre-treatment covariates; series-specific
+  covariates live here so one schema spans every series).
+- **what was done** (the *action*) — `assigned` (the cutoff side), `treated` (realized
+  receipt, nullable under fuzzy assignment), and the textual `action` / `alternative`.
+- **what followed** (the *reward*) — `outcome`, the later observed outcome;
+  `outcome_observed` is `false` (and `outcome` null) when a unit has no linked outcome
+  (e.g. attrition).
+
+The **calibrated causal effect is not denormalised onto every row** — it is a
+*local-to-cutoff* estimand of the *mark*, not a per-row label. Each row carries a
+`mark_id` (and `series`) join key back to where the full posterior lives — the marks
+and the per-series configs above — plus a few scalar conveniences
+(`effect_central/_lower/_upper/_interval_level/_std_dev`):
+
+```python
+fs = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]
+effect_by_mark = {m["id"]: m for m in fs}
+mark_for_row = effect_by_mark[row["mark_id"]]   # full effect_quantiles / effect_samples
+```
+
+That join is the whole storage model: just **two datasets** — the marks (metadata)
+and `episodes` (rows) — normalised on `mark_id`, nothing duplicated. The Parquet is
+content-addressed and also published to object storage (see the repo's
+`datasets/episodes.manifest.json`).
 
 ## Score your model
 

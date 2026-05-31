@@ -27,10 +27,6 @@ func sampleMark() schema.Mark {
 			Estimand:        "sharp RD effect at the cutoff",
 		},
 		Context: schema.Context{Description: "schools", CovariateNames: []string{"prior_attainment"}},
-		Data: schema.DataArtifact{
-			URI: "https://example/episodes.csv.gz", SHA256: "deadbeef", Format: "csv.gz",
-			Rows: 3098, Columns: []string{"unit_id", "running_value", "outcome"},
-		},
 		Effect: schema.Distribution{
 			Central:  0.03,
 			StdDev:   f64(0.07),
@@ -72,7 +68,7 @@ func TestRenderContainsKeySections(t *testing.T) {
 		"prior_attainment", // covariate row
 		"Placebo cutoffs",  // placebo section
 		"## Data",
-		"deadbeef", // data hash
+		"mark_id", // episodes-dataset join key
 		"## Provenance",
 		"context as-of",  // point-in-time line
 		"OGL v3.0",       // source licence

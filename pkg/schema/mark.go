@@ -32,14 +32,14 @@ type Mark struct {
 	// covariates the decision-maker observed before acting (pre-treatment only).
 	Context Context `json:"context"`
 
-	// Data references the full analysis-ready episode table the RDD is fit on
-	// (one row per unit × decision-period, pinned to its decision-time vintage).
-	// The table is published as a downloadable artifact (object storage), NOT
-	// embedded — keeping the mark itself a small, diffable instrument and the
-	// bulky rows in convenient columnar form for model trainers. Integrity is
-	// guaranteed by Data.SHA256; the table is also re-derivable byte-for-byte
-	// from the frozen inputs + the deterministic build.
-	Data DataArtifact `json:"data"`
+	// The full analysis-ready rows the RDD is fit on (one row per unit ×
+	// decision-period) are NOT embedded here. They live, alongside every other
+	// mark's rows, in the single published `episodes` dataset (object storage),
+	// where they are recovered by filtering on this mark's ID. Keeping the rows
+	// out of the mark keeps the mark a small, diffable metadata instrument; the
+	// episodes dataset is re-derivable byte-for-byte from the frozen inputs + the
+	// deterministic build. The two stored artifacts are exactly: the marks (here,
+	// in git) and the episodes dataset (in object storage), joined on ID.
 
 	// Sample is a small inline excerpt of the episode rows nearest the cutoff,
 	// for human inspection/audit without downloading the full table. Optional.
@@ -91,19 +91,6 @@ const (
 	// (e.g. "most deprived" indices where a *lower* rank means more deprived).
 	BelowTreated Direction = "below-treated"
 )
-
-// DataArtifact references the published analysis-ready episode table for a mark.
-// It is content-addressed by SHA256 so a consumer can verify the download, and
-// carries enough metadata (format, rows, columns) to use the table without the
-// mint. URI is the download location (e.g. an R2/object-store URL).
-type DataArtifact struct {
-	URI     string   `json:"uri"`
-	SHA256  string   `json:"sha256"`
-	Format  string   `json:"format"` // e.g. "csv.gz", "parquet"
-	Rows    int      `json:"rows"`
-	Bytes   int64    `json:"bytes,omitempty"`
-	Columns []string `json:"columns,omitempty"`
-}
 
 // Variable describes a named quantity with its units and open-data source.
 type Variable struct {
@@ -177,13 +164,6 @@ func (m Mark) Validate() error {
 	}
 	if err := m.Provenance.Validate(); err != nil {
 		return fmt.Errorf("mark %q provenance: %w", m.ID, err)
-	}
-	// The external episode table must be referenced and content-addressed.
-	if m.Data.URI == "" || m.Data.SHA256 == "" {
-		return fmt.Errorf("mark %q: data artifact must have a uri and sha256", m.ID)
-	}
-	if m.Data.Rows <= 0 {
-		return fmt.Errorf("mark %q: data artifact must report a positive row count", m.ID)
 	}
 	// Assignment consistency of the inline sample rows (if any).
 	for i, o := range m.Sample {

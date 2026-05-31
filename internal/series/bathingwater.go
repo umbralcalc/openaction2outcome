@@ -155,18 +155,10 @@ func BuildBathingWater(rawDir, cacheDir, distDir string, cfg publish.Config) (sc
 		return zero, fmt.Errorf("bathing-water: too few complete cases (%d) to estimate", len(estPts))
 	}
 
-	// Stage the analysis-ready episode table.
-	wa, err := publish.WriteEpisodesCSVGz(distDir, bwMarkID, "episodes.csv.gz", bwEpisodeColumns, bwEpisodeRows(episodes))
-	if err != nil {
+	// Stage the analysis-ready episode rows as a build intermediate (not published
+	// per-mark; reshaped into the one `episodes` dataset at export, joinable on ID).
+	if _, err := publish.WriteEpisodesCSVGz(distDir, bwMarkID, "episodes.csv.gz", bwEpisodeColumns, bwEpisodeRows(episodes)); err != nil {
 		return zero, err
-	}
-	data := schema.DataArtifact{
-		URI:     cfg.MarkArtifactURL(bwMarkID, "episodes.csv.gz"),
-		SHA256:  wa.SHA256,
-		Format:  "csv.gz",
-		Rows:    wa.Rows,
-		Bytes:   wa.Bytes,
-		Columns: bwEpisodeColumns,
 	}
 
 	// --- estimate the discontinuity (honest model-averaged SBI interval).
@@ -276,7 +268,6 @@ func BuildBathingWater(rawDir, cacheDir, distDir string, cfg publish.Config) (sc
 			CovariateNames: []string{"ie_sample_count", "is_inland", "impacted_by_heavy_rain"},
 			Population:     fmt.Sprintf("%d designated bathing waters with a usable 2015 compliance margin", len(episodes)),
 		},
-		Data:    data,
 		Sample:  nearCutoffSample(episodes, bwCutoff),
 		Effect:  effect,
 		Dossier: dossier,

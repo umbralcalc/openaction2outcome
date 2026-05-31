@@ -117,14 +117,13 @@ func Render(m schema.Mark) string {
 
 	// Data.
 	w("## Data\n\n")
-	w("The analysis-ready episode table (one row per unit) is published separately:\n\n")
-	w("- **URL:** %s\n", m.Data.URI)
-	w("- **SHA-256:** `%s`\n", m.Data.SHA256)
-	w("- **Rows:** %d  ·  **Format:** %s\n", m.Data.Rows, m.Data.Format)
-	if len(m.Data.Columns) > 0 {
-		w("- **Columns:** %s\n", strings.Join(m.Data.Columns, ", "))
+	w("The analysis-ready rows (one per unit) live in the single published `episodes` "+
+		"dataset, alongside every other mark's rows. Recover this mark's rows by filtering "+
+		"on `mark_id == %q`. The dataset's download URL and content hash are in "+
+		"`datasets/episodes.manifest.json`.\n\n", m.ID)
+	if len(m.Context.CovariateNames) > 0 {
+		w("- **Covariates (state):** %s\n\n", strings.Join(m.Context.CovariateNames, ", "))
 	}
-	w("\n")
 
 	// Provenance.
 	w("## Provenance\n\n")
