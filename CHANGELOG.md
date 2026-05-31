@@ -4,11 +4,12 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
-## Unreleased
+## v1.0.0 — 2026-05-31
 
-Restructures distribution around the dataset model: there are now exactly **two
-datasets**, normalised on `mark_id` — the marks (metadata, in git) and a single
-row-per-unit `episodes` dataset (the rows, in object storage).
+First stable release. Restructures distribution around the dataset model: there
+are now exactly **two datasets**, normalised on `mark_id` — the marks (metadata,
+in git) and a single row-per-unit `episodes` dataset (the rows, in object
+storage).
 
 ### New dataset
 - **`episodes`** — every mark's per-unit rows, unioned into one table for model
