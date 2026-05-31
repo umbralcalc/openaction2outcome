@@ -1,0 +1,17 @@
+{
+  "source_id": "bathing-water-samples-2015-2024",
+  "title": "Bathing-water per-sample microbiology (E. coli / intestinal enterococci counts + discountable flag) for near-cutoff sites, England 2015-2024",
+  "publisher": "Environment Agency (Defra)",
+  "landing_page": "https://environment.data.gov.uk/bwq/",
+  "download_uri": "https://environment.data.gov.uk/data/bathing-water-quality/",
+  "r2_object_key": "raw/bathing-water-samples-2015-2024/bathing_water_samples.csv",
+  "local_path": "bathing_water_samples.csv",
+  "sha256": "95a104b64d07ab5b0c69199ff00b529b2d6b03629b57e4971c093032bc9f0fe2",
+  "bytes": 153640,
+  "format": "csv",
+  "licence": "Open Government Licence v3.0",
+  "licence_uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "vintage": "Per-sample in-season microbiology results for the rolling 4-year windows (2012-2015) of every 2015 site-year classified Poor or Sufficient — the two bands adjacent to the action-triggering Poor/Sufficient boundary, scoped to the decision cohort the shipped mark uses. One row per sample: E. coli and intestinal enterococci counts (with detection-limit qualifiers) and the discountable flag (whether the EA may disregard the sample as an abnormal short-term-pollution / extreme-rainfall result). Re-runnable for further decision cohorts.",
+  "role": "exclusion-sensitivity",
+  "notes": "Backs the bathing-water abnormal-sample-exclusion sensitivity check (the seam-specific manipulation analogue): re-including discountable samples and re-deriving the log-normal 90th-percentile margin near the cutoff. Assembled once by scripts/bathingwater_harvest.py from the in-season sample-assessment endpoints; hash-pinned and mirrored to object storage. Scoped to near-cutoff bands to keep the harvest bounded; the standard battery and headline effect use only the compliance file."
+}

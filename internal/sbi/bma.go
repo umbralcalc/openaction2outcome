@@ -249,3 +249,12 @@ func DefaultFloorSpecs() []Spec {
 func DefaultSHMISpecs() []Spec {
 	return gridSpecs([]float64{0.08, 0.12, 0.16, 0.20, 0.25}, []int{1, 2}, []Kernel{Triangular, Boxcar})
 }
+
+// DefaultBathingWaterSpecs is the grid for the bathing-water series, whose
+// running variable is a base-10 log compliance margin (log10 of the worst
+// indicator's 90th percentile over its Sufficient threshold). Margins span
+// roughly [-1.5, +1.2] log10 units, so a half-decade or so of bandwidth keeps
+// the fit local to the Poor/Sufficient cutoff at 0.
+func DefaultBathingWaterSpecs() []Spec {
+	return gridSpecs([]float64{0.15, 0.20, 0.30, 0.40, 0.50}, []int{1, 2}, []Kernel{Triangular, Boxcar})
+}

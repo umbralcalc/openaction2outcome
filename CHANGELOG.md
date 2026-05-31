@@ -4,6 +4,41 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v0.2.0 — 2026-05-31
+
+Adds a third series and the first environmental-domain mark, taking the
+collection to three domains (education + health + environment). Introduces
+seam-specific validity checks beyond the standard battery, debuting with the
+bathing-water abnormal-sample-exclusion sensitivity.
+
+### Marks (admitted reference points)
+- **bathing-water-poor-2015** — sharp RDD on the English bathing-water Poor/Sufficient
+  classification boundary (revised Bathing Water Directive). Running variable is the
+  base-10 log compliance margin (worst of the E. coli / intestinal enterococci
+  90th-percentile statistic over its Sufficient threshold, coastal vs inland);
+  crossing into Poor triggers a mandatory advice-against-bathing sign + EA catchment
+  investigation. Outcome is the same site's compliance margin four years later
+  (2015 → 2019, non-overlapping rolling sample windows). Effect −0.095, 95% interval
+  [−0.407, 0.245] (the bandwidth sweep flips sign — genuine identification
+  uncertainty, honestly reported).
+
+### Schema
+- New `bathing-water` series value, and an optional `seam_specific_checks` field on
+  the validity dossier for series-specific tests outside the standard battery.
+
+### New validity check
+- **Abnormal-sample-exclusion sensitivity** (the bathing-water manipulation analogue):
+  re-includes the discretionarily-discounted extreme-weather samples, re-derives the
+  log-normal 90th-percentile margin near the cutoff, and confirms the effect estimate
+  is robust. The mark records how many samples were discounted near the boundary and
+  how many sites flip Poor/Sufficient under re-inclusion.
+
+### Data
+- Bathing-water inputs are harvested from the Defra linked-data API (no bulk CSV
+  upstream) by `scripts/bathingwater_harvest.py` into two frozen, hash-pinned CSVs
+  (annual compliance + percentile statistics; per-sample microbiology for near-cutoff
+  windows), mirroring the existing derived-snapshot pattern.
+
 ## v0.1.0 — 2026-05-30
 
 First public release: a working causal yardstick on two domains, with both

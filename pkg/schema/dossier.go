@@ -27,6 +27,13 @@ type ValidityDossier struct {
 	// probability at the cutoff. Nil for sharp marks.
 	FirstStage *FirstStageResult `json:"first_stage,omitempty"`
 
+	// SeamSpecificChecks holds validity checks unique to a particular series that
+	// fall outside the standard battery — e.g. the bathing-water abnormal-sample-
+	// exclusion sensitivity (the analogue of a manipulation check, since extreme-
+	// rainfall samples are discounted from the classification by a discretionary
+	// rule). Optional; empty for series without one.
+	SeamSpecificChecks []NamedTestResult `json:"seam_specific_checks,omitempty"`
+
 	// Admitted is the overall verdict; Notes explains it.
 	Admitted bool   `json:"admitted"`
 	Notes    string `json:"notes,omitempty"`

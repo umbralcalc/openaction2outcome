@@ -20,6 +20,10 @@ configs:
   data_files:
   - split: test
     path: shmi.jsonl
+- config_name: bathing-water
+  data_files:
+  - split: test
+    path: bathing_water.jsonl
 ---
 
 # OpenAction2Outcome — real reference points for testing counterfactual models
@@ -50,6 +54,7 @@ needs accurate marks, not many), not a leaderboard.
 |---|---|---|---|---|
 | `floor-standards-p8-2016` | Education | school | sharp RDD on the 2016 Progress 8 floor (−0.5) | 0.028 [−0.054, 0.256] |
 | `shmi-higher-than-expected-banding` | Health | NHS trust | sharp ITT on the SHMI "higher than expected" banding | −0.013 [−0.066, 0.018] |
+| `bathing-water-poor-2015` | Environment | bathing water | sharp RDD on the 2015 Poor/Sufficient compliance boundary | −0.095 [−0.407, 0.245] |
 
 Each series is a separate, individually-loadable subset (config).
 
@@ -58,7 +63,7 @@ Each series is a separate, individually-loadable subset (config).
 ```python
 from datasets import load_dataset, get_dataset_config_names
 
-get_dataset_config_names("umbralcalc/openaction2outcome")  # ['floor-standards', 'shmi']
+get_dataset_config_names("umbralcalc/openaction2outcome")  # ['bathing-water', 'floor-standards', 'shmi']
 
 ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")
 mark = ds["test"][0]

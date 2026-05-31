@@ -84,13 +84,21 @@ is stored and published is described in [PUBLISHING.md](PUBLISHING.md).
 
 ## Coverage
 
-Two series so far:
+Three series so far:
 
 - **Floor standards** — English school Progress 8 floor of −0.5; outcome is each
   school's Progress 8 two years later.
 - **SHMI** — NHS trusts publicly banded "higher than expected" mortality when
   their SHMI crosses the upper control limit; outcome is the trust's SHMI in the
   next 12-month window (a sharp intention-to-treat design, pooled trust-years).
+- **Bathing water** — English designated bathing waters classified Poor when
+  their E. coli / intestinal enterococci 90th-percentile statistic fails the
+  Sufficient standard, mechanically triggering an advice-against-bathing sign +
+  EA catchment investigation; outcome is the same site's compliance margin four
+  years later (a sharp RDD on the log compliance margin, non-overlapping sample
+  windows). Its dossier carries a seam-specific check: re-including the
+  discretionarily-discounted "abnormal" samples and confirming the design is
+  robust.
 
 Area-based funding is planned.
 

@@ -97,6 +97,20 @@ func Render(m schema.Mark) string {
 	if d.FirstStage != nil {
 		w("**First stage** (jump in treatment probability at the cutoff): %.4f — %s\n\n", d.FirstStage.Jump, tick(d.FirstStage.Passed))
 	}
+	if len(d.SeamSpecificChecks) > 0 {
+		w("**Seam-specific checks:**\n\n")
+		for _, c := range d.SeamSpecificChecks {
+			w("- **%s:** %s", c.Name, tick(c.Passed))
+			if c.Method != "" {
+				w(" — %s", c.Method)
+			}
+			w("\n")
+			if c.Detail != "" {
+				w("  - %s\n", c.Detail)
+			}
+		}
+		w("\n")
+	}
 	if d.Notes != "" {
 		w("**Notes.** %s\n\n", d.Notes)
 	}

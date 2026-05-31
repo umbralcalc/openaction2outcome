@@ -22,6 +22,7 @@ const (
 	SeriesAreaFunding    Series = "area-funding"    // local authority × deprivation/eligibility cutoff
 	SeriesFloorStandards Series = "floor-standards" // school × performance floor
 	SeriesSHMI           Series = "shmi"            // NHS trust × mortality banding (fuzzy)
+	SeriesBathingWater   Series = "bathing-water"   // designated bathing water × Poor/Sufficient classification (sharp)
 )
 
 // RDDType distinguishes sharp assignment (crossing the cutoff deterministically
