@@ -1,0 +1,69 @@
+<h1>Datasets &amp; downloads</h1>
+<p>Two datasets, normalised on <code>mark_id</code>: the <strong>marks</strong> (metadata, in git) and the unified
+   <strong><code>episodes</code></strong> dataset (the per-unit rows, in object storage). Everything is referenced by
+   URL + SHA-256, so a download is verifiable on arrival.</p>
+
+<div class="download">
+  <h3>The <code>episodes</code> dataset <span class="badge">primary</span></h3>
+  <p>Every mark's per-unit rows, unioned into one row-per-unit <em>(state, action, reward)</em> table. One Parquet;
+     filter on <code>mark_id</code> for a single mark's rows. The same bytes load from Hugging Face as the
+     <code>episodes</code> config.</p>
+  <p class="meta">
+    {{.Manifest.Rows}} rows · {{.Manifest.Bytes | bytes}} · Parquet<br>
+    SHA-256 <code>{{.Manifest.SHA256}}</code><br>
+    Series: {{.SeriesJoined}}
+  </p>
+  <div class="actions"><a class="btn" href="{{.Manifest.URI}}">Download episodes.parquet</a></div>
+</div>
+
+<div class="download">
+  <h3>Marks <span class="badge">metadata</span></h3>
+  <p>One JSON per decision: the design, the effect distribution, the validity dossier, and provenance.
+     The full nested marks live in git.</p>
+  <p class="meta">{{.MarksZip.Count}} marks · {{.MarksZip.Bytes | bytes}} zipped<br>
+     SHA-256 <code>{{.MarksZip.SHA256}}</code></p>
+  <div class="actions">
+    <a class="btn" href="downloads/marks.zip">Download all marks (zip)</a>
+    <a class="btn secondary" href="{{.RepoURL}}/tree/main/marks">Browse on GitHub</a>
+  </div>
+  <table>
+    <thead><tr><th>Mark</th><th>Series</th><th>Effect</th><th></th></tr></thead>
+    <tbody>
+    {{range .Marks}}
+      <tr>
+        <td><code>{{.ID}}</code></td>
+        <td>{{.Series}}</td>
+        <td>{{.EffectStr}}</td>
+        <td><a href="dossiers/{{.ID}}.html">dossier</a> · <a href="{{$.RepoURL}}/blob/main/marks/{{.ID}}.json">JSON</a></td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>
+
+<div class="download">
+  <h3>Hugging Face mirror</h3>
+  <p>Both datasets are mirrored to Hugging Face Datasets &mdash; the per-series mark configs plus the
+     <code>episodes</code> config &mdash; for discovery and one-line loading.</p>
+  <pre><code>from datasets import load_dataset
+ds = load_dataset("{{.HFRepo}}", "floor-standards")["test"]</code></pre>
+  <div class="actions"><a class="btn secondary" href="{{.HFURL}}">Open on Hugging Face &rarr;</a></div>
+</div>
+
+<h2>Frozen raw inputs <span class="badge">reproducibility</span></h2>
+<p>The original open-data inputs, frozen and content-addressed so every mark re-mints byte-for-byte. You only need
+   these to reproduce the marks &mdash; not to use the datasets above. Each carries its own licence.</p>
+<table>
+  <thead><tr><th>Source</th><th>Publisher</th><th>Licence</th><th>Size</th><th>Download</th></tr></thead>
+  <tbody>
+  {{range .Sources}}
+    <tr>
+      <td>{{.Title}}<br><code>{{.SourceID}}</code></td>
+      <td>{{.Publisher}}</td>
+      <td>{{if .LicenceURI}}<a href="{{.LicenceURI}}">{{.Licence}}</a>{{else}}{{.Licence}}{{end}}</td>
+      <td>{{if .Bytes}}{{.Bytes | bytes}}{{else}}&mdash;{{end}}</td>
+      <td><a href="{{.URL}}">download</a>{{if .OrigURL}} · <a href="{{.OrigURL}}">original</a>{{end}}</td>
+    </tr>
+  {{end}}
+  </tbody>
+</table>

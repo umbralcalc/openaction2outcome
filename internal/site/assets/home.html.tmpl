@@ -1,0 +1,41 @@
+<section class="hero">
+  <img src="assets/logo.png" alt="openaction2outcome logo">
+  <h1>Open Action&rarr;Outcome Datasets</h1>
+  <p class="tagline">Real-world reference points for testing models that predict the effects of decisions &mdash;
+     each an institution crossing a published threshold, with the true effect recovered by regression discontinuity.</p>
+  <div class="cta">
+    <a class="btn" href="downloads.html">Get the data</a>
+    <a class="btn secondary" href="schema.html">Read the schema</a>
+    <a class="btn secondary" href="{{.RepoURL}}">View on GitHub</a>
+  </div>
+</section>
+
+<h2>What's in it</h2>
+<p>Two datasets, normalised on <code>mark_id</code>:</p>
+<ul>
+  <li><strong>Marks</strong> &mdash; the reference points (the metadata). One small JSON per decision: the setup,
+      the effect as an honest distribution, the validity evidence it passed, and full provenance.</li>
+  <li><strong><code>episodes</code> dataset</strong> &mdash; the per-unit rows behind every mark, unioned into one
+      <em>(state, action, reward)</em> table for model training. A single Parquet, joined back to each mark on <code>mark_id</code>.</li>
+</ul>
+<p>You can check two things against a mark: does your model get the <strong>effect</strong> right, and is its <strong>confidence</strong> honest?</p>
+
+<h2>Coverage</h2>
+<div class="cards">
+  {{range .Marks}}
+  <div class="card">
+    <span class="domain">{{.Domain}} · {{.UnitType}}</span>
+    <h3>{{.Series}}</h3>
+    <p>{{.Estimand}}</p>
+    <span class="effect">Effect {{.EffectStr}}</span>
+    <a class="more" href="dossiers/{{.ID}}.html">Read the dossier &rarr;</a>
+  </div>
+  {{end}}
+</div>
+
+<h2>The finding it's built to show</h2>
+<p>A method that reports only its <em>sampling</em> error looks confident but is wrong too often &mdash; it ignores
+   how much the answer depends on modelling choices. A method that accounts for that is honestly less certain, and
+   better calibrated. In the committed calibration study, at a nominal 95% interval the plug-in method covers the
+   truth only <strong>{{.PlugInCov}}</strong> of the time; the model-averaged method <strong>{{.SBICov}}</strong>.</p>
+<p><a href="downloads.html">Get the data &rarr;</a></p>

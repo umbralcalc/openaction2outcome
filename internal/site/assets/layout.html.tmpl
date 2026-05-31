@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} · openaction2outcome</title>
+<link rel="icon" href="{{.Prefix}}assets/logo.png">
+<link rel="stylesheet" href="{{.Prefix}}style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="{{.Prefix}}index.html">
+    <img src="{{.Prefix}}assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    {{range .Nav}}<a href="{{$.Prefix}}{{.Href}}"{{if .Current}} class="current"{{end}}>{{.Label}}</a>{{end}}
+    <a class="ext" href="{{.RepoURL}}">GitHub</a>
+    <a class="ext" href="{{.HFURL}}">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+{{.Body}}
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data: UK public sector information (© Crown copyright)
+     under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</p>
+  <p><a href="{{.RepoURL}}">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>

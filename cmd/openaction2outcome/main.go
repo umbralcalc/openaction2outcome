@@ -7,6 +7,7 @@
 //	score     Score a submission against the marks (decision + calibration).
 //	study     Run the calibration study (plug-in vs model-averaged coverage).
 //	export    Assemble a Hugging Face-ready dataset directory from the marks.
+//	site      Generate the static GitHub Pages site (docs/) from the marks + docs.
 package main
 
 import (
@@ -18,12 +19,13 @@ import (
 	"sort"
 
 	"github.com/umbralcalc/openaction2outcome/internal/dossier"
+	"github.com/umbralcalc/openaction2outcome/internal/episodes"
 	"github.com/umbralcalc/openaction2outcome/internal/hfexport"
 	"github.com/umbralcalc/openaction2outcome/internal/ingest"
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
-	"github.com/umbralcalc/openaction2outcome/internal/episodes"
 	"github.com/umbralcalc/openaction2outcome/internal/sbi"
 	"github.com/umbralcalc/openaction2outcome/internal/series"
+	"github.com/umbralcalc/openaction2outcome/internal/site"
 	"github.com/umbralcalc/openaction2outcome/pkg/schema"
 	"github.com/umbralcalc/openaction2outcome/pkg/score"
 )
@@ -47,6 +49,8 @@ func main() {
 		err = cmdStudy(os.Args[2:])
 	case "export":
 		err = cmdExport(os.Args[2:])
+	case "site":
+		err = cmdSite(os.Args[2:])
 	case "-h", "--help", "help":
 		usage()
 		return
@@ -71,6 +75,7 @@ usage:
   openaction2outcome validate [--marks DIR]
   openaction2outcome score --submission FILE [--marks DIR] [--out FILE]
   openaction2outcome export [--marks DIR] [--card FILE] [--out DIR]
+  openaction2outcome site [--out DIR] [--repo-url URL] [--hf-repo REPO]
 `)
 }
 
@@ -207,6 +212,34 @@ func cmdExport(args []string) error {
 	fmt.Printf("exported episodes -> %s (%d rows, sha256=%s, %d bytes)\n", parquetPath, wa.Rows, wa.SHA256, wa.Bytes)
 	fmt.Printf("wrote manifest %s (uri=%s)\n", *manifestPath, uri)
 	fmt.Printf("push with: huggingface-cli upload <user>/openaction2outcome %s . --repo-type dataset\n", *out)
+	return nil
+}
+
+// cmdSite generates the static GitHub Pages site into docs/ from the committed
+// marks, dossiers, schema docs, and dataset manifest. It is a faithful, offline,
+// deterministic HTML view of artifacts already in the repo — re-run it after a
+// mint so the site tracks the data. Pages serves the committed docs/ folder.
+func cmdSite(args []string) error {
+	fs := flag.NewFlagSet("site", flag.ExitOnError)
+	cfg := site.Config{}
+	fs.StringVar(&cfg.MarksDir, "marks", "marks", "directory of mark JSON files")
+	fs.StringVar(&cfg.DossiersDir, "dossiers", "dossiers", "directory of rendered dossiers")
+	fs.StringVar(&cfg.SchemaDoc, "schema-doc", "docs/schema.md", "data-dictionary markdown")
+	fs.StringVar(&cfg.ChangelogDoc, "changelog-doc", "CHANGELOG.md", "changelog markdown")
+	fs.StringVar(&cfg.StudyPath, "study", "scores/calibration-study.json", "calibration study (for the headline finding)")
+	fs.StringVar(&cfg.ManifestPath, "manifest", "datasets/episodes.manifest.json", "episodes dataset manifest")
+	fs.StringVar(&cfg.RawDir, "raw", "data/raw", "directory of SOURCE.json pointers")
+	fs.StringVar(&cfg.PublishConfig, "publish-config", "publish.json", "publish config (object-store base URL)")
+	fs.StringVar(&cfg.LogoPath, "logo", "docs/assets/logo.png", "logo to copy into the site")
+	fs.StringVar(&cfg.OutDir, "out", "docs", "output directory (the Pages /docs folder)")
+	fs.StringVar(&cfg.RepoURL, "repo-url", "https://github.com/umbralcalc/openaction2outcome", "GitHub repo base URL")
+	fs.StringVar(&cfg.HFRepo, "hf-repo", "umbralcalc/openaction2outcome", "Hugging Face dataset repo")
+	fs.Parse(args)
+
+	if err := site.Generate(cfg); err != nil {
+		return err
+	}
+	fmt.Printf("generated site -> %s (open %s/index.html)\n", cfg.OutDir, cfg.OutDir)
 	return nil
 }
 

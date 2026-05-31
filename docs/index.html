@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · openaction2outcome</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    <a href="index.html" class="current">Home</a><a href="downloads.html">Datasets</a><a href="schema.html">Schema</a><a href="dossiers/index.html">Dossiers</a><a href="changelog.html">Changelog</a>
+    <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
+    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+<section class="hero">
+  <img src="assets/logo.png" alt="openaction2outcome logo">
+  <h1>Open Action&rarr;Outcome Datasets</h1>
+  <p class="tagline">Real-world reference points for testing models that predict the effects of decisions &mdash;
+     each an institution crossing a published threshold, with the true effect recovered by regression discontinuity.</p>
+  <div class="cta">
+    <a class="btn" href="downloads.html">Get the data</a>
+    <a class="btn secondary" href="schema.html">Read the schema</a>
+    <a class="btn secondary" href="https://github.com/umbralcalc/openaction2outcome">View on GitHub</a>
+  </div>
+</section>
+
+<h2>What's in it</h2>
+<p>Two datasets, normalised on <code>mark_id</code>:</p>
+<ul>
+  <li><strong>Marks</strong> &mdash; the reference points (the metadata). One small JSON per decision: the setup,
+      the effect as an honest distribution, the validity evidence it passed, and full provenance.</li>
+  <li><strong><code>episodes</code> dataset</strong> &mdash; the per-unit rows behind every mark, unioned into one
+      <em>(state, action, reward)</em> table for model training. A single Parquet, joined back to each mark on <code>mark_id</code>.</li>
+</ul>
+<p>You can check two things against a mark: does your model get the <strong>effect</strong> right, and is its <strong>confidence</strong> honest?</p>
+
+<h2>Coverage</h2>
+<div class="cards">
+  
+  <div class="card">
+    <span class="domain">Environment · bathing-water</span>
+    <h3>bathing-water</h3>
+    <p>Sharp RD effect at the Poor/Sufficient boundary of being classified Poor in 2015 (advice sign &#43; investigation) on the site&#39;s 2019 log compliance margin (local-to-cutoff, complete cases).</p>
+    <span class="effect">Effect −0.0947 · 95% CI [−0.4068, 0.2451]</span>
+    <a class="more" href="dossiers/bathing-water-poor-2015.html">Read the dossier &rarr;</a>
+  </div>
+  
+  <div class="card">
+    <span class="domain">Education · school</span>
+    <h3>floor-standards</h3>
+    <p>Sharp RD effect at -0.5 of being flagged below the 2016 Progress 8 floor on the school&#39;s 2017/18 Progress 8 (local-to-cutoff, complete cases).</p>
+    <span class="effect">Effect 0.0284 · 95% CI [−0.0544, 0.2557]</span>
+    <a class="more" href="dossiers/floor-standards-p8-2016.html">Read the dossier &rarr;</a>
+  </div>
+  
+  <div class="card">
+    <span class="domain">Health · nhs-trust</span>
+    <h3>shmi</h3>
+    <p>Sharp RD (intention-to-treat) effect at the upper control limit of being banded &#39;higher than expected&#39; on the trust&#39;s SHMI in the following 12-month window (pooled trust-years, local-to-cutoff).</p>
+    <span class="effect">Effect −0.0131 · 95% CI [−0.0658, 0.0177]</span>
+    <a class="more" href="dossiers/shmi-higher-than-expected-banding.html">Read the dossier &rarr;</a>
+  </div>
+  
+</div>
+
+<h2>The finding it's built to show</h2>
+<p>A method that reports only its <em>sampling</em> error looks confident but is wrong too often &mdash; it ignores
+   how much the answer depends on modelling choices. A method that accounts for that is honestly less certain, and
+   better calibrated. In the committed calibration study, at a nominal 95% interval the plug-in method covers the
+   truth only <strong>80%</strong> of the time; the model-averaged method <strong>92%</strong>.</p>
+<p><a href="downloads.html">Get the data &rarr;</a></p>
+
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data: UK public sector information (© Crown copyright)
+     under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</p>
+  <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schema · openaction2outcome</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a><a href="downloads.html">Datasets</a><a href="schema.html" class="current">Schema</a><a href="dossiers/index.html">Dossiers</a><a href="changelog.html">Changelog</a>
+    <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
+    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+<h1>Data dictionary</h1>
+<p>This is the field-by-field reference for everything you download or submit. The
+Go types it describes live in <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/pkg/schema"><code>pkg/schema</code></a>; the version string is
+<code>schema_version</code> (currently <code>0.4.0</code>).</p>
+<p>There are three things to know about:</p>
+<ol>
+<li><strong>A mark</strong> — one causally-validated reference point (a JSON file in <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks"><code>marks/</code></a>). This is the <em>metadata</em>.</li>
+<li><strong>The <code>episodes</code> dataset</strong> — the per-unit rows behind every mark, unioned into one table (a Parquet in object storage), joined to the marks on <code>mark_id</code>.</li>
+<li><strong>A submission</strong> — what you send to be scored, and the score you get back.</li>
+</ol>
+<p>There are only ever those two datasets — the marks (metadata, in git) and the
+episodes dataset (rows, in object storage) — normalised on <code>mark_id</code>.</p>
+<hr>
+<h2>1. Mark</h2>
+<p>One mark is one real decision whose true effect is known: an institution crossed a
+published threshold, that triggered an action, and a later outcome is observable.
+The effect is given as a distribution (a central estimate plus an interval whose
+width is honest about how much is genuinely uncertain), not a single number.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>schema_version</code></td>
+<td>string</td>
+<td>Schema version this mark was written against.</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td>string</td>
+<td>Stable unique identifier, e.g. <code>floor-standards-p8-2016</code>.</td>
+</tr>
+<tr>
+<td><code>series</code></td>
+<td>string</td>
+<td>Which group of marks this belongs to: <code>floor-standards</code>, <code>shmi</code>, or <code>area-funding</code>.</td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td>string</td>
+<td>Human label, e.g. <code>Education</code>.</td>
+</tr>
+<tr>
+<td><code>unit_type</code></td>
+<td>string</td>
+<td>The kind of institution, e.g. <code>school</code>, <code>nhs-trust</code>, <code>local-authority</code>.</td>
+</tr>
+<tr>
+<td><code>rdd_type</code></td>
+<td>string</td>
+<td><code>sharp</code> (crossing the cutoff always triggers the action) or <code>fuzzy</code> (it changes the probability).</td>
+</tr>
+<tr>
+<td><code>design</code></td>
+<td>object</td>
+<td>What is being estimated — see below.</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td>object</td>
+<td>Pre-decision information a model is allowed to use.</td>
+</tr>
+<tr>
+<td><code>sample</code></td>
+<td>array</td>
+<td>A small inline excerpt of episode rows nearest the cutoff, for quick inspection (the full rows are in the <code>episodes</code> dataset, keyed by this mark's <code>id</code>).</td>
+</tr>
+<tr>
+<td><code>effect</code></td>
+<td>object</td>
+<td>The mark itself: the effect distribution — see below.</td>
+</tr>
+<tr>
+<td><code>dossier</code></td>
+<td>object</td>
+<td>The validity checks the mark passed — see below.</td>
+</tr>
+<tr>
+<td><code>provenance</code></td>
+<td>object</td>
+<td>Sources, licences, timestamps, and reproducibility metadata.</td>
+</tr>
+</tbody>
+</table>
+<h3><code>design</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>running_variable</code></td>
+<td>object</td>
+<td>The measured quantity the decision depends on (<code>name</code>, <code>description</code>, <code>units</code>, <code>source_id</code>).</td>
+</tr>
+<tr>
+<td><code>cutoff</code></td>
+<td>number</td>
+<td>The published threshold.</td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td>string</td>
+<td><code>above-treated</code> or <code>below-treated</code> — which side of the cutoff receives the action.</td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td>string</td>
+<td>What happens when the cutoff is crossed.</td>
+</tr>
+<tr>
+<td><code>alternative</code></td>
+<td>string</td>
+<td>The counterfactual: what happens otherwise.</td>
+</tr>
+<tr>
+<td><code>outcome</code></td>
+<td>object</td>
+<td>The later observable quantity (<code>name</code>, <code>description</code>, <code>units</code>, <code>source_id</code>).</td>
+</tr>
+<tr>
+<td><code>estimand</code></td>
+<td>string</td>
+<td>Plain-language statement of exactly what the effect measures.</td>
+</tr>
+</tbody>
+</table>
+<h3><code>effect</code> (the distribution)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>central</code></td>
+<td>number</td>
+<td>Central estimate of the effect.</td>
+</tr>
+<tr>
+<td><code>interval</code></td>
+<td>object</td>
+<td><code>{level, lower, upper}</code> — e.g. a 95% credible interval.</td>
+</tr>
+<tr>
+<td><code>std_dev</code></td>
+<td>number</td>
+<td>Standard deviation of the effect distribution.</td>
+</tr>
+<tr>
+<td><code>quantiles</code></td>
+<td>array</td>
+<td><code>{p, value}</code> points of the distribution, for finer comparison.</td>
+</tr>
+<tr>
+<td><code>samples</code></td>
+<td>array</td>
+<td>Representative samples of the distribution (useful for scoring).</td>
+</tr>
+<tr>
+<td><code>uncertainty_budget</code></td>
+<td>object</td>
+<td>Splits the variance into <code>sampling</code> (finite data) and <code>specification</code> (which modelling choices were made). The second is what naive methods leave out.</td>
+</tr>
+</tbody>
+</table>
+<h3><code>dossier</code> (validity)</h3>
+<p>A mark is included only if it passes these checks; it is never excluded for being
+<em>uncertain</em> (a wide interval is information, not a failure).</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>density</code></td>
+<td>Manipulation/sorting test: did units bunch on one side of the cutoff?</td>
+</tr>
+<tr>
+<td><code>covariate_continuity</code></td>
+<td>Pre-decision characteristics should not jump at the cutoff.</td>
+</tr>
+<tr>
+<td><code>placebo_cutoffs</code></td>
+<td>The effect should vanish at fake cutoffs away from the real one.</td>
+</tr>
+<tr>
+<td><code>bandwidth_sweep</code></td>
+<td>How the estimate moves as the analysis window changes.</td>
+</tr>
+<tr>
+<td><code>donut_robustness</code></td>
+<td>Re-estimate after dropping units right at the cutoff.</td>
+</tr>
+<tr>
+<td><code>first_stage</code></td>
+<td>(fuzzy only) the jump in treatment probability at the cutoff.</td>
+</tr>
+<tr>
+<td><code>admitted</code></td>
+<td>Overall verdict.</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td>Plain-language caveats (e.g. attrition).</td>
+</tr>
+</tbody>
+</table>
+<p>A rendered, human-readable version of this is in <a href="dossiers/index.html"><code>dossiers/</code></a>.</p>
+<h3><code>provenance</code></h3>
+<p><code>context_asof</code> ≤ <code>decision_timestamp</code> &lt; <code>outcome_timestamp</code> is enforced, so no
+information from after the outcome can leak in. Also records each source's
+licence and SHA-256, the random seed, and tool versions — enough to re-mint the
+mark byte-for-byte.</p>
+<hr>
+<h2>2. The <code>episodes</code> dataset</h2>
+<p>The analysis-ready rows behind every mark, unioned into one table: one row per unit.
+It is <strong>not</strong> in git — it is a single Parquet in object storage, pointed to by
+<a href="downloads.html"><code>datasets/episodes.manifest.json</code></a> (download URL +
+SHA-256, so you can verify your download). You only need it if you want to train or
+refit on the rows; scoring a model does not require it. Filter on <code>mark_id</code> to get one
+mark's rows. Loadable from Hugging Face as the <code>episodes</code> config.</p>
+<p>It is the <strong>(state, action, reward)</strong> view, in this dataset's own terms — the unit's
+context before the decision, what was done, and the outcome that followed:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Role</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mark_id</code></td>
+<td>join</td>
+<td>Which mark this row belongs to — the join key to the mark's metadata + full effect.</td>
+</tr>
+<tr>
+<td><code>series</code></td>
+<td>join</td>
+<td>The mark's series.</td>
+</tr>
+<tr>
+<td><code>unit_id</code></td>
+<td>id</td>
+<td>Stable identifier for the institution (e.g. school URN).</td>
+</tr>
+<tr>
+<td><code>unit_name</code></td>
+<td>id</td>
+<td>Human-readable name.</td>
+</tr>
+<tr>
+<td><code>running_value</code></td>
+<td>state</td>
+<td>The running variable at decision time.</td>
+</tr>
+<tr>
+<td><code>cutoff</code></td>
+<td>state</td>
+<td>The mark's threshold.</td>
+</tr>
+<tr>
+<td><code>distance_to_cutoff</code></td>
+<td>state</td>
+<td><code>running_value − cutoff</code> (signed).</td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td>state</td>
+<td>Which side of the cutoff is treated.</td>
+</tr>
+<tr>
+<td><code>covariates</code></td>
+<td>state</td>
+<td>The pre-decision covariates, as a key-sorted list of <code>{name, value}</code> (those in the mark's <code>context.covariate_names</code>).</td>
+</tr>
+<tr>
+<td><code>assigned</code></td>
+<td>action</td>
+<td><code>true</code> if the running value puts the unit on the action side of the cutoff.</td>
+</tr>
+<tr>
+<td><code>treated</code></td>
+<td>action</td>
+<td>Whether the action was actually received (can differ from <code>assigned</code> under fuzzy designs); null if unknown.</td>
+</tr>
+<tr>
+<td><code>action</code>, <code>alternative</code></td>
+<td>action</td>
+<td>The textual action and its counterfactual (from the mark).</td>
+</tr>
+<tr>
+<td><code>outcome</code></td>
+<td>reward</td>
+<td>The later observed outcome; null when unobserved.</td>
+</tr>
+<tr>
+<td><code>outcome_observed</code></td>
+<td>reward</td>
+<td><code>false</code> when the unit has no linked outcome (e.g. attrition).</td>
+</tr>
+<tr>
+<td><code>effect_central</code>, <code>effect_lower</code>, <code>effect_upper</code>, <code>effect_interval_level</code>, <code>effect_std_dev</code></td>
+<td>—</td>
+<td>A scalar summary of the mark's effect, inlined for convenience. The full posterior (quantiles, samples) stays in the mark — join on <code>mark_id</code>.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2>3. Submission and score</h2>
+<p>To be scored, send a <code>submission.json</code>: for each mark, your model's predicted
+effect <strong>with its own uncertainty</strong>. See
+<a href="https://github.com/umbralcalc/openaction2outcome/blob/main/examples/submission.example.json"><code>examples/submission.example.json</code></a>.</p>
+<table>
+<thead>
+<tr>
+<th>Submission field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>schema_version</code></td>
+<td>Must match the marks you are scoring against.</td>
+</tr>
+<tr>
+<td><code>model_name</code></td>
+<td>Identifier for your model.</td>
+</tr>
+<tr>
+<td><code>predictions[]</code></td>
+<td>One per mark.</td>
+</tr>
+<tr>
+<td><code>predictions[].mark_id</code></td>
+<td>Which mark this predicts.</td>
+</tr>
+<tr>
+<td><code>predictions[].effect</code></td>
+<td>Your predicted effect distribution (same shape as a mark's <code>effect</code>).</td>
+</tr>
+<tr>
+<td><code>predictions[].value_action</code> / <code>value_alternative</code></td>
+<td>Optional explicit decision values.</td>
+</tr>
+</tbody>
+</table>
+<p>You get back two independent scores per mark:</p>
+<ul>
+<li><strong>Decision</strong> — did you get the direction of the effect right, and what would a
+wrong call cost? (No penalty where the reference itself is unsure of the sign.)</li>
+<li><strong>Calibration</strong> — does your stated uncertainty match the truth? Interval
+overlap, a distribution-distance, a calibration curve, and a flag for being
+<em>confidently wrong</em> (narrow and wrong while the reference is narrow and known).</li>
+</ul>
+
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data: UK public sector information (© Crown copyright)
+     under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</p>
+  <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>

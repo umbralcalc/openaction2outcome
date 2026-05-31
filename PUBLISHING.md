@@ -119,3 +119,41 @@ dataset (`datasets/episodes.parquet`) — content-addressed by the SHA-256 recor
 the staged episode rows and the marks. So Hugging Face carries the same two datasets the
 project stores — the marks (the per-series configs) and `episodes` — joined on `mark_id`.
 See [specs/4_EPISODES_DATASET_SPEC.md](specs/4_EPISODES_DATASET_SPEC.md).
+
+# The documentation site (GitHub Pages)
+
+The project ships a static website — download buttons, the schema, the per-mark dossiers,
+and the docs — served by **GitHub Pages from the committed `docs/` folder**. Like the
+marks, it is generated **offline and deterministically** from artifacts already in the
+repo, so it can never silently drift from the data.
+
+## Generate
+
+```sh
+make site          # -> docs/ : index, downloads, schema, dossiers/, publishing, changelog
+```
+
+`openaction2outcome site` reads the marks, dossiers, `docs/schema.md`, `CHANGELOG.md`, 
+the calibration study, and `datasets/episodes.manifest.json`, and writes a
+self-contained static site into `docs/`:
+
+- **`index.html`** — the landing page; coverage cards are generated from the marks.
+- **`downloads.html`** — download buttons for the `episodes` Parquet (URL + SHA-256 from
+  the manifest), a generated `downloads/marks.zip` (content-addressed), the Hugging Face
+  mirror, and a table of the frozen raw inputs (from each `data/raw/*/SOURCE.json`,
+  preferring the object-store mirror URL when `publish.json:base_url` is configured).
+- **`schema.html`** and **`changelog.html`** — the repo markdown,
+  rendered (single source of truth; intra-repo links are rewritten to the site's pages or
+  to GitHub).
+- **`dossiers/`** — an index plus one page per mark, rendered from `dossiers/*.md`.
+
+Re-run `make site` after a mint (or after editing the docs) and commit `docs/`. Flags let
+you override the repo/Hugging Face URLs (`--repo-url`, `--hf-repo`) and any input/output
+path; see `openaction2outcome site -h`.
+
+## Enable Pages (one-time)
+
+In the GitHub repo: **Settings → Pages → Build and deployment → Source: "Deploy from a
+branch" → Branch: `main`, folder: `/docs`**. No CI is involved; pushing an updated `docs/`
+to `main` republishes. (The generated `docs/.nojekyll` tells Pages to serve the files
+as-is rather than running Jekyll over them.)

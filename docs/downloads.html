@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datasets · openaction2outcome</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a><a href="downloads.html" class="current">Datasets</a><a href="schema.html">Schema</a><a href="dossiers/index.html">Dossiers</a><a href="changelog.html">Changelog</a>
+    <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
+    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+<h1>Datasets &amp; downloads</h1>
+<p>Two datasets, normalised on <code>mark_id</code>: the <strong>marks</strong> (metadata, in git) and the unified
+   <strong><code>episodes</code></strong> dataset (the per-unit rows, in object storage). Everything is referenced by
+   URL + SHA-256, so a download is verifiable on arrival.</p>
+
+<div class="download">
+  <h3>The <code>episodes</code> dataset <span class="badge">primary</span></h3>
+  <p>Every mark's per-unit rows, unioned into one row-per-unit <em>(state, action, reward)</em> table. One Parquet;
+     filter on <code>mark_id</code> for a single mark's rows. The same bytes load from Hugging Face as the
+     <code>episodes</code> config.</p>
+  <p class="meta">
+    3879 rows · 200.0 KB · Parquet<br>
+    SHA-256 <code>825022ea6303ec3f17e2fe5f97a59dd4fad9b4f0e76053027eb7253c066ecfeb</code><br>
+    Series: bathing-water, floor-standards, shmi
+  </p>
+  <div class="actions"><a class="btn" href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/datasets/episodes.parquet">Download episodes.parquet</a></div>
+</div>
+
+<div class="download">
+  <h3>Marks <span class="badge">metadata</span></h3>
+  <p>One JSON per decision: the design, the effect distribution, the validity dossier, and provenance.
+     The full nested marks live in git.</p>
+  <p class="meta">3 marks · 19.5 KB zipped<br>
+     SHA-256 <code>94e8648f5dc6a6309656101627d4fcebcffd80a5b6adf36f6b06db67631e7554</code></p>
+  <div class="actions">
+    <a class="btn" href="downloads/marks.zip">Download all marks (zip)</a>
+    <a class="btn secondary" href="https://github.com/umbralcalc/openaction2outcome/tree/main/marks">Browse on GitHub</a>
+  </div>
+  <table>
+    <thead><tr><th>Mark</th><th>Series</th><th>Effect</th><th></th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td><code>bathing-water-poor-2015</code></td>
+        <td>bathing-water</td>
+        <td>−0.0947 · 95% CI [−0.4068, 0.2451]</td>
+        <td><a href="dossiers/bathing-water-poor-2015.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/bathing-water-poor-2015.json">JSON</a></td>
+      </tr>
+    
+      <tr>
+        <td><code>floor-standards-p8-2016</code></td>
+        <td>floor-standards</td>
+        <td>0.0284 · 95% CI [−0.0544, 0.2557]</td>
+        <td><a href="dossiers/floor-standards-p8-2016.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/floor-standards-p8-2016.json">JSON</a></td>
+      </tr>
+    
+      <tr>
+        <td><code>shmi-higher-than-expected-banding</code></td>
+        <td>shmi</td>
+        <td>−0.0131 · 95% CI [−0.0658, 0.0177]</td>
+        <td><a href="dossiers/shmi-higher-than-expected-banding.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/shmi-higher-than-expected-banding.json">JSON</a></td>
+      </tr>
+    
+    </tbody>
+  </table>
+</div>
+
+<div class="download">
+  <h3>Hugging Face mirror</h3>
+  <p>Both datasets are mirrored to Hugging Face Datasets &mdash; the per-series mark configs plus the
+     <code>episodes</code> config &mdash; for discovery and one-line loading.</p>
+  <pre><code>from datasets import load_dataset
+ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</code></pre>
+  <div class="actions"><a class="btn secondary" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">Open on Hugging Face &rarr;</a></div>
+</div>
+
+<h2>Frozen raw inputs <span class="badge">reproducibility</span></h2>
+<p>The original open-data inputs, frozen and content-addressed so every mark re-mints byte-for-byte. You only need
+   these to reproduce the marks &mdash; not to use the datasets above. Each carries its own licence.</p>
+<table>
+  <thead><tr><th>Source</th><th>Publisher</th><th>Licence</th><th>Size</th><th>Download</th></tr></thead>
+  <tbody>
+  
+    <tr>
+      <td>Bathing-water annual compliance classifications &#43; E. coli / intestinal enterococci percentile statistics, England 2015-2024 (revised Bathing Water Directive)<br><code>bathing-water-rbwd-2015-2024</code></td>
+      <td>Environment Agency (Defra)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>797.8 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/bathing-water-rbwd-2015-2024/bathing_water_compliance.csv">download</a> · <a href="https://environment.data.gov.uk/data/bathing-water-quality/">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Bathing-water per-sample microbiology (E. coli / intestinal enterococci counts &#43; discountable flag) for near-cutoff sites, England 2015-2024<br><code>bathing-water-samples-2015-2024</code></td>
+      <td>Environment Agency (Defra)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>150.0 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/bathing-water-samples-2015-2024/bathing_water_samples.csv">download</a> · <a href="https://environment.data.gov.uk/data/bathing-water-quality/">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>CQC dated inspection/report events for NHS acute trusts (extracted 2026-05-30)<br><code>cqc-inspections-2026-05-30</code></td>
+      <td>Care Quality Commission (CQC)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>63.1 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/cqc-inspections-2026-05-30/cqc_inspections.csv">download</a> · <a href="https://api.service.cqc.org.uk/public/v1/providers/">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>English Indices of Deprivation 2019 — File 10: Local Authority District Summaries (lower-tier)<br><code>imd2019-file10-lad-lower-tier</code></td>
+      <td>Ministry of Housing, Communities &amp; Local Government (MHCLG)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>249.3 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/imd2019-file10-lad-lower-tier/File_10_IoD2019_LAD_Summaries_lower_tier.xlsx">download</a> · <a href="https://assets.publishing.service.gov.uk/media/5d8b3cfbe5274a08be69aa91/File_10_-_IoD2019_Local_Authority_District_Summaries__lower-tier__.xlsx">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Key Stage 4 (KS4) final performance tables — school-level data, 2015/16<br><code>ks4-2015-2016-final</code></td>
+      <td>Department for Education (DfE)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>8.0 MB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/ks4-2015-2016-final/england_ks4final_2015-2016.csv">download</a> · <a href="https://www.compare-school-performance.service.gov.uk/download-data?download=true&amp;regions=0&amp;filters=KS4&amp;fileformat=csv&amp;year=2015-2016">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Key Stage 4 (KS4) final performance tables — school-level data, 2017/18<br><code>ks4-2017-2018-final</code></td>
+      <td>Department for Education (DfE)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>10.8 MB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/ks4-2017-2018-final/england_ks4final_2017-2018.csv">download</a> · <a href="https://www.compare-school-performance.service.gov.uk/download-data?download=true&amp;regions=0&amp;filters=KS4&amp;fileformat=csv&amp;year=2017-2018">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Summary Hospital-level Mortality Indicator (SHMI) — historical trust-level data (release Oct 2024 - Sep 2025)<br><code>shmi-historical-oct24-sep25</code></td>
+      <td>NHS England (NHS Digital)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>3.7 MB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/shmi-historical-oct24-sep25/SHMI_data_Oct24-Sep25.zip">download</a> · <a href="https://files.digital.nhs.uk/9E/F90BCF/SHMI%20data%2C%20Oct24-Sep25.zip">original</a></td>
+    </tr>
+  
+  </tbody>
+</table>
+
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data: UK public sector information (© Crown copyright)
+     under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</p>
+  <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>

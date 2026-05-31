@@ -5,6 +5,7 @@ go 1.25.2
 require (
 	github.com/parquet-go/parquet-go v0.30.1
 	github.com/umbralcalc/stochadex v0.0.0-20260529062707-b3fa54eb7212
+	github.com/yuin/goldmark v1.8.2
 )
 
 require (

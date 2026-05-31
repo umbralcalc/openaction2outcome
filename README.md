@@ -1,6 +1,6 @@
-![](assets/logo.png)
+![](docs/assets/logo.png)
 
-# The Open Action->Outcome Datasets
+# Open Action->Outcome Datasets
 
 **Real-world reference points for testing models that predict the effects of decisions.**
 
@@ -9,9 +9,9 @@ If your model answers "what would happen if we did X?" (a world model, a model-b
 Usually you can't: real-world counterfactual ground truth
 is rarely available, so people fall back on simulators.
 
-These datasets provide that ground truth.
+`openaction2outcome` is a collection of datasets that provide that ground truth; tracking real-world decisions and their measured outcomes.
 
-`openaction2outcome` is a collection of datasets tracking real-world decisions and their measured outcomes.
+📚 **Documentation site:** https://umbralcalc.github.io/openaction2outcome/ — download buttons, the schema, the per-mark dossiers, and the docs (generated offline by `make site` into [`docs/`](docs)).
 
 In each case an institution crossed a published threshold (a school's performance score, a hospital's mortality rating, an area's deprivation rank), which triggered an action, and where the true effect of that action can be recovered — because units that *just* crossed the line are comparable to those that *just* didn't (regression discontinuity).
 
@@ -19,7 +19,7 @@ Each reference point ships with an **honest interval**: a central estimate plus 
 
 You can check two things against it: does your model get the **effect** right, and is its **confidence** honest?
 
-## What's in it
+## What does it look like?
 
 There are only **two datasets**, normalised on `mark_id`:
 
@@ -104,8 +104,6 @@ Three series so far:
   windows). Its dossier carries a seam-specific check: re-including the
   discretionarily-discounted "abnormal" samples and confirming the design is
   robust.
-
-Area-based funding is planned.
 
 ## Licensing
 

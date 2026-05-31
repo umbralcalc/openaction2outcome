@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shmi-higher-than-expected-banding · openaction2outcome</title>
+<link rel="icon" href="../assets/logo.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html">
+    <img src="../assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a><a href="../downloads.html">Datasets</a><a href="../schema.html">Schema</a><a href="../dossiers/index.html" class="current">Dossiers</a><a href="../changelog.html">Changelog</a>
+    <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
+    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+<h1>shmi-higher-than-expected-banding</h1>
+<p><strong>Series:</strong> shmi  ·  <strong>Domain:</strong> Health  ·  <strong>Unit:</strong> nhs-trust  ·  <strong>Design:</strong> sharp RDD  ·  <strong>Status:</strong> ADMITTED</p>
+<h2>The decision</h2>
+<ul>
+<li><strong>Running variable:</strong> shmi_minus_od_upper — SHMI minus the overdispersed upper control limit (positive =&gt; banded 'higher than expected') (SHMI ratio)</li>
+<li><strong>Cutoff:</strong> 0 (above-treated)</li>
+<li><strong>Action:</strong> Publicly banded 'higher than expected' mortality (SHMI above the overdispersed upper control limit) — a 'smoke alarm' that raises scrutiny.</li>
+<li><strong>Alternative:</strong> Banded 'as expected' (SHMI within the control limits): no higher-than-expected flag.</li>
+<li><strong>Outcome:</strong> shmi_next_window — The trust's SHMI in the following non-overlapping 12-month window (SHMI ratio)</li>
+<li><strong>Estimand:</strong> Sharp RD (intention-to-treat) effect at the upper control limit of being banded 'higher than expected' on the trust's SHMI in the following 12-month window (pooled trust-years, local-to-cutoff).</li>
+</ul>
+<h2>The effect</h2>
+<p><strong>-0.0131</strong> with a 95% interval of <strong>[-0.0658, 0.0177]</strong>.</p>
+<p>The interval width separates into two sources:</p>
+<table>
+<thead>
+<tr>
+<th>source</th>
+<th>standard deviation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sampling (finite data)</td>
+<td>0.0136</td>
+</tr>
+<tr>
+<td>identification (bandwidth / order / kernel choice)</td>
+<td>0.0195</td>
+</tr>
+<tr>
+<td><strong>total</strong></td>
+<td><strong>0.0238</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>Validity checks</h2>
+<p><strong>Density / manipulation:</strong> pass — binned-density-discontinuity (McCrary-style) (p = 0.623)</p>
+<p><strong>Covariate continuity at the cutoff</strong> (covariates should not jump):</p>
+<table>
+<thead>
+<tr>
+<th>covariate</th>
+<th>jump</th>
+<th>p-value</th>
+<th>pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>expected_deaths</td>
+<td>-48.3127</td>
+<td>0.855</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Placebo cutoffs</strong> (effect should vanish away from the real cutoff):</p>
+<table>
+<thead>
+<tr>
+<th>placebo cutoff</th>
+<th>estimate</th>
+<th>indistinguishable from zero</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-0.2</td>
+<td>-0.0074</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>-0.1</td>
+<td>0.0056</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bandwidth sweep</strong> (estimate vs window width):</p>
+<table>
+<thead>
+<tr>
+<th>bandwidth</th>
+<th>estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.08</td>
+<td>-0.0299</td>
+</tr>
+<tr>
+<td>0.12</td>
+<td>-0.0249</td>
+</tr>
+<tr>
+<td>0.15</td>
+<td>-0.0244</td>
+</tr>
+<tr>
+<td>0.2</td>
+<td>-0.0265</td>
+</tr>
+<tr>
+<td>0.25</td>
+<td>-0.0258</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Donut robustness</strong> (re-estimate after excluding units nearest the cutoff):</p>
+<table>
+<thead>
+<tr>
+<th>donut radius</th>
+<th>estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.02</td>
+<td>-0.0325</td>
+</tr>
+<tr>
+<td>0.04</td>
+<td>-0.0473</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes.</strong> Sharp intention-to-treat RDD on the SHMI 'higher than expected' banding, pooled over 3 non-overlapping reporting-window pairs (trust-years). Effect of being publicly flagged (SHMI above the overdispersed upper control limit) on the trust's SHMI in the following 12-month window. SBI honest interval [-0.0658, 0.0177] (sd 0.0238) splits into sampling sd 0.0136 and identification sd 0.0195; the plug-in interval is [-0.0616, 0.0128] (sd 0.0190). SMALL-N CAVEAT: only ~120 acute trusts per window, so the interval is wide by design. The RDD nets out SHMI's mean reversion (smooth through the cutoff); the flagging effect is the discontinuity. Pooling assumes a stable effect across windows and treats trust-years as units (within-trust serial correlation is not modelled, which understates the sampling component). COVID windows (Apr 2019 - Mar 2022 decisions) are excluded. This is intention-to-treat on the banding label, not the effect of any specific downstream intervention.</p>
+<h2>Data</h2>
+<p>The analysis-ready rows (one per unit) live in the single published <code>episodes</code> dataset, alongside every other mark's rows. Recover this mark's rows by filtering on <code>mark_id == &quot;shmi-higher-than-expected-banding&quot;</code>. The dataset's download URL and content hash are in <code>datasets/episodes.manifest.json</code>.</p>
+<ul>
+<li><strong>Covariates (state):</strong> expected_deaths, decision_shmi</li>
+</ul>
+<h2>Provenance</h2>
+<p>Point-in-time order: context as-of <code>2018-04-01</code> ≤ decision <code>2024-03-31</code> &lt; outcome <code>2025-03-31</code>.</p>
+<p><strong>Sources:</strong></p>
+<ul>
+<li>Summary Hospital-level Mortality Indicator (SHMI) — historical trust-level data (release Oct 2024 - Sep 2025) — NHS England (NHS Digital). Licence: Open Government Licence v3.0. SHA-256 <code>0e67d902cab0084c9f7a61a67de4e8b94f21b06b45cfeb1c50982f48f45e2a5f</code>.</li>
+</ul>
+<p><strong>Reproducibility:</strong> go go1.25.2, openaction2outcome 0.4.0, smc particles=4000,rounds=8, stochadex v0.0.0-20260529062707-b3fa54eb7212. The mark and its data table re-mint byte-for-byte from the frozen inputs.</p>
+
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data: UK public sector information (© Crown copyright)
+     under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</p>
+  <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>

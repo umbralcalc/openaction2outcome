@@ -1,0 +1,116 @@
+/* openaction2outcome — generated static site. Single stylesheet, no JS.
+   Palette: blue #6d9eeb · red #b73535 · black · white. */
+:root {
+  --ink: #000000;
+  --muted: rgba(0, 0, 0, 0.6);
+  --line: rgba(0, 0, 0, 0.14);
+  --bg: #ffffff;
+  --bg-soft: #eef4fd;   /* faint tint of the blue */
+  --blue: #6d9eeb;
+  --red: #b73535;
+  --max: 880px;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+a { color: var(--blue); text-decoration: none; }
+a:hover { color: var(--red); text-decoration: underline; }
+code, pre {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+code { background: var(--bg-soft); padding: 0.12em 0.35em; border-radius: 4px; }
+pre {
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+pre code { background: none; padding: 0; }
+
+/* Header / nav */
+.site-header {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 10;
+}
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 700; }
+.brand:hover { text-decoration: none; color: var(--ink); }
+.brand-logo { height: 26px; width: auto; display: block; }
+.brand-arrow { color: var(--red); }
+.site-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+.site-nav a { color: var(--muted); font-size: 0.95rem; }
+.site-nav a:hover { color: var(--red); }
+.site-nav a.current { color: var(--ink); font-weight: 600; }
+.site-nav a.ext { color: var(--blue); }
+.site-nav a.ext:hover { color: var(--red); }
+
+/* Content */
+.content { max-width: var(--max); margin: 0 auto; padding: 32px 22px 56px; }
+.content h1 { font-size: 2rem; line-height: 1.2; margin: 0.2em 0 0.5em; }
+.content h2 { font-size: 1.4rem; margin: 1.8em 0 0.6em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+.content h3 { font-size: 1.1rem; margin: 1.4em 0 0.5em; }
+.content table {
+  border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.93rem;
+}
+.content th, .content td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; vertical-align: top; }
+.content th { background: var(--bg-soft); font-weight: 600; }
+.content blockquote {
+  margin: 1em 0; padding: 0.4em 1em; border-left: 3px solid var(--blue);
+  color: var(--muted);
+}
+hr { border: none; border-top: 1px solid var(--line); margin: 2em 0; }
+
+/* Hero (home) */
+.hero { text-align: center; padding: 18px 0 8px; }
+.hero img { height: auto; width: 300px; max-width: 100%; }
+.hero h1 { font-size: 2.3rem; margin: 0.4em 0 0.2em; }
+.hero .tagline { font-size: 1.15rem; color: var(--muted); max-width: 640px; margin: 0 auto 1.4em; }
+.cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* Buttons */
+.btn {
+  display: inline-block; padding: 10px 18px; border-radius: 8px;
+  background: var(--blue); color: #fff; font-weight: 600;
+  border: 1px solid var(--blue);
+}
+.btn:hover { background: var(--red); border-color: var(--red); color: #fff; text-decoration: none; }
+.btn.secondary { background: var(--bg); color: var(--ink); border-color: var(--line); }
+.btn.secondary:hover { background: var(--bg); color: var(--red); border-color: var(--red); }
+
+/* Cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 1.4em 0; }
+.card {
+  border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; background: var(--bg);
+  display: flex; flex-direction: column;
+}
+.card h3 { margin: 0 0 0.2em; }
+.card .domain { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.card p { margin: 0.5em 0; font-size: 0.93rem; color: var(--ink); }
+.card .effect { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.9rem; margin-top: auto; }
+.card a.more { margin-top: 0.7em; font-weight: 600; }
+
+/* Download blocks */
+.download {
+  border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin: 1.2em 0;
+  background: var(--bg-soft);
+}
+.download h3 { margin-top: 0; }
+.download .meta { font-size: 0.86rem; color: var(--muted); margin: 0.6em 0; }
+.download .meta code { background: #fff; }
+.download .actions { margin-top: 0.8em; }
+.badge {
+  display: inline-block; font-size: 0.78rem; padding: 2px 9px; border-radius: 999px;
+  background: var(--blue); color: #fff; margin-left: 6px; vertical-align: middle; font-weight: 600;
+}
+.pass { color: var(--ink); font-weight: 600; }
+.fail { color: var(--red); font-weight: 600; }

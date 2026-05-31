@@ -4,6 +4,17 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## Unreleased
+
+### Documentation site
+- **Static GitHub Pages site** (`make site` → `openaction2outcome site`): generates a
+  self-contained website into the committed `docs/` folder — a landing page (coverage
+  cards generated from the marks), a downloads page (the `episodes` Parquet with its
+  SHA-256, a content-addressed `marks.zip`, the Hugging Face mirror, and the frozen
+  raw-input table), the rendered schema/publishing/changelog docs, and a page per mark
+  dossier. Generated offline and deterministically from artifacts already in the repo, so
+  it can't drift from the data. Served by Pages from `main` → `/docs`.
+
 ## v1.0.0 — 2026-05-31
 
 First stable release. Restructures distribution around the dataset model: there

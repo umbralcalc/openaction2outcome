@@ -1,0 +1,14 @@
+<h1>Dossiers</h1>
+<p>A readable write-up of each mark's validity checks &mdash; the design, the effect with its uncertainty split,
+   the full validity battery, and the provenance. A mark is included only if it passes these checks.</p>
+<div class="cards">
+  {{range .Marks}}
+  <div class="card">
+    <span class="domain">{{.Domain}} · {{.UnitType}}</span>
+    <h3>{{.Series}}</h3>
+    <p>{{.Estimand}}</p>
+    <span class="effect">Effect {{.EffectStr}} · {{.Status}}</span>
+    <a class="more" href="{{.ID}}.html">Open dossier &rarr;</a>
+  </div>
+  {{end}}
+</div>

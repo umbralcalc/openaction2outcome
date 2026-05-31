@@ -4,7 +4,7 @@ CLI    := go run ./cmd/openaction2outcome
 SERIES ?= floor-standards
 REMOTE ?= r2
 
-.PHONY: all fetch build build-all validate score study test publish verify clean
+.PHONY: all fetch build build-all validate score study test publish verify clean site
 
 all: build-all validate      ## fetch (implicit) + mint every series + validate
 
@@ -42,3 +42,6 @@ clean:                       ## remove staged upload artifacts
 
 hf:                          ## export HF dataset dir (dist/hf): per-series marks + row-by-row episodes.parquet + manifest
 	$(CLI) export
+
+site:                        ## generate the static GitHub Pages site into docs/ (commit it; Pages serves docs/)
+	$(CLI) site

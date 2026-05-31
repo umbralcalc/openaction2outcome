@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changelog · openaction2outcome</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a><a href="downloads.html">Datasets</a><a href="schema.html">Schema</a><a href="dossiers/index.html">Dossiers</a><a href="changelog.html" class="current">Changelog</a>
+    <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
+    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+<h1>Changelog</h1>
+<p>All notable changes to this project are recorded here. Versions refer to the
+published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
+separately inside each mark).</p>
+<h2>Unreleased</h2>
+<h3>Documentation site</h3>
+<ul>
+<li><strong>Static GitHub Pages site</strong> (<code>make site</code> → <code>openaction2outcome site</code>): generates a
+self-contained website into the committed <code>docs/</code> folder — a landing page (coverage
+cards generated from the marks), a downloads page (the <code>episodes</code> Parquet with its
+SHA-256, a content-addressed <code>marks.zip</code>, the Hugging Face mirror, and the frozen
+raw-input table), the rendered schema/publishing/changelog docs, and a page per mark
+dossier. Generated offline and deterministically from artifacts already in the repo, so
+it can't drift from the data. Served by Pages from <code>main</code> → <code>/docs</code>.</li>
+</ul>
+<h2>v1.0.0 — 2026-05-31</h2>
+<p>First stable release. Restructures distribution around the dataset model: there
+are now exactly <strong>two datasets</strong>, normalised on <code>mark_id</code> — the marks (metadata,
+in git) and a single row-per-unit <code>episodes</code> dataset (the rows, in object
+storage).</p>
+<h3>New dataset</h3>
+<ul>
+<li><strong><code>episodes</code></strong> — every mark's per-unit rows, unioned into one table for model
+training: each unit's context before the decision (<code>covariates</code>,
+<code>running_value</code>/<code>distance_to_cutoff</code>/<code>direction</code>), what was done (<code>assigned</code>/<code>treated</code>,
+<code>action</code>/<code>alternative</code>), and the <code>outcome</code> that followed (<code>outcome_observed</code> flags
+attrition). The (state, action, reward) view, in the dataset's own terms. Published as
+one deterministic, content-addressed Parquet (object storage) and loadable as the
+Hugging Face <code>episodes</code> config; pointed to by <code>datasets/episodes.manifest.json</code>. Each
+row carries <code>mark_id</code> (+ scalar <code>effect_*</code> summaries) to join back to the mark's full
+effect distribution.</li>
+</ul>
+<h3>Schema (<code>schema_version</code> 0.3.0 → 0.4.0)</h3>
+<ul>
+<li><strong>Breaking:</strong> removed the per-mark <code>data</code> artifact (<code>DataArtifact</code>). A mark is now pure
+metadata; its rows live in the <code>episodes</code> dataset, recovered by filtering on the mark
+<code>id</code>. Per-mark episode tables are no longer published — they are a build intermediate
+feeding the episodes reshape.</li>
+</ul>
+<h3>Storage</h3>
+<ul>
+<li>Object storage now holds just the <code>episodes</code> Parquet plus the frozen raw-input mirror
+(reproducibility). The mark-level Hugging Face records drop the <code>episode_table_*</code>
+fields. See <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/specs/4_EPISODES_DATASET_SPEC.md">specs/4_EPISODES_DATASET_SPEC.md</a>.</li>
+</ul>
+<h2>v0.2.0 — 2026-05-31</h2>
+<p>Adds a third series and the first environmental-domain mark, taking the
+collection to three domains (education + health + environment). Introduces
+seam-specific validity checks beyond the standard battery, debuting with the
+bathing-water abnormal-sample-exclusion sensitivity.</p>
+<h3>Marks (admitted reference points)</h3>
+<ul>
+<li><strong>bathing-water-poor-2015</strong> — sharp RDD on the English bathing-water Poor/Sufficient
+classification boundary (revised Bathing Water Directive). Running variable is the
+base-10 log compliance margin (worst of the E. coli / intestinal enterococci
+90th-percentile statistic over its Sufficient threshold, coastal vs inland);
+crossing into Poor triggers a mandatory advice-against-bathing sign + EA catchment
+investigation. Outcome is the same site's compliance margin four years later
+(2015 → 2019, non-overlapping rolling sample windows). Effect −0.095, 95% interval
+[−0.407, 0.245] (the bandwidth sweep flips sign — genuine identification
+uncertainty, honestly reported).</li>
+</ul>
+<h3>Schema</h3>
+<ul>
+<li>New <code>bathing-water</code> series value, and an optional <code>seam_specific_checks</code> field on
+the validity dossier for series-specific tests outside the standard battery.</li>
+</ul>
+<h3>New validity check</h3>
+<ul>
+<li><strong>Abnormal-sample-exclusion sensitivity</strong> (the bathing-water manipulation analogue):
+re-includes the discretionarily-discounted extreme-weather samples, re-derives the
+log-normal 90th-percentile margin near the cutoff, and confirms the effect estimate
+is robust. The mark records how many samples were discounted near the boundary and
+how many sites flip Poor/Sufficient under re-inclusion.</li>
+</ul>
+<h3>Data</h3>
+<ul>
+<li>Bathing-water inputs are harvested from the Defra linked-data API (no bulk CSV
+upstream) by <code>scripts/bathingwater_harvest.py</code> into two frozen, hash-pinned CSVs
+(annual compliance + percentile statistics; per-sample microbiology for near-cutoff
+windows), mirroring the existing derived-snapshot pattern.</li>
+</ul>
+<h2>v0.1.0 — 2026-05-30</h2>
+<p>First public release: a working causal yardstick on two domains, with both
+identification regimes implemented and the headline calibration finding
+demonstrated.</p>
+<h3>Marks (admitted reference points)</h3>
+<ul>
+<li><strong>floor-standards-p8-2016</strong> — sharp RDD on the 2016 English school Progress 8
+floor (−0.5); outcome is each school's Progress 8 two years later. Effect
+0.028, 95% interval [−0.054, 0.256].</li>
+<li><strong>shmi-higher-than-expected-banding</strong> — sharp intention-to-treat RDD on the NHS
+SHMI &quot;higher than expected&quot; mortality banding; outcome is the trust's SHMI in
+the next 12-month window (pooled trust-years). Effect −0.013, 95% interval
+[−0.066, 0.018].</li>
+</ul>
+<h3>Estimation</h3>
+<ul>
+<li>Model-averaged SBI estimator (stochadex SMC across a bandwidth × order × kernel
+grid; marginal-likelihood weighting within a bandwidth, uniform across). The
+honest interval splits into sampling vs identification variance.</li>
+<li>Fuzzy two-stage (Wald LATE) estimator with a first-stage admission gate.</li>
+<li>Plug-in local-linear estimator kept as the comparison baseline.</li>
+</ul>
+<h3>Headline finding</h3>
+<ul>
+<li>Calibration study against known truth: at a nominal 95% interval the plug-in
+method covers the truth 80% of the time, the model-averaged method 92%.</li>
+</ul>
+<h3>Tooling &amp; distribution</h3>
+<ul>
+<li>CLI: <code>fetch</code>, <code>build</code>, <code>validate</code>, <code>score</code>, <code>study</code>, <code>export</code>.</li>
+<li>Two public, dependency-light Go packages: <code>pkg/schema</code> and <code>pkg/score</code>.</li>
+<li>Deterministic, re-mintable marks; per-mark validity dossiers.</li>
+<li>Storage: git holds the instrument; frozen inputs and episode tables live in
+object storage (Cloudflare R2), referenced by URL + SHA-256.</li>
+<li>Hugging Face dataset export (one config per series) + Dataset Card.</li>
+</ul>
+<h3>Honest scoping</h3>
+<ul>
+<li>Documented why a clean area-funding mark is deferred (UKSPF too recent for an
+outcome; the Neighbourhood Renewal Fund running variable is not openly
+reconstructable; the CQC-instrumented fuzzy SHMI first stage is too weak to
+admit). The fuzzy estimator runs on this real data but the mark is not admitted.</li>
+</ul>
+
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data: UK public sector information (© Crown copyright)
+     under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</p>
+  <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>
