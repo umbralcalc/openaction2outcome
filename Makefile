@@ -11,12 +11,13 @@ all: build-all validate      ## fetch (implicit) + mint every series + validate
 fetch:                       ## download frozen inputs into data/cache (verify SHA-256)
 	$(CLI) fetch
 
-build:                       ## mint one series (SERIES=floor-standards|shmi) + stage its sidecar
+build:                       ## mint one series (SERIES=floor-standards|shmi|bathing-water) + stage its sidecar
 	$(CLI) build --series $(SERIES)
 
 build-all:                   ## mint every series
 	$(CLI) build --series floor-standards
 	$(CLI) build --series shmi
+	$(CLI) build --series bathing-water
 
 validate:                    ## check every mark against the schema
 	$(CLI) validate

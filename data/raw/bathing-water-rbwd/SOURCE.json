@@ -1,0 +1,17 @@
+{
+  "source_id": "bathing-water-rbwd-2015-2024",
+  "title": "Bathing-water annual compliance classifications + E. coli / intestinal enterococci percentile statistics, England 2015-2024 (revised Bathing Water Directive)",
+  "publisher": "Environment Agency (Defra)",
+  "landing_page": "https://environment.data.gov.uk/bwq/",
+  "download_uri": "https://environment.data.gov.uk/data/bathing-water-quality/",
+  "r2_object_key": "raw/bathing-water-rbwd-2015-2024/bathing_water_compliance.csv",
+  "local_path": "bathing_water_compliance.csv",
+  "sha256": "faec1609564a1a170f62aed3846f4a33ba5e92ce8995cc1027fad5d2554bc0cc",
+  "bytes": 816914,
+  "format": "csv",
+  "licence": "Open Government Licence v3.0",
+  "licence_uri": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "vintage": "Revised Bathing Water Directive (rBWD) annual compliance assessments for designated English bathing waters, season years 2015-2024 (2020 omitted: no full rBWD classification season under the COVID derogation). One row per (sampling point, season year): the published compliance classification (Excellent/Good/Sufficient/Poor) plus the log-normal 90th/95th percentile statistics, sample count, and log-mean/log-sd for each indicator, over the rolling 4-year window ending that season.",
+  "role": "running-variable-and-outcome",
+  "notes": "The EA publishes this only through the Defra linked-data API (environment.data.gov.uk/data/bathing-water-quality) — there is no single bulk CSV upstream. This canonical file was assembled once by scripts/bathingwater_harvest.py (per-year compliance slices + per-(point,year) escherichiaColiStats/intestinalEnterococciStats sub-resources + per-water type/region metadata). The Go build reads only this frozen file, hash-pinned and mirrored to object storage; re-running the harvest needs network and may differ as the EA revises historical vintages. The running variable is the base-10 log compliance margin = max(log10(EC_p90/EC_threshold), log10(IE_p90/IE_threshold)), coastal thresholds EC<=500/IE<=185, inland EC<=900/IE<=330; margin>0 is Poor."
+}

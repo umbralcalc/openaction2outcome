@@ -307,8 +307,10 @@ func cmdBuild(args []string) error {
 		mark, err = series.BuildSHMI(*rawDir, *cacheDir, *distDir, cfg)
 	case "shmi-fuzzy":
 		mark, err = series.BuildSHMIFuzzy(*rawDir, *cacheDir, *distDir, cfg)
+	case "bathing-water":
+		mark, err = series.BuildBathingWater(*rawDir, *cacheDir, *distDir, cfg)
 	case "":
-		return fmt.Errorf("build: --series is required (floor-standards, shmi)")
+		return fmt.Errorf("build: --series is required (floor-standards, shmi, shmi-fuzzy, bathing-water)")
 	default:
 		return fmt.Errorf("build: unknown or not-yet-implemented series %q", *seriesName)
 	}

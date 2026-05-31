@@ -151,7 +151,7 @@ func (m Mark) Validate() error {
 		return errors.New("mark: empty id")
 	}
 	switch m.Series {
-	case SeriesAreaFunding, SeriesFloorStandards, SeriesSHMI:
+	case SeriesAreaFunding, SeriesFloorStandards, SeriesSHMI, SeriesBathingWater:
 	default:
 		return fmt.Errorf("mark %q: unknown series %q", m.ID, m.Series)
 	}
