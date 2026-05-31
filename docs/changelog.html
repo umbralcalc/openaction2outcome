@@ -23,16 +23,19 @@
 <p>All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
 separately inside each mark).</p>
-<h2>Unreleased</h2>
+<h2>v1.1.0 — 2026-05-31</h2>
+<p>Adds a documentation website. No dataset, schema, or scorer changes — the marks and the
+<code>episodes</code> dataset are byte-identical to v1.0.0.</p>
 <h3>Documentation site</h3>
 <ul>
 <li><strong>Static GitHub Pages site</strong> (<code>make site</code> → <code>openaction2outcome site</code>): generates a
 self-contained website into the committed <code>docs/</code> folder — a landing page (coverage
 cards generated from the marks), a downloads page (the <code>episodes</code> Parquet with its
 SHA-256, a content-addressed <code>marks.zip</code>, the Hugging Face mirror, and the frozen
-raw-input table), the rendered schema/publishing/changelog docs, and a page per mark
-dossier. Generated offline and deterministically from artifacts already in the repo, so
-it can't drift from the data. Served by Pages from <code>main</code> → <code>/docs</code>.</li>
+raw-input table), the rendered schema and changelog docs, and a page per mark dossier.
+Generated offline and deterministically from artifacts already in the repo, so it can't
+drift from the data. Served by Pages from <code>main</code> → <code>/docs</code>. See
+<a href="https://github.com/umbralcalc/openaction2outcome/blob/main/PUBLISHING.md">PUBLISHING.md</a>.</li>
 </ul>
 <h2>v1.0.0 — 2026-05-31</h2>
 <p>First stable release. Restructures distribution around the dataset model: there
