@@ -106,7 +106,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 2em 0; }
 }
 .download h3 { margin-top: 0; }
 .download .meta { font-size: 0.86rem; color: var(--muted); margin: 0.6em 0; }
-.download .meta code { background: #fff; }
+.download .meta code { background: #fff; overflow-wrap: anywhere; word-break: break-all; }
 .download .actions { margin-top: 0.8em; }
 .badge {
   display: inline-block; font-size: 0.78rem; padding: 2px 9px; border-radius: 999px;
