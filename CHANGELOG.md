@@ -4,6 +4,25 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.5.0 — 2026-06-01
+
+Introduces the **Mechanism** entity, making the collection a clean instance of the
+bridge-marks data model. A mechanism is where anchor coherence is *defined* — two
+anchors share a mechanism iff they share the policy variable, outcome construct,
+population definition, and regime — and it is the unit a bridge spans. Grouping
+marks under a mechanism is what turns "several isolated marks" into an anchor
+family. This is the groundwork the bridge-seams expansion needs.
+
+- **`schema.Mechanism`** + a registry of the declared seams (`area-funding-eligibility`,
+  `floor-standards-p8`, `shmi-mortality-banding`, `bathing-water-classification`),
+  exposed via `CanonicalMechanisms()` / `MechanismByID()`.
+- New required **`mechanism_id`** field on every mark; `Mark.Validate` rejects a
+  missing or unknown id, and requires a bridge mark's `mechanism_id` to equal its
+  bridge block's mechanism. Each existing seam is a one-anchor mechanism today; the
+  data model is identical when a family arrives — more anchors simply share the id.
+- The three committed identified marks gain `mechanism_id` (values unchanged).
+- Additive field — `schema_version` stays 0.5.0.
+
 ## v1.4.0 — 2026-06-01
 
 Adds the **deterministic causal layer** — the first major extension on top of the

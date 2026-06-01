@@ -24,6 +24,13 @@ type Mark struct {
 	UnitType      string  `json:"unit_type"`
 	RDDType       RDDType `json:"rdd_type"`
 
+	// MechanismID is the mechanism this mark belongs to — the entity on which
+	// identified marks are anchors and bridge marks interpolate. Anchor coherence
+	// is defined at the mechanism (shared policy variable / outcome construct /
+	// population / regime). Marks grouped under one mechanism with bracketing
+	// policy points form an anchor family a bridge can span. See Mechanism.
+	MechanismID string `json:"mechanism_id"`
+
 	// Category separates identified (design-based, the pins) from bridge
 	// (simulator-bridged interpolation, the span). An empty value reads as
 	// `identified` so marks minted before this field keep validating.
@@ -162,6 +169,9 @@ func (m Mark) Validate() error {
 	// pin/span discipline is then enforced per category.
 	cat := m.EffectiveCategory()
 	if err := m.validateProvenanceLine(cat); err != nil {
+		return err
+	}
+	if err := m.validateMechanismID(); err != nil {
 		return err
 	}
 

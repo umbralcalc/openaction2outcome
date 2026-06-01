@@ -193,6 +193,7 @@ func BuildFloorStandards(rawDir, cacheDir, distDir string, cfg publish.Config) (
 
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
+		MechanismID:   "floor-standards-p8",
 		Category:      schema.CategoryIdentified,
 		TruthSource:   schema.TruthIdentified,
 		ID:            markID,

@@ -243,6 +243,7 @@ func BuildBathingWater(rawDir, cacheDir, distDir string, cfg publish.Config) (sc
 
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
+		MechanismID:   "bathing-water-classification",
 		Category:      schema.CategoryIdentified,
 		TruthSource:   schema.TruthIdentified,
 		ID:            bwMarkID,

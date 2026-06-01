@@ -5,6 +5,7 @@
   "domain": "Education",
   "unit_type": "school",
   "rdd_type": "sharp",
+  "mechanism_id": "floor-standards-p8",
   "category": "identified",
   "truth_source": "identified",
   "design": {

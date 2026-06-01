@@ -5,6 +5,7 @@
   "domain": "Health",
   "unit_type": "nhs-trust",
   "rdd_type": "sharp",
+  "mechanism_id": "shmi-mortality-banding",
   "category": "identified",
   "truth_source": "identified",
   "design": {

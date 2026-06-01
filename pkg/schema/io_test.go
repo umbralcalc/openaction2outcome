@@ -12,6 +12,7 @@ func validMark() Mark {
 		SchemaVersion: SchemaVersion,
 		ID:            "demo",
 		Series:        SeriesFloorStandards,
+		MechanismID:   "floor-standards-p8",
 		Domain:        "Education",
 		UnitType:      "school",
 		RDDType:       Sharp,

@@ -176,6 +176,7 @@ func BuildSHMI(rawDir, cacheDir, distDir string, cfg publish.Config) (schema.Mar
 
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
+		MechanismID:   "shmi-mortality-banding",
 		Category:      schema.CategoryIdentified,
 		TruthSource:   schema.TruthIdentified,
 		ID:            shmiMarkID,

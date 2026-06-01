@@ -5,6 +5,7 @@
   "domain": "Environment",
   "unit_type": "bathing-water",
   "rdd_type": "sharp",
+  "mechanism_id": "bathing-water-classification",
   "category": "identified",
   "truth_source": "identified",
   "design": {

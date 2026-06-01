@@ -58,6 +58,7 @@ func TestMarkAssignmentConsistency(t *testing.T) {
 		SchemaVersion: SchemaVersion,
 		ID:            "t1",
 		Series:        SeriesAreaFunding,
+		MechanismID:   "area-funding-eligibility",
 		RDDType:       Sharp,
 		Design:        Design{Cutoff: 20, Direction: BelowTreated}, // most-deprived = low percentile
 		Effect: Distribution{

@@ -169,6 +169,7 @@ func BuildSHMIFuzzy(rawDir, cacheDir, distDir string, cfg publish.Config) (schem
 
 	mark := schema.Mark{
 		SchemaVersion: schema.SchemaVersion,
+		MechanismID:   "shmi-mortality-banding",
 		Category:      schema.CategoryIdentified,
 		TruthSource:   schema.TruthIdentified,
 		ID:            shmiFuzzyMarkID,
