@@ -44,7 +44,15 @@ func sampleBridgeMark() schema.Mark {
 				BracketingOK: true,
 				LOAOCoverage: 1.0,
 				LOAOLevel:    0.95,
-				Admitted:     true,
+				Inference: &schema.InferenceRecord{
+					Rung: "closed-form",
+					Tractability: &schema.TractabilityVerdict{
+						Pass: true, Linear: true,
+						NonlinearityTol: 0.05, SkewTol: 0.30, MisfitTol: 0.5,
+						Reason: "linear-Gaussian: exact.",
+					},
+				},
+				Admitted: true,
 			},
 		},
 	}
@@ -62,6 +70,9 @@ func TestRenderBridgeDossier(t *testing.T) {
 		"trust-decay assumption",
 		"squared-exponential",
 		"Leave-one-anchor-out",
+		"Inference rung",    // the deterministic causal layer's provenance
+		"Tractability gate", // the Axis-B verdict
+		"closed-form",
 		"category == identified", // tells consumers how to filter bridges out
 	} {
 		if !strings.Contains(out, want) {

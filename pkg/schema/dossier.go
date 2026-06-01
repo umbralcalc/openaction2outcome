@@ -109,6 +109,11 @@ type BridgeChecks struct {
 	KernelSensitivity []KernelSensitivityRow `json:"kernel_sensitivity,omitempty"`
 	KernelFlagged     bool                   `json:"kernel_flagged"`
 
+	// Inference is the deterministic causal layer's record of the rung used and the
+	// tractability-gate verdict — the Axis-B check that a deterministic interval is
+	// honest for this mechanism. Present once that layer mints the mark.
+	Inference *InferenceRecord `json:"inference,omitempty"`
+
 	// Admitted is the bridge verdict; Notes explains it.
 	Admitted bool   `json:"admitted"`
 	Notes    string `json:"notes,omitempty"`

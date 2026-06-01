@@ -70,6 +70,46 @@ type BridgeSpec struct {
 	// AnchorCoherence is the structured justification that all anchors reflect the
 	// same underlying mechanism. Mandatory; a bridge without it is rejected.
 	AnchorCoherence AnchorCoherence `json:"anchor_coherence"`
+
+	// Inference records HOW the honest interval was produced: which rung of the
+	// inference ladder (closed-form / deterministic-moment / sampled) and the
+	// tractability-gate verdict that certified it. It makes "determinism was
+	// earned, not assumed" auditable. Present once the deterministic causal layer
+	// mints the mark; nil on foundation-era bridges.
+	Inference *InferenceRecord `json:"inference,omitempty"`
+}
+
+// InferenceRecord is the deterministic causal layer's provenance for a bridge
+// mark's interval: the inference rung used and the tractability-gate verdict that
+// licensed it. Pure description — schema never runs the gate.
+type InferenceRecord struct {
+	// Rung is the inference ladder rung that produced the interval:
+	// `closed-form` (linear-Gaussian, exact), `deterministic-moment`
+	// (mildly-nonlinear, moment-propagated), or `sampled` (gated, deferred — used
+	// only when the mechanism left the deterministic regime).
+	Rung string `json:"rung"`
+
+	// Tractability is the Axis-B gate verdict: whether the mechanism stayed in the
+	// deterministic regime and the statistics that decided it. A `sampled` rung is
+	// only honest when this records a failed gate.
+	Tractability *TractabilityVerdict `json:"tractability,omitempty"`
+}
+
+// TractabilityVerdict echoes the gate's measurement of whether a deterministic
+// interval is honest for this mechanism: a non-Gaussian / strongly-nonlinear θ
+// posterior fails the gate and is routed to the sampling path instead of being
+// papered over with a tidy Gaussian interval. The statistics + tolerances ship so
+// a reader can audit the boundary.
+type TractabilityVerdict struct {
+	Pass            bool    `json:"pass"`
+	Linear          bool    `json:"linear"`           // mechanism detected linear-in-θ (exact regime)
+	NonlinearityGap float64 `json:"nonlinearity_gap"` // unscented-vs-linearised predictive variance gap
+	Skew            float64 `json:"skew"`             // propagated-prediction skew (non-Gaussianity proxy)
+	LaplaceMisfit   float64 `json:"laplace_misfit"`   // NLP-vs-quadratic gap in nats (posterior non-Gaussianity)
+	NonlinearityTol float64 `json:"nonlinearity_tol"`
+	SkewTol         float64 `json:"skew_tol"`
+	MisfitTol       float64 `json:"misfit_tol"`
+	Reason          string  `json:"reason"`
 }
 
 // AnchorRef points at an identified mark used as a pin, recording the mark id and

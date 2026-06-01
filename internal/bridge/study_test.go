@@ -35,6 +35,36 @@ func TestBridgeRecoveryStudyTracksNominal(t *testing.T) {
 	}
 }
 
+func TestDeterministicLayerStudy(t *testing.T) {
+	if testing.Short() {
+		t.Skip("layer study runs SMC for the agreement arm; skipped in -short")
+	}
+	study := RunDeterministicLayerStudy(15, 7000, SMCConfig{NumParticles: 600, NumRounds: 6, Seed: 1})
+
+	// The deterministic moment answer must match the SMC closed-form joint to within
+	// Monte-Carlo error (no systematic gap), and re-mint byte-for-byte.
+	if study.MaxMomentVsSMC > 0.05 {
+		t.Errorf("moment vs SMC closed-form gap too large (%.4f) — should be within MC error", study.MaxMomentVsSMC)
+	}
+	if !study.RemintIdentical {
+		t.Error("moment calibrator must re-mint byte-for-byte")
+	}
+	// The linear-Gaussian causal mechanism must earn the closed-form rung everywhere.
+	if !study.AllClosedForm || study.GateRung != rungClosedForm {
+		t.Errorf("linear-Gaussian SCM should always earn the closed-form rung; allClosedForm=%v rung=%q", study.AllClosedForm, study.GateRung)
+	}
+	// Recovery of the known interventional truth should track nominal (conservative ok).
+	idx95 := -1
+	for i, L := range study.Levels {
+		if L == 0.95 {
+			idx95 = i
+		}
+	}
+	if study.Recovery.Coverage[idx95] < 0.8 {
+		t.Errorf("recovery@0.95 should track nominal; got %.3f", study.Recovery.Coverage[idx95])
+	}
+}
+
 func TestKernelSensitivityFlags(t *testing.T) {
 	// A smooth, simulator-friendly truth → kernels should roughly agree (not flagged).
 	curve := func(x float64) float64 { return 0.2 + 0.5*x }

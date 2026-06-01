@@ -90,7 +90,8 @@ type BridgePosterior struct {
 	GPVar    float64 // within: GP conditional (discrepancy/pinning) variance
 	ThetaVar float64 // between: spread of per-particle means (simulator/θ uncertainty)
 	Kernel   string
-	Method   string // "modular" (closed-form δ) or "joint" (sampled δ)
+	Method   string // "modular"/"joint-exact" (SMC θ), "moment" (deterministic), "joint" (sampled δ)
+	Rung     string // inference rung used: closed-form | deterministic-moment | sampled (empty for the SMC calibrators)
 	dist     postShape
 }
 

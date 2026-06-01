@@ -63,3 +63,34 @@ func (k Matern52) Variance() float64 { return k.SigmaF * k.SigmaF }
 func (k Matern52) Params() map[string]float64 {
 	return map[string]float64{"sigma_f": k.SigmaF, "lengthscale": k.Lengthscale}
 }
+
+// OrnsteinUhlenbeck is the STRUCTURED / latent-force kernel of the deterministic
+// causal layer: the stationary covariance of a first-order linear mechanism. The
+// OU process dz = -(1/ℓ)z dx + σ dW — the response of a linear first-order system
+// (relaxation/decay length ℓ) driven by a white latent force — has covariance
+//
+//	k(x, x') = σf² exp(-|x − x'|/ℓ),   σf² = σ²ℓ/2.
+//
+// So unlike the purely phenomenological SE/Matérn kernels, ℓ here is a *mechanistic*
+// quantity: the relaxation length of the linearised mechanism, and the kernel is
+// ODE-derived (this is the single-output, first-order latent-force model). It is the
+// roughest standard kernel (Matérn-1/2; not mean-square differentiable), so as a
+// sensitivity contrast it stresses the trust-decay assumption hardest. stochadex
+// ships the exact OU propagator (continuous.OrnsteinUhlenbeckExactGaussianIteration),
+// so a mechanism whose discrepancy uses this kernel sits on the same engine.
+type OrnsteinUhlenbeck struct {
+	SigmaF      float64 // prior discrepancy sd (σf); Variance = σf²
+	Lengthscale float64 // ℓ: the linearised mechanism's relaxation length
+}
+
+func (k OrnsteinUhlenbeck) Name() string { return "ornstein-uhlenbeck" }
+
+func (k OrnsteinUhlenbeck) Cov(x1, x2 float64) float64 {
+	return k.SigmaF * k.SigmaF * math.Exp(-math.Abs(x1-x2)/k.Lengthscale)
+}
+
+func (k OrnsteinUhlenbeck) Variance() float64 { return k.SigmaF * k.SigmaF }
+
+func (k OrnsteinUhlenbeck) Params() map[string]float64 {
+	return map[string]float64{"sigma_f": k.SigmaF, "lengthscale": k.Lengthscale}
+}

@@ -33,6 +33,10 @@ type BridgeBatteryInput struct {
 	Coherence  schema.AnchorCoherence
 	Level      float64 // credible level for LOAO / sensitivity intervals (e.g. 0.95)
 	SMC        bridge.SMCConfig
+	// UseMarginal selects the θ likelihood weighting the tractability gate evaluates
+	// (false = modular cut, true = GP marginal) — match the calibrator that minted
+	// the interval so the gate sees the posterior the interval rests on.
+	UseMarginal bool
 }
 
 // RunBridgeBattery executes the bridge validity battery and returns the dossier
@@ -59,9 +63,20 @@ func RunBridgeBattery(in BridgeBatteryInput) schema.BridgeChecks {
 		checks.KernelFlagged = ks.Flagged
 	}
 
+	// Tractability gate (Axis-B detector): assert the mechanism is in the
+	// deterministic regime. A failed gate does not by itself reject the bridge —
+	// it routes the mark to the deferred sampling path — but it is surfaced
+	// prominently so a deterministic interval is never minted past the boundary.
+	gateFlagged := false
+	if v, err := bridge.TractabilityGate(in.Mechanism, in.Anchors, in.Query, in.Kernel, in.UseMarginal); err == nil {
+		rec := v.SchemaRecord()
+		checks.Inference = &rec
+		gateFlagged = !v.Pass
+	}
+
 	// Admission: coherence and bracketing are the hard gates.
 	checks.Admitted = coherenceOK && bracketingOK
-	checks.Notes = bridgeNotes(coherenceOK, coherenceMsg, bracketingOK, checks.LOAOCoverage, in.Level, checks.KernelFlagged)
+	checks.Notes = bridgeNotes(coherenceOK, coherenceMsg, bracketingOK, checks.LOAOCoverage, in.Level, checks.KernelFlagged, gateFlagged, checks.Inference)
 	return checks
 }
 
@@ -79,7 +94,7 @@ func coherenceVerdict(c schema.AnchorCoherence) (bool, string) {
 	return true, "anchors asserted coherent on one mechanism"
 }
 
-func bridgeNotes(coherenceOK bool, coherenceMsg string, bracketingOK bool, loaoCov, level float64, kernelFlagged bool) string {
+func bridgeNotes(coherenceOK bool, coherenceMsg string, bracketingOK bool, loaoCov, level float64, kernelFlagged, gateFlagged bool, inf *schema.InferenceRecord) string {
 	verdict := "ADMITTED"
 	if !coherenceOK || !bracketingOK {
 		verdict = "REJECTED"
@@ -87,6 +102,12 @@ func bridgeNotes(coherenceOK bool, coherenceMsg string, bracketingOK bool, loaoC
 	s := fmt.Sprintf("%s. Coherence: %s. Bracketing: %s (interpolation only). "+
 		"LOAO coverage at %.0f%%: %.0f%% of held-out anchors fell within the bridge's predicted interval.",
 		verdict, coherenceMsg, bracketedWord(bracketingOK), 100*level, 100*loaoCov)
+	if inf != nil {
+		s += fmt.Sprintf(" Inference rung: %s.", inf.Rung)
+	}
+	if gateFlagged {
+		s += " TRACTABILITY GATE FAILED: the mechanism left the deterministic regime (a non-Gaussian / strongly-nonlinear θ posterior) — a deterministic interval would be miscalibrated; route to the deferred sampling path."
+	}
 	if kernelFlagged {
 		s += " KERNEL-SENSITIVE: τ(query) moves materially under an alternative covariance kernel — the estimate is partly kernel-driven; read the kernel-sensitivity table."
 	}

@@ -146,6 +146,11 @@ func renderBridge(m schema.Mark) string {
 			w("\n")
 		}
 
+		// Inference rung + tractability gate (the deterministic causal layer).
+		if bc.Inference != nil {
+			renderInference(w, bc.Inference)
+		}
+
 		if bc.Notes != "" {
 			w("**Notes.** %s\n\n", bc.Notes)
 		}
@@ -178,6 +183,33 @@ func renderBridge(m schema.Mark) string {
 		w("- **Reproducibility:** %s. The bridge re-mints byte-for-byte from the anchors + simulator seed + kernel.\n", strings.Join(parts, ", "))
 	}
 	return b.String()
+}
+
+// renderInference renders the deterministic causal layer's provenance: the
+// inference rung that produced the interval and the tractability-gate verdict that
+// licensed it — making "determinism was earned, not assumed" visible.
+func renderInference(w func(string, ...any), inf *schema.InferenceRecord) {
+	rungWord := map[string]string{
+		"closed-form":          "closed-form (linear-Gaussian — the interval is exact)",
+		"deterministic-moment": "deterministic moment propagation (mildly nonlinear — unscented)",
+		"sampled":              "sampled (gated, deferred — the mechanism left the deterministic regime)",
+	}
+	label := inf.Rung
+	if pretty, ok := rungWord[inf.Rung]; ok {
+		label = pretty
+	}
+	w("**Inference rung** (how the honest interval was computed): %s\n\n", label)
+	if t := inf.Tractability; t != nil {
+		w("**Tractability gate** (Axis-B — is a deterministic interval honest here?): %s\n\n", tick(t.Pass))
+		w("| statistic | value | tolerance | meaning |\n|---|---|---|---|\n")
+		w("| nonlinearity gap | %.4f | %.2f | unscented vs linearised predictive variance |\n", t.NonlinearityGap, t.NonlinearityTol)
+		w("| propagated skew | %.4f | %.2f | non-Gaussianity of the prediction |\n", t.Skew, t.SkewTol)
+		w("| Laplace misfit (nats) | %.4f | %.2f | how non-Gaussian the θ posterior is |\n", t.LaplaceMisfit, t.MisfitTol)
+		w("\n")
+		if t.Reason != "" {
+			w("> %s\n\n", t.Reason)
+		}
+	}
 }
 
 // pinSpanPicture draws a tiny ASCII number line with the anchors as pins (|) and

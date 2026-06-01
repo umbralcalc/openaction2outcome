@@ -71,7 +71,7 @@ func usage() {
 
 usage:
   openaction2outcome fetch [--raw DIR] [--cache DIR] [--publish-config FILE]
-  openaction2outcome study [--problems N] [--seed N] [--out FILE]
+  openaction2outcome study [--problems N] [--seed N] [--out FILE] [--bridge [--compare|--layer]]
   openaction2outcome build --series NAME [--raw DIR] [--cache DIR] [--dist DIR] [--marks DIR]
   openaction2outcome validate [--marks DIR]
   openaction2outcome score --submission FILE [--marks DIR] [--out FILE]
@@ -143,13 +143,18 @@ func cmdStudy(args []string) error {
 	rounds := fs.Int("rounds", 5, "SMC rounds per spec")
 	isBridge := fs.Bool("bridge", false, "run the bridge recovery + LOAO study instead of the RDD calibration study")
 	compare := fs.Bool("compare", false, "with --bridge: compare modular vs exact-joint vs sampled-joint calibrators")
+	layer := fs.Bool("layer", false, "with --bridge: run the deterministic causal-layer study (moment vs SMC, gate, re-mint)")
 	fs.Parse(args)
 
 	if *isBridge {
-		if *compare {
+		switch {
+		case *layer:
+			return runDeterministicLayerStudy(*problems, *seed, *particles, *rounds, *out)
+		case *compare:
 			return runBridgeComparison(*problems, *seed, *particles, *rounds, *out)
+		default:
+			return runBridgeStudy(*problems, *seed, *particles, *rounds, *out)
 		}
-		return runBridgeStudy(*problems, *seed, *particles, *rounds, *out)
 	}
 
 	fmt.Printf("running calibration study: %d problems x %d specs (this takes a minute)...\n",
@@ -197,6 +202,36 @@ func runBridgeStudy(problems int, seed int64, particles, rounds int, out string)
 			L, study.Recovery.Coverage[i], study.LOAO.Coverage[i], study.Recovery.MeanWidth[i])
 	}
 	fmt.Printf("\nwrote %s\n", out)
+	return nil
+}
+
+// runDeterministicLayerStudy runs the deterministic causal-layer validation: on a
+// directed structural causal mechanism (do(T=x) on a confounded graph, run on the
+// stochadex engine) with a KNOWN interventional truth, it shows the moment
+// calibrator matches the SMC closed-form joint while carrying no sampling noise,
+// re-mints byte-for-byte, earns the closed-form rung from the tractability gate,
+// and recovers the truth between anchors.
+func runDeterministicLayerStudy(problems int, seed int64, particles, rounds int, out string) error {
+	fmt.Printf("running deterministic causal-layer study: %d problems on the structural causal mechanism...\n", problems)
+	study := bridge.RunDeterministicLayerStudy(problems, seed,
+		bridge.SMCConfig{NumParticles: particles, NumRounds: rounds, Seed: 1})
+
+	b, err := json.MarshalIndent(study, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(out, append(b, '\n'), 0o644); err != nil {
+		return err
+	}
+	fmt.Printf("\nmechanism=%s  kernel=%s\n", study.Mechanism, study.Kernel)
+	fmt.Printf("moment vs SMC closed-form: max=%.5f mean=%.5f   re-mint identical=%v\n",
+		study.MaxMomentVsSMC, study.MeanMomentVsSMC, study.RemintIdentical)
+	fmt.Printf("tractability gate: all closed-form=%v (rung=%s)\n", study.AllClosedForm, study.GateRung)
+	fmt.Printf("\nnominal  recovery-cov  recovery-w\n")
+	for i, L := range study.Levels {
+		fmt.Printf("%5.2f      %.3f         %.3f\n", L, study.Recovery.Coverage[i], study.Recovery.MeanWidth[i])
+	}
+	fmt.Printf("\n%s\n\nwrote %s\n", study.Finding, out)
 	return nil
 }
 

@@ -4,6 +4,63 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.4.0 — 2026-06-01
+
+Adds the **deterministic causal layer** — the first major extension on top of the
+bridge foundation. It augments causal-modelling power while staying *determinism-first*:
+the honest interval is computed by closed-form / deterministic moment propagation, never
+by sampling the discrepancy, and an explicit tractability gate certifies that a
+deterministic interval is honest for a given mechanism before one is minted. No
+breaking wire-format change — the new provenance fields are additive and optional, so
+`schema_version` stays 0.5.0 and existing marks are unchanged.
+
+### Deterministic inference (rungs 1 & 2)
+- **`CalibrateMoment` / `CalibrateDeterministic`** (`internal/bridge`) — a calibrator with
+  no Monte Carlo: θ is fit by deterministic Gauss–Newton (a Laplace posterior) and pushed
+  through the prediction map by the **unscented transform**. It is **exact in the
+  linear-Gaussian limit** (verified against a closed-form analytic reference to round-off)
+  and re-mints byte-for-byte (no RNG).
+
+### The tractability gate (the Axis-B detector)
+- **`TractabilityGate`** tests whether a mechanism stays in the deterministic regime and
+  ships its verdict as provenance. Its load-bearing statistic is the **Laplace misfit**
+  (the true negative-log-posterior vs its quadratic approximation, in nats): ~0 for a
+  linear-Gaussian θ posterior, large for a genuinely non-Gaussian one. A failed gate is
+  flagged and routed to the deferred sampling path rather than given a (miscalibrated)
+  deterministic interval. Determinism is earned, not assumed.
+
+### The causal mechanism + structured kernels
+- **`LinearSCMMechanism`** — a directed structural causal model (a confounded
+  treatment→outcome graph) built as a genuine stochadex deterministic graph (value-function
+  nodes + upstream edges, run on the same simulator engine the identified marks use), with
+  **analytic `do(·)` interventions**. The interventional slope differs from the confounded
+  observational association — the directed graph carries interventional content a covariance
+  alone cannot.
+- New discrepancy kernels: an **Ornstein–Uhlenbeck / latent-force** kernel (ODE-derived,
+  encoding a first-order linearised mechanism) and an **intrinsic-coregionalisation**
+  multi-output kernel (PSD `B = WWᵀ + diag κ`, with joint multi-output Gram assembly) to
+  bridge correlated outputs or jurisdictions.
+
+### Provenance + validity
+- New optional `inference` record on a bridge mark (and in the dossier): the **rung** used
+  (`closed-form` | `deterministic-moment` | `sampled`) and the **tractability-gate verdict**
+  with its statistics + tolerances, so a consumer sees exactly which method produced the
+  interval and that determinism was certified.
+- The bridge validity battery runs the tractability gate; a failed gate is surfaced
+  prominently. The dossier renders the inference rung and the gate verdict.
+
+### Validation artifact
+- **`study --bridge --layer`** runs the deterministic-causal-layer study on the structural
+  causal mechanism with a *known* interventional truth: the moment calibrator coincides with
+  the SMC closed-form joint to within Monte-Carlo error while carrying no sampling noise,
+  re-mints byte-for-byte, earns the closed-form rung at every problem, and recovers the
+  known τ* between the anchors.
+
+### Still deferred (data-gated)
+- The first *real* bridge mark (needs a mechanism with ≥2 bracketing identified anchors) and
+  the gated sampling rung remain deferred. The modelling layer raised the ceiling; coherent
+  anchor families remain the binding constraint.
+
 ## v1.3.0 — 2026-05-31
 
 Adds a second, clearly-separated category of mark — the **bridge mark** — and the
