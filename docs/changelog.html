@@ -23,6 +23,85 @@
 <p>All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
 separately inside each mark).</p>
+<h2>v1.5.0 — 2026-06-01</h2>
+<p>Introduces the <strong>Mechanism</strong> entity, making the collection a clean instance of the
+bridge-marks data model. A mechanism is where anchor coherence is <em>defined</em> — two
+anchors share a mechanism iff they share the policy variable, outcome construct,
+population definition, and regime — and it is the unit a bridge spans. Grouping
+marks under a mechanism is what turns &quot;several isolated marks&quot; into an anchor
+family. This is the groundwork the bridge-seams expansion needs.</p>
+<ul>
+<li><strong><code>schema.Mechanism</code></strong> + a registry of the declared seams (<code>area-funding-eligibility</code>,
+<code>floor-standards-p8</code>, <code>shmi-mortality-banding</code>, <code>bathing-water-classification</code>),
+exposed via <code>CanonicalMechanisms()</code> / <code>MechanismByID()</code>.</li>
+<li>New required <strong><code>mechanism_id</code></strong> field on every mark; <code>Mark.Validate</code> rejects a
+missing or unknown id, and requires a bridge mark's <code>mechanism_id</code> to equal its
+bridge block's mechanism. Each existing seam is a one-anchor mechanism today; the
+data model is identical when a family arrives — more anchors simply share the id.</li>
+<li>The three committed identified marks gain <code>mechanism_id</code> (values unchanged).</li>
+<li>Additive field — <code>schema_version</code> stays 0.5.0.</li>
+</ul>
+<h2>v1.4.0 — 2026-06-01</h2>
+<p>Adds the <strong>deterministic causal layer</strong> — the first major extension on top of the
+bridge foundation. It augments causal-modelling power while staying <em>determinism-first</em>:
+the honest interval is computed by closed-form / deterministic moment propagation, never
+by sampling the discrepancy, and an explicit tractability gate certifies that a
+deterministic interval is honest for a given mechanism before one is minted. No
+breaking wire-format change — the new provenance fields are additive and optional, so
+<code>schema_version</code> stays 0.5.0 and existing marks are unchanged.</p>
+<h3>Deterministic inference (rungs 1 &amp; 2)</h3>
+<ul>
+<li><strong><code>CalibrateMoment</code> / <code>CalibrateDeterministic</code></strong> (<code>internal/bridge</code>) — a calibrator with
+no Monte Carlo: θ is fit by deterministic Gauss–Newton (a Laplace posterior) and pushed
+through the prediction map by the <strong>unscented transform</strong>. It is <strong>exact in the
+linear-Gaussian limit</strong> (verified against a closed-form analytic reference to round-off)
+and re-mints byte-for-byte (no RNG).</li>
+</ul>
+<h3>The tractability gate (the Axis-B detector)</h3>
+<ul>
+<li><strong><code>TractabilityGate</code></strong> tests whether a mechanism stays in the deterministic regime and
+ships its verdict as provenance. Its load-bearing statistic is the <strong>Laplace misfit</strong>
+(the true negative-log-posterior vs its quadratic approximation, in nats): ~0 for a
+linear-Gaussian θ posterior, large for a genuinely non-Gaussian one. A failed gate is
+flagged and routed to the deferred sampling path rather than given a (miscalibrated)
+deterministic interval. Determinism is earned, not assumed.</li>
+</ul>
+<h3>The causal mechanism + structured kernels</h3>
+<ul>
+<li><strong><code>LinearSCMMechanism</code></strong> — a directed structural causal model (a confounded
+treatment→outcome graph) built as a genuine stochadex deterministic graph (value-function
+nodes + upstream edges, run on the same simulator engine the identified marks use), with
+<strong>analytic <code>do(·)</code> interventions</strong>. The interventional slope differs from the confounded
+observational association — the directed graph carries interventional content a covariance
+alone cannot.</li>
+<li>New discrepancy kernels: an <strong>Ornstein–Uhlenbeck / latent-force</strong> kernel (ODE-derived,
+encoding a first-order linearised mechanism) and an <strong>intrinsic-coregionalisation</strong>
+multi-output kernel (PSD <code>B = WWᵀ + diag κ</code>, with joint multi-output Gram assembly) to
+bridge correlated outputs or jurisdictions.</li>
+</ul>
+<h3>Provenance + validity</h3>
+<ul>
+<li>New optional <code>inference</code> record on a bridge mark (and in the dossier): the <strong>rung</strong> used
+(<code>closed-form</code> | <code>deterministic-moment</code> | <code>sampled</code>) and the <strong>tractability-gate verdict</strong>
+with its statistics + tolerances, so a consumer sees exactly which method produced the
+interval and that determinism was certified.</li>
+<li>The bridge validity battery runs the tractability gate; a failed gate is surfaced
+prominently. The dossier renders the inference rung and the gate verdict.</li>
+</ul>
+<h3>Validation artifact</h3>
+<ul>
+<li><strong><code>study --bridge --layer</code></strong> runs the deterministic-causal-layer study on the structural
+causal mechanism with a <em>known</em> interventional truth: the moment calibrator coincides with
+the SMC closed-form joint to within Monte-Carlo error while carrying no sampling noise,
+re-mints byte-for-byte, earns the closed-form rung at every problem, and recovers the
+known τ* between the anchors.</li>
+</ul>
+<h3>Still deferred (data-gated)</h3>
+<ul>
+<li>The first <em>real</em> bridge mark (needs a mechanism with ≥2 bracketing identified anchors) and
+the gated sampling rung remain deferred. The modelling layer raised the ceiling; coherent
+anchor families remain the binding constraint.</li>
+</ul>
 <h2>v1.3.0 — 2026-05-31</h2>
 <p>Adds a second, clearly-separated category of mark — the <strong>bridge mark</strong> — and the
 machinery to mint and score it. Bridge marks estimate a mechanism's effect at a

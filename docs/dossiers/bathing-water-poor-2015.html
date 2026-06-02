@@ -33,7 +33,7 @@
 <h2>The effect</h2>
 <p><strong>-0.0947</strong> with a 95% interval of <strong>[-0.4068, 0.2451]</strong>.</p>
 <p>The interval width separates into two sources:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>source</th>
@@ -54,11 +54,11 @@
 <td><strong>0.1716</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>Validity checks</h2>
 <p><strong>Density / manipulation:</strong> pass — binned-density-discontinuity (McCrary-style) (p = 0.710)</p>
 <p><strong>Covariate continuity at the cutoff</strong> (covariates should not jump):</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>covariate</th>
@@ -87,9 +87,9 @@
 <td>pass</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Placebo cutoffs</strong> (effect should vanish away from the real cutoff):</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>placebo cutoff</th>
@@ -109,9 +109,9 @@
 <td>pass</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Bandwidth sweep</strong> (estimate vs window width):</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>bandwidth</th>
@@ -140,9 +140,9 @@
 <td>-0.1443</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Donut robustness</strong> (re-estimate after excluding units nearest the cutoff):</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>donut radius</th>
@@ -159,7 +159,7 @@
 <td>-0.1259</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Seam-specific checks:</strong></p>
 <ul>
 <li><strong>abnormal_sample_exclusion:</strong> pass — abnormal-sample-exclusion sensitivity (re-include discounted samples, re-derive 90th-percentile margin near the cutoff)

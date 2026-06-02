@@ -11,6 +11,7 @@
      for the design (cutoff, direction, action) and the full effect distribution.</p>
   <p class="meta">{{.EpisodeTotalRows}} rows total across {{len .EpisodeFiles}} marks · one gzipped CSV per mark<br>
      Columns: {{.ColumnsJoined}} <em>(+ each mark's covariates)</em></p>
+  <div class="table-wrap">
   <table>
     <thead><tr><th>Mark</th><th>Series</th><th>Effect</th><th>Rows</th><th>Download</th></tr></thead>
     <tbody>
@@ -28,6 +29,7 @@
     {{end}}
     </tbody>
   </table>
+  </div>
 </div>
 
 <div class="download">
@@ -54,6 +56,7 @@ ds = load_dataset("{{.HFRepo}}", "floor-standards")["test"]</code></pre>
 <h2>Frozen raw inputs <span class="badge">reproducibility</span></h2>
 <p>The original open-data inputs, frozen and content-addressed so every mark re-mints byte-for-byte. You only need
    these to reproduce the marks &mdash; not to use the datasets above. Each carries its own licence.</p>
+<div class="table-wrap">
 <table>
   <thead><tr><th>Source</th><th>Publisher</th><th>Licence</th><th>Size</th><th>Download</th></tr></thead>
   <tbody>
@@ -68,3 +71,4 @@ ds = load_dataset("{{.HFRepo}}", "floor-standards")["test"]</code></pre>
   {{end}}
   </tbody>
 </table>
+</div>

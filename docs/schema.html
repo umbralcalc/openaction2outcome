@@ -37,7 +37,7 @@ episodes dataset (rows, in object storage) — normalised on <code>mark_id</code
 published threshold, that triggered an action, and a later outcome is observable.
 The effect is given as a distribution (a central estimate plus an interval whose
 width is honest about how much is genuinely uncertain), not a single number.</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Field</th>
@@ -122,10 +122,10 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <td>Sources, licences, timestamps, and reproducibility metadata.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3><code>bridge</code> (bridge marks only)</h3>
 <p>A bridge mark estimates a mechanism's effect at a <code>query_point</code> that lies strictly <strong>between</strong> identified anchors. Interpolation only; the boundary to identified truth is made unmissable here.</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Field</th>
@@ -170,10 +170,10 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <td><code>{same_population, same_regime, same_outcome_construct, justification}</code> — the mandatory argument that anchors share one mechanism.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The bridge mark's <code>dossier.bridge</code> records the leave-one-anchor-out (LOAO) coverage (the headline credibility number), the kernel-sensitivity table, the bracketing check, and the admission verdict.</p>
 <h3><code>design</code></h3>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Field</th>
@@ -218,9 +218,9 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <td>Plain-language statement of exactly what the effect measures.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3><code>effect</code> (the distribution)</h3>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Field</th>
@@ -260,11 +260,11 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <td>Splits the variance into <code>sampling</code> (finite data) and <code>specification</code> (which modelling choices were made). The second is what naive methods leave out.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3><code>dossier</code> (validity)</h3>
 <p>A mark is included only if it passes these checks; it is never excluded for being
 <em>uncertain</em> (a wide interval is information, not a failure).</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Field</th>
@@ -305,7 +305,7 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <td>Plain-language caveats (e.g. attrition).</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>A rendered, human-readable version of this is in <a href="dossiers/index.html"><code>dossiers/</code></a>.</p>
 <h3><code>provenance</code></h3>
 <p><code>context_asof</code> ≤ <code>decision_timestamp</code> &lt; <code>outcome_timestamp</code> is enforced, so no
@@ -325,7 +325,7 @@ does not require it. A mark's file <em>is</em> its rows — download <code>marks
 <code>load_dataset(repo, data_files=&quot;episodes/&lt;id&gt;.csv.gz&quot;)</code>.)</p>
 <p>Each per-mark CSV is the <strong>(state, action, reward)</strong> view, in this dataset's own terms —
 the unit's context before the decision, what was done, and the outcome that followed:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Column</th>
@@ -370,7 +370,7 @@ the unit's context before the decision, what was done, and the outcome that foll
 <td>One further column per pre-decision covariate (those in the mark's <code>context.covariate_names</code>; listed per mark in the manifest).</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>These are the per-unit, per-mark columns. Everything else is <strong>constant for the mark</strong> and
 is read from the mark JSON, joined on the mark <code>id</code>: the threshold (<code>design.cutoff</code>), the
 treated side (<code>design.direction</code>), the textual <code>action</code>/<code>alternative</code>, and the full
@@ -385,7 +385,7 @@ distribution are the per-series configs (<code>floor-standards</code>, <code>shm
 <p>To be scored, send a <code>submission.json</code>: for each mark, your model's predicted
 effect <strong>with its own uncertainty</strong>. See
 <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/examples/submission.example.json"><code>examples/submission.example.json</code></a>.</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Submission field</th>
@@ -418,7 +418,7 @@ effect <strong>with its own uncertainty</strong>. See
 <td>Optional explicit decision values.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>You get back two independent scores per mark:</p>
 <ul>
 <li><strong>Decision</strong> — did you get the direction of the effect right, and what would a

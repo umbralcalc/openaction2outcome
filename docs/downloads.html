@@ -32,6 +32,7 @@
      for the design (cutoff, direction, action) and the full effect distribution.</p>
   <p class="meta">3879 rows total across 3 marks · one gzipped CSV per mark<br>
      Columns: unit_id, unit_name, running_value, assigned, treated, outcome <em>(+ each mark's covariates)</em></p>
+  <div class="table-wrap">
   <table>
     <thead><tr><th>Mark</th><th>Series</th><th>Effect</th><th>Rows</th><th>Download</th></tr></thead>
     <tbody>
@@ -71,14 +72,15 @@
     
     </tbody>
   </table>
+  </div>
 </div>
 
 <div class="download">
   <h3>Marks <span class="badge">metadata</span></h3>
   <p>One JSON per decision: the design, the effect distribution, the validity dossier, and provenance.
      The full nested marks live in git.</p>
-  <p class="meta">3 marks · 19.5 KB zipped<br>
-     SHA-256 <code>b603f03cd9ca560addcf2f90af0e50ca1d5b3540a58ceea6f4833b06692dc2bc</code></p>
+  <p class="meta">3 marks · 19.6 KB zipped<br>
+     SHA-256 <code>833b4e030e2ba1a0fb3f03e76de1588a75d2b26202daa9173f011d53a96def6b</code></p>
   <div class="actions">
     <a class="btn" href="downloads/marks.zip">Download all marks (zip)</a>
     <a class="btn secondary" href="https://github.com/umbralcalc/openaction2outcome/tree/main/marks">Browse on GitHub</a>
@@ -97,6 +99,7 @@ ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</c
 <h2>Frozen raw inputs <span class="badge">reproducibility</span></h2>
 <p>The original open-data inputs, frozen and content-addressed so every mark re-mints byte-for-byte. You only need
    these to reproduce the marks &mdash; not to use the datasets above. Each carries its own licence.</p>
+<div class="table-wrap">
 <table>
   <thead><tr><th>Source</th><th>Publisher</th><th>Licence</th><th>Size</th><th>Download</th></tr></thead>
   <tbody>
@@ -159,6 +162,7 @@ ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</c
   
   </tbody>
 </table>
+</div>
 
 </main>
 <footer class="site-footer">

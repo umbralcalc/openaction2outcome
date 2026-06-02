@@ -23,7 +23,17 @@ func renderMarkdown(src []byte, repoURL, prefix string) (string, error) {
 	if err := md.Convert(src, &buf); err != nil {
 		return "", err
 	}
-	return rewriteLinks(buf.String(), repoURL, prefix), nil
+	return wrapTables(rewriteLinks(buf.String(), repoURL, prefix)), nil
+}
+
+// tableRE matches a complete rendered table block.
+var tableRE = regexp.MustCompile(`(?s)<table>.*?</table>`)
+
+// wrapTables puts every table in a horizontally-scrollable container so wide
+// tables (e.g. the downloads manifest) side-scroll on narrow screens instead of
+// overflowing the page.
+func wrapTables(html string) string {
+	return tableRE.ReplaceAllString(html, `<div class="table-wrap">$0</div>`)
 }
 
 var attrRE = regexp.MustCompile(`(href|src)="([^"]*)"`)

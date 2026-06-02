@@ -59,8 +59,9 @@ pre code { background: none; padding: 0; }
 .content h1 { font-size: 2rem; line-height: 1.2; margin: 0.2em 0 0.5em; }
 .content h2 { font-size: 1.4rem; margin: 1.8em 0 0.6em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
 .content h3 { font-size: 1.1rem; margin: 1.4em 0 0.5em; }
+.table-wrap { overflow-x: auto; margin: 1em 0; -webkit-overflow-scrolling: touch; }
 .content table {
-  border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.93rem;
+  border-collapse: collapse; width: 100%; margin: 0; font-size: 0.93rem;
 }
 .content th, .content td { border: 1px solid var(--line); padding: 7px 11px; text-align: left; vertical-align: top; }
 .content th { background: var(--bg-soft); font-weight: 600; }

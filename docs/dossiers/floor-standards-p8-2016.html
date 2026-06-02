@@ -33,7 +33,7 @@
 <h2>The effect</h2>
 <p><strong>0.0284</strong> with a 95% interval of <strong>[-0.0544, 0.2557]</strong>.</p>
 <p>The interval width separates into two sources:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>source</th>
@@ -54,11 +54,11 @@
 <td><strong>0.0729</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2>Validity checks</h2>
 <p><strong>Density / manipulation:</strong> pass — binned-density-discontinuity (McCrary-style) (p = 0.381)</p>
 <p><strong>Covariate continuity at the cutoff</strong> (covariates should not jump):</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>covariate</th>
@@ -87,9 +87,9 @@
 <td>pass</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Placebo cutoffs</strong> (effect should vanish away from the real cutoff):</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>placebo cutoff</th>
@@ -109,9 +109,9 @@
 <td>pass</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Bandwidth sweep</strong> (estimate vs window width):</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>bandwidth</th>
@@ -144,9 +144,9 @@
 <td>0.0056</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Donut robustness</strong> (re-estimate after excluding units nearest the cutoff):</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>donut radius</th>
@@ -163,7 +163,7 @@
 <td>-0.0500</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Notes.</strong> SBI: Bayesian model average over 20 specs (bandwidth x order x kernel) via stochadex SMC (4000 particles, 8 rounds). Honest interval [-0.0544, 0.2557] (sd 0.0729) decomposes into sampling sd 0.0311 and identification sd 0.0659. For comparison, the plug-in local-linear interval is [-0.0627, 0.1055] (sd 0.0429) — narrower because it ignores between-spec identification uncertainty; this is the gap a model that reports only sampling SE should fail the calibration score. Design is effectively sharp: of 302 schools below -0.5, only 1 are excluded by the floor's CI condition (P8CIUPP&gt;=0). DIFFERENTIAL ATTRITION CAVEAT: within +/-0.5 of the cutoff, 21.5% of below-floor schools vs 11.3% of above-floor schools lack a linked 2017/18 P8 (sponsored academies are re-issued a new URN). This attrition is correlated with treatment and biases the complete-case estimate; it is the dominant threat to this mark and motivates a future attrition-aware treatment.</p>
 <h2>Data</h2>
 <p>The analysis-ready rows (one per unit) live in the single published <code>episodes</code> dataset, alongside every other mark's rows. Recover this mark's rows by filtering on <code>mark_id == &quot;floor-standards-p8-2016&quot;</code>. The dataset's download URL and content hash are in <code>datasets/episodes.manifest.json</code>.</p>
