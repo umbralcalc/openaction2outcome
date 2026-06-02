@@ -33,3 +33,37 @@ func TestMechanismIDRequiredAndKnown(t *testing.T) {
 		t.Error("a mark with an unknown mechanism_id should be rejected")
 	}
 }
+
+// TestKinkDesignValidation checks the regression-kink design's invariants: a kink
+// mark needs a non-zero policy_slope_change; a level (sharp/fuzzy) mark must not
+// carry one.
+func TestKinkDesignValidation(t *testing.T) {
+	s := 1.0 / 3000.0
+
+	ok := validMark()
+	ok.RDDType = Kink
+	ok.Design.PolicySlopeChange = &s
+	if err := ok.Validate(); err != nil {
+		t.Fatalf("valid kink mark rejected: %v", err)
+	}
+
+	missing := validMark()
+	missing.RDDType = Kink
+	if missing.Validate() == nil {
+		t.Error("a kink mark without policy_slope_change should be rejected")
+	}
+
+	zero := 0.0
+	zeroSlope := validMark()
+	zeroSlope.RDDType = Kink
+	zeroSlope.Design.PolicySlopeChange = &zero
+	if zeroSlope.Validate() == nil {
+		t.Error("a kink mark with zero policy_slope_change should be rejected")
+	}
+
+	misplaced := validMark() // sharp by default
+	misplaced.Design.PolicySlopeChange = &s
+	if misplaced.Validate() == nil {
+		t.Error("a level design must not carry policy_slope_change")
+	}
+}

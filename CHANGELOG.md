@@ -4,6 +4,25 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.6.0 — 2026-06-02
+
+Adds the **regression-kink design (RKD)** as a new identified-anchor design — the
+prerequisite for tiered-relief anchor families (e.g. small-business-rate-relief
+tapers), where the policy bends rather than jumps. Where a sharp/fuzzy RDD reads a
+*level* discontinuity at a cutoff, an RKD reads a *slope* discontinuity at a kink and
+divides it by the known kink in the policy function's slope, identifying the marginal
+effect of the policy intensity.
+
+- **`internal/rdd`** gains the plug-in RKD estimator: a kernel-weighted local-
+  *quadratic* slope fit per side (the RKD convention for boundary derivatives),
+  `FitKink` / `EstimateKink` with the same bandwidth-sweep honest interval as the RDD
+  level estimator, and `LevelDiscontinuity` — the RKD validity check that the
+  conditional mean is continuous at the kink (a non-zero level jump means a notch
+  contaminates the design). Validated on synthetic data with a known marginal effect.
+- **`schema`**: new `rdd_type=kink` and a required `design.policy_slope_change`
+  (b'(c+) − b'(c−)); `Validate` enforces a non-zero value for kink designs and forbids
+  it on level designs. Additive — `schema_version` stays 0.5.0.
+
 ## v1.5.0 — 2026-06-01
 
 Introduces the **Mechanism** entity, making the collection a clean instance of the

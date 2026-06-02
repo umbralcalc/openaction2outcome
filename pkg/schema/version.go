@@ -33,4 +33,9 @@ type RDDType string
 const (
 	Sharp RDDType = "sharp"
 	Fuzzy RDDType = "fuzzy"
+	// Kink is a regression-kink design: assignment intensity is a continuous,
+	// deterministic function of the running variable whose SLOPE changes at the
+	// cutoff (a tiered relief/benefit taper). The effect is identified from the
+	// kink in the outcome's slope, not a level jump. See Design.PolicySlopeChange.
+	Kink RDDType = "kink"
 )

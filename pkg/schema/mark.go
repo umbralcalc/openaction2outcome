@@ -100,6 +100,13 @@ type Design struct {
 	// Estimand names the quantity the Effect distribution describes (e.g. the
 	// sharp RD effect / LATE at the cutoff).
 	Estimand string `json:"estimand"`
+
+	// PolicySlopeChange is required for a regression-kink design (rdd_type=kink)
+	// and is the KNOWN change in the deterministic policy function's slope at the
+	// kink, b'(c+) − b'(c−). The RKD estimand is the kink in the outcome's slope
+	// divided by this — the marginal effect of the policy intensity. It must be
+	// non-zero for a kink, and is absent for sharp/fuzzy level designs.
+	PolicySlopeChange *float64 `json:"policy_slope_change,omitempty"`
 }
 
 // Direction states which side of the cutoff is treated.
@@ -240,7 +247,7 @@ func (m Mark) validateIdentified() error {
 		return fmt.Errorf("mark %q: identified mark must not carry a bridge block", m.ID)
 	}
 	switch m.RDDType {
-	case Sharp, Fuzzy:
+	case Sharp, Fuzzy, Kink:
 	default:
 		return fmt.Errorf("mark %q: unknown rdd_type %q", m.ID, m.RDDType)
 	}
@@ -252,6 +259,18 @@ func (m Mark) validateIdentified() error {
 	// A fuzzy mark's admission depends on a real first stage.
 	if m.RDDType == Fuzzy && m.Dossier.FirstStage == nil {
 		return fmt.Errorf("mark %q: fuzzy mark requires a first-stage result in its dossier", m.ID)
+	}
+	// A kink mark identifies its effect from a known change in the policy slope,
+	// so that change must be present and non-zero; a level design must not carry it.
+	switch m.RDDType {
+	case Kink:
+		if m.Design.PolicySlopeChange == nil || *m.Design.PolicySlopeChange == 0 {
+			return fmt.Errorf("mark %q: kink design requires a non-zero design.policy_slope_change", m.ID)
+		}
+	default:
+		if m.Design.PolicySlopeChange != nil {
+			return fmt.Errorf("mark %q: policy_slope_change is only valid for a kink design", m.ID)
+		}
 	}
 	// Assignment consistency of the inline sample rows (if any).
 	for i, o := range m.Sample {
