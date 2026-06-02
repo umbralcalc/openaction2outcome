@@ -4,6 +4,28 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.7.0 — 2026-06-02
+
+Adds the **difference-in-differences (DiD)** design — the gating prerequisite for the
+dose / staggered-rollout bridge seams (alcohol minimum-unit pricing, emission zones,
+minimum wage), where each anchor is one treated-vs-control, pre-vs-post comparison and
+a *family* of such anchors at different policy intensities is what a bridge interpolates
+across. This is the DiD analogue of the regression-kink work, and it unlocks all three
+top dose/rollout candidates, not just one.
+
+- **`internal/did`** — a clean 2×2 (unit-first-difference) DiD around a single event:
+  per-unit post-mean minus pre-mean, compared across the treated and control groups,
+  with **unit-clustered** inference and the same window-swept honest interval (sampling
+  + specification variance) as the RDD/RKD estimators. Deliberately a single-event 2×2,
+  which sidesteps the staggered-adoption / two-way-fixed-effects bias of a pooled
+  regression. Ships **`PreTrend`** — the parallel-trends diagnostic (the cross-group
+  pre-period trend, ≈0 when credible) — the DiD analogue of the RDD manipulation check.
+  Validated on synthetic panels: exact effect recovery, pre-trend-violation detection,
+  and spec-spread folding under a dynamic effect.
+- **`schema`**: new `rdd_type=did`; `Validate` admits it without a cutoff Direction
+  (DiD has treatment groups, not a cutoff side) and forbids the kink-only
+  policy_slope_change. Additive — `schema_version` stays 0.5.0.
+
 ## v1.6.0 — 2026-06-02
 
 Adds the **regression-kink design (RKD)** as a new identified-anchor design — the

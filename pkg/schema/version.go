@@ -38,4 +38,10 @@ const (
 	// cutoff (a tiered relief/benefit taper). The effect is identified from the
 	// kink in the outcome's slope, not a level jump. See Design.PolicySlopeChange.
 	Kink RDDType = "kink"
+	// DiD is a difference-in-differences design: the effect is identified by
+	// comparing a treated group's pre→post change to a control group's, under a
+	// parallel-trends assumption. It has no cutoff/running-variable discontinuity;
+	// it is the anchor unit for dose / staggered-rollout mechanisms (a policy
+	// intensity ratcheted in steps, or a scheme rolled out across areas/times).
+	DiD RDDType = "did"
 )

@@ -247,14 +247,19 @@ func (m Mark) validateIdentified() error {
 		return fmt.Errorf("mark %q: identified mark must not carry a bridge block", m.ID)
 	}
 	switch m.RDDType {
-	case Sharp, Fuzzy, Kink:
+	case Sharp, Fuzzy, Kink, DiD:
 	default:
 		return fmt.Errorf("mark %q: unknown rdd_type %q", m.ID, m.RDDType)
 	}
-	switch m.Design.Direction {
-	case AboveTreated, BelowTreated:
-	default:
-		return fmt.Errorf("mark %q: unknown direction %q", m.ID, m.Design.Direction)
+	// Direction (which side of a cutoff is treated) is a discontinuity-design
+	// concept; a difference-in-differences design has treatment groups, not a
+	// cutoff side, so the check applies only to the cutoff designs.
+	if m.RDDType != DiD {
+		switch m.Design.Direction {
+		case AboveTreated, BelowTreated:
+		default:
+			return fmt.Errorf("mark %q: unknown direction %q", m.ID, m.Design.Direction)
+		}
 	}
 	// A fuzzy mark's admission depends on a real first stage.
 	if m.RDDType == Fuzzy && m.Dossier.FirstStage == nil {
@@ -272,10 +277,14 @@ func (m Mark) validateIdentified() error {
 			return fmt.Errorf("mark %q: policy_slope_change is only valid for a kink design", m.ID)
 		}
 	}
-	// Assignment consistency of the inline sample rows (if any).
-	for i, o := range m.Sample {
-		if err := m.checkAssignment(o); err != nil {
-			return fmt.Errorf("mark %q sample row %d (%s): %w", m.ID, i, o.UnitID, err)
+	// Assignment consistency of the inline sample rows (if any). This checks each
+	// row's treated side against the cutoff, so it applies only to the cutoff
+	// designs; a DiD mark's rows are panel observations, not cutoff assignments.
+	if m.RDDType != DiD {
+		for i, o := range m.Sample {
+			if err := m.checkAssignment(o); err != nil {
+				return fmt.Errorf("mark %q sample row %d (%s): %w", m.ID, i, o.UnitID, err)
+			}
 		}
 	}
 	return nil

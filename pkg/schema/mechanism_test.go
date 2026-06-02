@@ -67,3 +67,24 @@ func TestKinkDesignValidation(t *testing.T) {
 		t.Error("a level design must not carry policy_slope_change")
 	}
 }
+
+// TestDiDDesignValidation checks the difference-in-differences design: it validates
+// without a cutoff Direction (DiD has treatment groups, not a cutoff side) and must
+// not carry a policy_slope_change (kink-only).
+func TestDiDDesignValidation(t *testing.T) {
+	ok := validMark()
+	ok.RDDType = DiD
+	ok.Design.Direction = "" // no cutoff side for a DiD design
+	if err := ok.Validate(); err != nil {
+		t.Fatalf("valid DiD mark rejected: %v", err)
+	}
+
+	s := 0.1
+	withSlope := validMark()
+	withSlope.RDDType = DiD
+	withSlope.Design.Direction = ""
+	withSlope.Design.PolicySlopeChange = &s
+	if withSlope.Validate() == nil {
+		t.Error("a DiD mark must not carry policy_slope_change (kink-only)")
+	}
+}
