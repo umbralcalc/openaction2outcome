@@ -19,10 +19,10 @@
   </nav>
 </header>
 <main class="content">
-<h1>Data dictionary</h1>
+<h1 id="data-dictionary">Data dictionary</h1>
 <p>This is the field-by-field reference for everything you download or submit. The
 Go types it describes live in <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/pkg/schema"><code>pkg/schema</code></a>; the version string is
-<code>schema_version</code> (currently <code>0.4.0</code>).</p>
+<code>schema_version</code> (currently <code>0.5.0</code>).</p>
 <p>There are three things to know about:</p>
 <ol>
 <li><strong>A mark</strong> — one causally-validated reference point (a JSON file in <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks"><code>marks/</code></a>). This is the <em>metadata</em>.</li>
@@ -32,11 +32,17 @@ Go types it describes live in <a href="https://github.com/umbralcalc/openaction2
 <p>There are only ever those two datasets — the marks (metadata, in git) and the
 episodes dataset (rows, in object storage) — normalised on <code>mark_id</code>.</p>
 <hr>
-<h2>1. Mark</h2>
+<h2 id="1-mark">1. Mark</h2>
 <p>One mark is one real decision whose true effect is known: an institution crossed a
-published threshold, that triggered an action, and a later outcome is observable.
-The effect is given as a distribution (a central estimate plus an interval whose
-width is honest about how much is genuinely uncertain), not a single number.</p>
+published threshold (or a policy switched on at a known date), that triggered an
+action, and a later outcome is observable. The effect is given as a distribution (a
+central estimate plus an interval whose width is honest about how much is genuinely
+uncertain), not a single number.</p>
+<p>A mark is <strong>identification-agnostic</strong>: the effect distribution, the uncertainty
+budget, the provenance, and the scorer are the same regardless of <em>how</em>
+comparability was established. Only the <code>design</code> block and the validity <code>dossier</code>
+change shape per design family — selected by the <code>identification</code> field (see
+<a href="#designs-the-identification-field">Designs</a>).</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -59,7 +65,7 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <tr>
 <td><code>series</code></td>
 <td>string</td>
-<td>Which group of marks this belongs to: <code>floor-standards</code>, <code>shmi</code>, or <code>area-funding</code>.</td>
+<td>Which group of marks this belongs to: <code>floor-standards</code>, <code>shmi</code>, <code>bathing-water</code>, or <code>area-funding</code>.</td>
 </tr>
 <tr>
 <td><code>domain</code></td>
@@ -82,9 +88,19 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <td><code>identified</code> for design-based marks, <code>simulator-bridged</code> for bridge marks. The hard provenance line.</td>
 </tr>
 <tr>
+<td><code>identification</code></td>
+<td>string</td>
+<td>The design family: <code>rdd-sharp</code>, <code>rdd-fuzzy</code>, <code>rdd-kink</code>, <code>did</code>, or <code>its-controlled</code>. Selects the <code>design</code> sub-shape and the <code>dossier</code> block. Identified marks only. See <a href="#designs-the-identification-field">Designs</a>.</td>
+</tr>
+<tr>
 <td><code>rdd_type</code></td>
 <td>string</td>
-<td><code>sharp</code> (crossing the cutoff always triggers the action) or <code>fuzzy</code> (it changes the probability). Identified marks only.</td>
+<td><strong>Legacy</strong> discriminator (<code>sharp</code> / <code>fuzzy</code> / <code>kink</code> / <code>did</code>); migrates to <code>identification</code> automatically. Optional once <code>identification</code> is set; the two must not contradict.</td>
+</tr>
+<tr>
+<td><code>row_shape</code></td>
+<td>string</td>
+<td>The shape of this mark's episode rows: <code>cross-section</code> (RDD/DiD — one row per unit) or <code>panel</code> (ITS — one row per series × time bucket). Empty is derived (panel for ITS, else cross-section).</td>
 </tr>
 <tr>
 <td><code>design</code></td>
@@ -104,7 +120,12 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <tr>
 <td><code>sample</code></td>
 <td>array</td>
-<td>A small inline excerpt of episode rows nearest the cutoff, for quick inspection (the full rows are in the <code>episodes</code> dataset, keyed by this mark's <code>id</code>).</td>
+<td>A small inline excerpt of cross-section episode rows nearest the cutoff, for quick inspection (the full rows are in the <code>episodes</code> dataset, keyed by this mark's <code>id</code>).</td>
+</tr>
+<tr>
+<td><code>panel_sample</code></td>
+<td>array</td>
+<td>The ITS analogue of <code>sample</code>: a small inline excerpt of panel episode rows (treated and control series near the intervention instant). ITS marks only.</td>
 </tr>
 <tr>
 <td><code>effect</code></td>
@@ -123,7 +144,72 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 </tr>
 </tbody>
 </table></div>
-<h3><code>bridge</code> (bridge marks only)</h3>
+<h3 id="designs-the-identification-field">Designs (the <code>identification</code> field)</h3>
+<p>Every identified mark is recovered by one of four quasi-experimental designs. The
+<code>identification</code> field names the family and selects the <code>design</code> sub-shape and the
+<code>dossier</code> checks; everything else about the mark is identical across families.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th><code>identification</code></th>
+<th>Design</th>
+<th>Comparability from</th>
+<th>Estimand</th>
+<th><code>design</code> carries</th>
+<th><code>row_shape</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rdd-sharp</code></td>
+<td>Sharp regression discontinuity</td>
+<td>Units just either side of a cutoff</td>
+<td>Local effect at the cutoff</td>
+<td><code>running_variable</code>, <code>cutoff</code>, <code>direction</code></td>
+<td><code>cross-section</code></td>
+</tr>
+<tr>
+<td><code>rdd-fuzzy</code></td>
+<td>Fuzzy regression discontinuity</td>
+<td>As sharp, but the cutoff shifts the <em>probability</em> of action (real first stage)</td>
+<td>Local LATE at the cutoff</td>
+<td>as sharp; <code>dossier.first_stage</code> required</td>
+<td><code>cross-section</code></td>
+</tr>
+<tr>
+<td><code>rdd-kink</code></td>
+<td>Regression-kink design (RKD)</td>
+<td>A change in the <strong>slope</strong> of a continuous policy function at a kink</td>
+<td>Marginal effect of policy intensity</td>
+<td>as sharp + <code>policy_slope_change</code> (non-zero)</td>
+<td><code>cross-section</code></td>
+</tr>
+<tr>
+<td><code>did</code></td>
+<td>Difference-in-differences</td>
+<td>A treated group's pre→post change vs a control group's, under parallel trends</td>
+<td>Average effect on the treated</td>
+<td>the shared fields; no cutoff <code>direction</code></td>
+<td><code>cross-section</code></td>
+</tr>
+<tr>
+<td><code>its-controlled</code></td>
+<td>Controlled interrupted time series (ITS)</td>
+<td>A treated series' break at a sharp intervention <em>instant</em> vs a control series sharing its pre-trend</td>
+<td><strong>Population</strong> effect over the post window</td>
+<td>the shared fields + the <code>design.its</code> block</td>
+<td><code>panel</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The first three are discontinuity designs (a cutoff in a running variable); <code>did</code>
+and <code>its-controlled</code> are panel designs (a treatment/control split in groups or in
+time). <strong>Decision scores are comparable within a family, never pooled across</strong> — a
+local-at-cutoff RDD estimand and a population-over-window ITS estimand answer
+different questions. Calibration scores remain comparable everywhere.</p>
+<p>The legacy <code>rdd_type</code> field (<code>sharp</code> / <code>fuzzy</code> / <code>kink</code> / <code>did</code>) still reads and
+migrates to <code>identification</code>; the two must not contradict.</p>
+<h3 id="bridge-bridge-marks-only"><code>bridge</code> (bridge marks only)</h3>
 <p>A bridge mark estimates a mechanism's effect at a <code>query_point</code> that lies strictly <strong>between</strong> identified anchors. Interpolation only; the boundary to identified truth is made unmissable here.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -172,7 +258,11 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 </tbody>
 </table></div>
 <p>The bridge mark's <code>dossier.bridge</code> records the leave-one-anchor-out (LOAO) coverage (the headline credibility number), the kernel-sensitivity table, the bracketing check, and the admission verdict.</p>
-<h3><code>design</code></h3>
+<h3 id="design"><code>design</code></h3>
+<p>The shared fields below apply to every design family. The discontinuity designs
+(<code>rdd-sharp</code> / <code>rdd-fuzzy</code> / <code>rdd-kink</code>) carry the running-variable/cutoff triplet;
+<code>did</code> omits <code>direction</code> (it has treatment groups, not a cutoff side); <code>its-controlled</code>
+replaces the triplet with the <code>design.its</code> block.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -185,22 +275,27 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <tr>
 <td><code>running_variable</code></td>
 <td>object</td>
-<td>The measured quantity the decision depends on (<code>name</code>, <code>description</code>, <code>units</code>, <code>source_id</code>).</td>
+<td>The measured quantity the decision depends on (<code>name</code>, <code>description</code>, <code>units</code>, <code>source_id</code>). Discontinuity designs.</td>
 </tr>
 <tr>
 <td><code>cutoff</code></td>
 <td>number</td>
-<td>The published threshold.</td>
+<td>The published threshold. Discontinuity designs.</td>
 </tr>
 <tr>
 <td><code>direction</code></td>
 <td>string</td>
-<td><code>above-treated</code> or <code>below-treated</code> — which side of the cutoff receives the action.</td>
+<td><code>above-treated</code> or <code>below-treated</code> — which side of the cutoff receives the action. Discontinuity designs.</td>
+</tr>
+<tr>
+<td><code>policy_slope_change</code></td>
+<td>number</td>
+<td>(RKD only) the known change in the policy function's slope at the kink, <code>b'(c+) − b'(c−)</code>; must be non-zero. The effect is the kink in the outcome's slope over this.</td>
 </tr>
 <tr>
 <td><code>action</code></td>
 <td>string</td>
-<td>What happens when the cutoff is crossed.</td>
+<td>What happens when the action is triggered.</td>
 </tr>
 <tr>
 <td><code>alternative</code></td>
@@ -215,11 +310,66 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 <tr>
 <td><code>estimand</code></td>
 <td>string</td>
-<td>Plain-language statement of exactly what the effect measures.</td>
+<td>Plain-language statement of exactly what the effect measures (note: a <em>population</em> effect over the post window for ITS, not a local-at-cutoff effect).</td>
+</tr>
+<tr>
+<td><code>its</code></td>
+<td>object</td>
+<td>(ITS only) the controlled-interrupted-time-series design block — see below.</td>
 </tr>
 </tbody>
 </table></div>
-<h3><code>effect</code> (the distribution)</h3>
+<h4 id="designits-its-marks-only"><code>design.its</code> (ITS marks only)</h4>
+<p>The time-domain analogue of the running-variable/cutoff/direction triplet: the
+forcing variable is time, the &quot;cutoff&quot; is a sharp intervention instant, and
+comparability comes from a control series sharing the treated series' pre-trend.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>intervention_instant</code></td>
+<td>string</td>
+<td>The sharp date/time the action took effect (ISO 8601) — the time-domain analogue of <code>cutoff</code>.</td>
+</tr>
+<tr>
+<td><code>running_time</code></td>
+<td>object</td>
+<td><code>{name, description, units, source_id}</code> for the time axis (e.g. units <code>month</code>).</td>
+</tr>
+<tr>
+<td><code>pre_window</code></td>
+<td>object</td>
+<td><code>{start, end}</code> — the pre-intervention period used to fit the counterfactual.</td>
+</tr>
+<tr>
+<td><code>post_window</code></td>
+<td>object</td>
+<td><code>{start, end}</code> — the period over which the effect is accumulated/averaged.</td>
+</tr>
+<tr>
+<td><code>transition</code></td>
+<td>object</td>
+<td><code>{start, end}</code> or absent — an implementation ramp excluded from both windows (the time-domain donut).</td>
+</tr>
+<tr>
+<td><code>counterfactual</code></td>
+<td>object</td>
+<td><code>{family, terms, seasonality, justification}</code> — the model of what the treated series would have done absent the action. The single biggest specification choice; recorded openly.</td>
+</tr>
+<tr>
+<td><code>control</code></td>
+<td>object</td>
+<td><code>{series_id, role, justification}</code> — the comparison series (e.g. England for a Scotland intervention). Required on an identified ITS mark; uncontrolled ITS should be a <code>bridge</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="effect-the-distribution"><code>effect</code> (the distribution)</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -261,9 +411,11 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 </tr>
 </tbody>
 </table></div>
-<h3><code>dossier</code> (validity)</h3>
+<h3 id="dossier-validity"><code>dossier</code> (validity)</h3>
 <p>A mark is included only if it passes these checks; it is never excluded for being
-<em>uncertain</em> (a wide interval is information, not a failure).</p>
+<em>uncertain</em> (a wide interval is information, not a failure). The discontinuity/DiD
+checks below are the default; an ITS mark carries the time-domain <code>dossier.its</code>
+block instead (same epistemic intents, see below).</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -306,14 +458,62 @@ width is honest about how much is genuinely uncertain), not a single number.</p>
 </tr>
 </tbody>
 </table></div>
+<h4 id="dossierits-its-marks-only"><code>dossier.its</code> (ITS marks only)</h4>
+<p>Each check is the time-domain analogue of an RDD check, carrying the same intent.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning (mirrors)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no_anticipation</code></td>
+<td>No pre-trend break or forestalling before the intervention instant (mirrors <code>density</code>).</td>
+</tr>
+<tr>
+<td><code>control_parallelism</code></td>
+<td>Treated and control share a pre-intervention trend (mirrors <code>covariate_continuity</code>).</td>
+</tr>
+<tr>
+<td><code>placebo_dates</code></td>
+<td>The effect vanishes at fake intervention dates in the pre-period (mirrors <code>placebo_cutoffs</code>).</td>
+</tr>
+<tr>
+<td><code>placebo_outcomes</code></td>
+<td>A logically unaffected outcome shows no effect (mirrors <code>placebo_cutoffs</code>, second axis).</td>
+</tr>
+<tr>
+<td><code>window_sweep</code></td>
+<td>Estimate stability as the pre/post window lengths vary (mirrors <code>bandwidth_sweep</code>).</td>
+</tr>
+<tr>
+<td><code>transition_exclusion</code></td>
+<td>Re-estimate after dropping the implementation ramp (mirrors <code>donut_robustness</code>).</td>
+</tr>
+<tr>
+<td><code>dose_check</code></td>
+<td>The action was actually delivered (sales/price/compliance moved at the date) (mirrors fuzzy <code>first_stage</code>).</td>
+</tr>
+<tr>
+<td><code>autocorrelation</code></td>
+<td>Residual serial correlation modelled (Newey-West / ARMA errors); ITS-specific.</td>
+</tr>
+<tr>
+<td><code>admitted</code> / <code>notes</code></td>
+<td>Overall verdict and caveats.</td>
+</tr>
+</tbody>
+</table></div>
 <p>A rendered, human-readable version of this is in <a href="dossiers/index.html"><code>dossiers/</code></a>.</p>
-<h3><code>provenance</code></h3>
+<h3 id="provenance"><code>provenance</code></h3>
 <p><code>context_asof</code> ≤ <code>decision_timestamp</code> &lt; <code>outcome_timestamp</code> is enforced, so no
 information from after the outcome can leak in. Also records each source's
 licence and SHA-256, the random seed, and tool versions — enough to re-mint the
 mark byte-for-byte.</p>
 <hr>
-<h2>2. The <code>episodes</code> dataset</h2>
+<h2 id="2-the-episodes-dataset">2. The <code>episodes</code> dataset</h2>
 <p>The analysis-ready rows behind every mark: one row per unit. It is <strong>not</strong> in git — it
 lives in object storage, published <strong>per mark</strong> (one gzipped CSV each), pointed to by
 <a href="downloads.html"><code>datasets/episodes.manifest.json</code></a>. The manifest
@@ -324,7 +524,9 @@ does not require it. A mark's file <em>is</em> its rows — download <code>marks
 <code>episodes/&lt;id&gt;.csv.gz</code> — same schema — so an HF user can load one mark's rows with
 <code>load_dataset(repo, data_files=&quot;episodes/&lt;id&gt;.csv.gz&quot;)</code>.)</p>
 <p>Each per-mark CSV is the <strong>(state, action, reward)</strong> view, in this dataset's own terms —
-the unit's context before the decision, what was done, and the outcome that followed:</p>
+the context before the decision, what was done, and the outcome that followed. A mark's
+<code>row_shape</code> says which of two column layouts its file uses.</p>
+<p><strong><code>cross-section</code> rows</strong> (RDD / DiD — one row per unit):</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -371,17 +573,71 @@ the unit's context before the decision, what was done, and the outcome that foll
 </tr>
 </tbody>
 </table></div>
-<p>These are the per-unit, per-mark columns. Everything else is <strong>constant for the mark</strong> and
-is read from the mark JSON, joined on the mark <code>id</code>: the threshold (<code>design.cutoff</code>), the
-treated side (<code>design.direction</code>), the textual <code>action</code>/<code>alternative</code>, and the full
-<code>effect</code> distribution. <code>distance_to_cutoff</code> is just <code>running_value − cutoff</code>.</p>
+<p>For these rows the per-mark constants read from the mark JSON are the threshold
+(<code>design.cutoff</code>), the treated side (<code>design.direction</code>), the textual
+<code>action</code>/<code>alternative</code>, and the full <code>effect</code> distribution; <code>distance_to_cutoff</code> is just
+<code>running_value − cutoff</code>.</p>
+<p><strong><code>panel</code> rows</strong> (ITS — one row per series × time bucket):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Role</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>series_id</code></td>
+<td>id</td>
+<td>Which series the row belongs to (treated or a control).</td>
+</tr>
+<tr>
+<td><code>series_name</code></td>
+<td>id</td>
+<td>Human-readable.</td>
+</tr>
+<tr>
+<td><code>is_control</code></td>
+<td>state</td>
+<td><code>true</code> for control-series rows.</td>
+</tr>
+<tr>
+<td><code>period</code></td>
+<td>state</td>
+<td>The time bucket (ISO 8601, e.g. <code>2018-05</code>).</td>
+</tr>
+<tr>
+<td><code>periods_since_intervention</code></td>
+<td>state</td>
+<td><code>period − intervention_instant</code> in <code>running_time.units</code>; negative = pre. The time analogue of <code>distance_to_cutoff</code>.</td>
+</tr>
+<tr>
+<td><code>is_post</code></td>
+<td>action</td>
+<td><code>true</code> if <code>period</code> is on/after the intervention instant (and outside any <code>transition</code>).</td>
+</tr>
+<tr>
+<td><code>outcome</code></td>
+<td>reward</td>
+<td>The observed outcome value in that period for that series.</td>
+</tr>
+<tr>
+<td><em>(covariates)</em></td>
+<td>state</td>
+<td>One column per <code>context.covariate_names</code> (e.g. a population denominator, seasonal index).</td>
+</tr>
+</tbody>
+</table></div>
+<p>For these rows the per-mark constants are the <code>intervention_instant</code>, the
+<code>counterfactual</code> spec, and the <code>effect</code> distribution, joined on the mark <code>id</code>.</p>
 <blockquote>
 <p>Hugging Face carries the <strong>same per-mark CSVs</strong> (mirrored at <code>episodes/&lt;id&gt;.csv.gz</code>),
 not a separate unioned table — one row shape everywhere. The mark-level metadata + effect
 distribution are the per-series configs (<code>floor-standards</code>, <code>shmi</code>, <code>bathing-water</code>).</p>
 </blockquote>
 <hr>
-<h2>3. Submission and score</h2>
+<h2 id="3-submission-and-score">3. Submission and score</h2>
 <p>To be scored, send a <code>submission.json</code>: for each mark, your model's predicted
 effect <strong>with its own uncertainty</strong>. See
 <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/examples/submission.example.json"><code>examples/submission.example.json</code></a>.</p>

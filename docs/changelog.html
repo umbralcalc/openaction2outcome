@@ -19,11 +19,83 @@
   </nav>
 </header>
 <main class="content">
-<h1>Changelog</h1>
+<h1 id="changelog">Changelog</h1>
 <p>All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
 separately inside each mark).</p>
-<h2>v1.5.0 — 2026-06-01</h2>
+<h2 id="v180--2026-06-03">v1.8.0 — 2026-06-03</h2>
+<p>Adds <strong>controlled interrupted time series (ITS)</strong> as a second identification strategy
+alongside regression discontinuity — the design family behind the dose / rollout
+price-instrument seams (Scotland alcohol minimum-unit pricing, London emission zones)
+where the policy lands at a sharp <em>instant in time</em> and comparability is a control
+series sharing the treated series' pre-trend. An ITS estimand is a <strong>population</strong> effect
+over a post-intervention window, not a local-at-cutoff effect, so its decision scores
+never pool with RDD marks (the same firewall already used for identified vs bridge).
+Purely <strong>additive</strong> — <code>schema_version</code> stays 0.5.0; every mark, episode file, and scorer
+minted before this keeps validating unchanged.</p>
+<ul>
+<li><strong><code>schema</code></strong>: a new <code>identification</code> discriminator (<code>rdd-sharp</code> / <code>rdd-fuzzy</code> /
+<code>rdd-kink</code> / <code>did</code> / <code>its-controlled</code>) that selects which <code>design</code> sub-shape and which
+<code>dossier</code> block a reader expects. Legacy <code>rdd_type</code> migrates via
+<code>EffectiveIdentification</code>; a contradiction between the two is rejected.</li>
+<li><strong><code>schema</code></strong>: <code>Design.ITS</code> carries the ITS-only design fields (intervention instant,
+pre/post windows, transition ramp, counterfactual model, control series) in place of
+the RDD running_variable/cutoff/direction; <code>Dossier.ITS</code> holds the time-domain validity
+battery (no-anticipation, control-parallelism, placebo dates/outcomes, window sweep,
+transition exclusion, dose check, autocorrelation). New <code>row_shape</code> (<code>cross-section</code> /
+<code>panel</code>) and a <code>PanelObservation</code> row type for the ITS panel. <code>Validate</code> enforces the
+mandatory ITS fields, requires a control on an <em>identified</em> ITS mark (uncontrolled ITS
+belongs in a bridge), and keeps panel rows' post-flag consistent with their distance.</li>
+<li><strong><code>internal/dossier</code></strong>: a distinct ITS dossier renderer (the time-domain analogue of the
+RDD dossier; shared effect/provenance sections), so a reader can never mistake a
+population-over-window estimand for a local-at-cutoff one.</li>
+<li><strong><code>internal/episodes</code></strong> / <strong><code>internal/hfexport</code></strong>: the episodes manifest gains a per-mark
+<code>row_shape</code>, and the Hugging Face record gains an <code>identification</code> column.</li>
+<li>Executes <code>research/schema-its-addendum.md</code> (the 0.5.0 proposal).</li>
+</ul>
+<h2 id="v170--2026-06-02">v1.7.0 — 2026-06-02</h2>
+<p>Adds the <strong>difference-in-differences (DiD)</strong> design — the gating prerequisite for the
+dose / staggered-rollout bridge seams (alcohol minimum-unit pricing, emission zones,
+minimum wage), where each anchor is one treated-vs-control, pre-vs-post comparison and
+a <em>family</em> of such anchors at different policy intensities is what a bridge interpolates
+across. This is the DiD analogue of the regression-kink work, and it unlocks all three
+top dose/rollout candidates, not just one.</p>
+<ul>
+<li><strong><code>internal/did</code></strong> — a clean 2×2 (unit-first-difference) DiD around a single event:
+per-unit post-mean minus pre-mean, compared across the treated and control groups,
+with <strong>unit-clustered</strong> inference and the same window-swept honest interval (sampling
+<ul>
+<li>specification variance) as the RDD/RKD estimators. Deliberately a single-event 2×2,
+which sidesteps the staggered-adoption / two-way-fixed-effects bias of a pooled
+regression. Ships <strong><code>PreTrend</code></strong> — the parallel-trends diagnostic (the cross-group
+pre-period trend, ≈0 when credible) — the DiD analogue of the RDD manipulation check.
+Validated on synthetic panels: exact effect recovery, pre-trend-violation detection,
+and spec-spread folding under a dynamic effect.</li>
+</ul>
+</li>
+<li><strong><code>schema</code></strong>: new <code>rdd_type=did</code>; <code>Validate</code> admits it without a cutoff Direction
+(DiD has treatment groups, not a cutoff side) and forbids the kink-only
+policy_slope_change. Additive — <code>schema_version</code> stays 0.5.0.</li>
+</ul>
+<h2 id="v160--2026-06-02">v1.6.0 — 2026-06-02</h2>
+<p>Adds the <strong>regression-kink design (RKD)</strong> as a new identified-anchor design — the
+prerequisite for tiered-relief anchor families (e.g. small-business-rate-relief
+tapers), where the policy bends rather than jumps. Where a sharp/fuzzy RDD reads a
+<em>level</em> discontinuity at a cutoff, an RKD reads a <em>slope</em> discontinuity at a kink and
+divides it by the known kink in the policy function's slope, identifying the marginal
+effect of the policy intensity.</p>
+<ul>
+<li><strong><code>internal/rdd</code></strong> gains the plug-in RKD estimator: a kernel-weighted local-
+<em>quadratic</em> slope fit per side (the RKD convention for boundary derivatives),
+<code>FitKink</code> / <code>EstimateKink</code> with the same bandwidth-sweep honest interval as the RDD
+level estimator, and <code>LevelDiscontinuity</code> — the RKD validity check that the
+conditional mean is continuous at the kink (a non-zero level jump means a notch
+contaminates the design). Validated on synthetic data with a known marginal effect.</li>
+<li><strong><code>schema</code></strong>: new <code>rdd_type=kink</code> and a required <code>design.policy_slope_change</code>
+(b'(c+) − b'(c−)); <code>Validate</code> enforces a non-zero value for kink designs and forbids
+it on level designs. Additive — <code>schema_version</code> stays 0.5.0.</li>
+</ul>
+<h2 id="v150--2026-06-01">v1.5.0 — 2026-06-01</h2>
 <p>Introduces the <strong>Mechanism</strong> entity, making the collection a clean instance of the
 bridge-marks data model. A mechanism is where anchor coherence is <em>defined</em> — two
 anchors share a mechanism iff they share the policy variable, outcome construct,
@@ -41,7 +113,7 @@ data model is identical when a family arrives — more anchors simply share the 
 <li>The three committed identified marks gain <code>mechanism_id</code> (values unchanged).</li>
 <li>Additive field — <code>schema_version</code> stays 0.5.0.</li>
 </ul>
-<h2>v1.4.0 — 2026-06-01</h2>
+<h2 id="v140--2026-06-01">v1.4.0 — 2026-06-01</h2>
 <p>Adds the <strong>deterministic causal layer</strong> — the first major extension on top of the
 bridge foundation. It augments causal-modelling power while staying <em>determinism-first</em>:
 the honest interval is computed by closed-form / deterministic moment propagation, never
@@ -49,7 +121,7 @@ by sampling the discrepancy, and an explicit tractability gate certifies that a
 deterministic interval is honest for a given mechanism before one is minted. No
 breaking wire-format change — the new provenance fields are additive and optional, so
 <code>schema_version</code> stays 0.5.0 and existing marks are unchanged.</p>
-<h3>Deterministic inference (rungs 1 &amp; 2)</h3>
+<h3 id="deterministic-inference-rungs-1--2">Deterministic inference (rungs 1 &amp; 2)</h3>
 <ul>
 <li><strong><code>CalibrateMoment</code> / <code>CalibrateDeterministic</code></strong> (<code>internal/bridge</code>) — a calibrator with
 no Monte Carlo: θ is fit by deterministic Gauss–Newton (a Laplace posterior) and pushed
@@ -57,7 +129,7 @@ through the prediction map by the <strong>unscented transform</strong>. It is <s
 linear-Gaussian limit</strong> (verified against a closed-form analytic reference to round-off)
 and re-mints byte-for-byte (no RNG).</li>
 </ul>
-<h3>The tractability gate (the Axis-B detector)</h3>
+<h3 id="the-tractability-gate-the-axis-b-detector">The tractability gate (the Axis-B detector)</h3>
 <ul>
 <li><strong><code>TractabilityGate</code></strong> tests whether a mechanism stays in the deterministic regime and
 ships its verdict as provenance. Its load-bearing statistic is the <strong>Laplace misfit</strong>
@@ -66,7 +138,7 @@ linear-Gaussian θ posterior, large for a genuinely non-Gaussian one. A failed g
 flagged and routed to the deferred sampling path rather than given a (miscalibrated)
 deterministic interval. Determinism is earned, not assumed.</li>
 </ul>
-<h3>The causal mechanism + structured kernels</h3>
+<h3 id="the-causal-mechanism--structured-kernels">The causal mechanism + structured kernels</h3>
 <ul>
 <li><strong><code>LinearSCMMechanism</code></strong> — a directed structural causal model (a confounded
 treatment→outcome graph) built as a genuine stochadex deterministic graph (value-function
@@ -79,7 +151,7 @@ encoding a first-order linearised mechanism) and an <strong>intrinsic-coregional
 multi-output kernel (PSD <code>B = WWᵀ + diag κ</code>, with joint multi-output Gram assembly) to
 bridge correlated outputs or jurisdictions.</li>
 </ul>
-<h3>Provenance + validity</h3>
+<h3 id="provenance--validity">Provenance + validity</h3>
 <ul>
 <li>New optional <code>inference</code> record on a bridge mark (and in the dossier): the <strong>rung</strong> used
 (<code>closed-form</code> | <code>deterministic-moment</code> | <code>sampled</code>) and the <strong>tractability-gate verdict</strong>
@@ -88,7 +160,7 @@ interval and that determinism was certified.</li>
 <li>The bridge validity battery runs the tractability gate; a failed gate is surfaced
 prominently. The dossier renders the inference rung and the gate verdict.</li>
 </ul>
-<h3>Validation artifact</h3>
+<h3 id="validation-artifact">Validation artifact</h3>
 <ul>
 <li><strong><code>study --bridge --layer</code></strong> runs the deterministic-causal-layer study on the structural
 causal mechanism with a <em>known</em> interventional truth: the moment calibrator coincides with
@@ -96,20 +168,20 @@ the SMC closed-form joint to within Monte-Carlo error while carrying no sampling
 re-mints byte-for-byte, earns the closed-form rung at every problem, and recovers the
 known τ* between the anchors.</li>
 </ul>
-<h3>Still deferred (data-gated)</h3>
+<h3 id="still-deferred-data-gated">Still deferred (data-gated)</h3>
 <ul>
 <li>The first <em>real</em> bridge mark (needs a mechanism with ≥2 bracketing identified anchors) and
 the gated sampling rung remain deferred. The modelling layer raised the ceiling; coherent
 anchor families remain the binding constraint.</li>
 </ul>
-<h2>v1.3.0 — 2026-05-31</h2>
+<h2 id="v130--2026-05-31">v1.3.0 — 2026-05-31</h2>
 <p>Adds a second, clearly-separated category of mark — the <strong>bridge mark</strong> — and the
 machinery to mint and score it. Bridge marks estimate a mechanism's effect at a
 point bracketed by real identified anchors, using a stochadex simulator plus a
 Gaussian-process discrepancy pinned to those anchors (Kennedy–O'Hagan calibration).
 Interpolation only; the honest interval is the posterior, bounded and pinned at
 both ends. Existing marks are unchanged in value — they gain a <code>category</code> field.</p>
-<h3>Schema (<code>schema_version</code> 0.4.0 → 0.5.0)</h3>
+<h3 id="schema-schema-version-040--050">Schema (<code>schema_version</code> 0.4.0 → 0.5.0)</h3>
 <ul>
 <li>New mark fields: <code>category</code> (<code>identified</code> | <code>bridge</code>, empty reads as
 <code>identified</code>) and <code>truth_source</code> (<code>identified</code> | <code>simulator-bridged</code>) — the hard
@@ -123,7 +195,7 @@ kernel-sensitivity table, bracketing flag, admission verdict.</li>
 <li>The three committed identified marks are re-minted at 0.5.0 (byte-identical
 values; only the new <code>category</code>/<code>truth_source</code> fields + version string change).</li>
 </ul>
-<h3>New machinery</h3>
+<h3 id="new-machinery">New machinery</h3>
 <ul>
 <li><strong><code>internal/bridge</code></strong> — the simulator interface, two GP covariance kernels
 (squared-exponential, Matérn-5/2), GP-discrepancy conditioning (reusing the
@@ -136,7 +208,7 @@ as the hard gates; LOAO + kernel sensitivity as reported credibility numbers).</
 <li><strong><code>internal/dossier</code></strong> renders a distinct bridge dossier — pin/span picture, the
 load-bearing kernel, the coherence justification, and LOAO as the headline.</li>
 </ul>
-<h3>Determinism: closed-form, not sampled</h3>
+<h3 id="determinism-closed-form-not-sampled">Determinism: closed-form, not sampled</h3>
 <ul>
 <li>The discrepancy GP is conditioned in <strong>closed form</strong>, never sampled — the honest
 interval is exact and re-mintable. <code>internal/bridge</code> ships three calibrators:
@@ -149,17 +221,17 @@ while the sampled joint degenerates (recovery ≈ 0.25, intervals several-fold t
 narrow) as its data-free discrepancy latents collapse under resampling. Sampling
 the GP adds only Monte-Carlo error and degeneracy.</li>
 </ul>
-<h3>Scoring</h3>
+<h3 id="scoring">Scoring</h3>
 <ul>
 <li><code>pkg/score</code> now reports <strong>per-category, never pooled</strong> (so strong identified
 coverage cannot mask weak bridge coverage). New <code>--category identified|bridge|both</code>
 flag on <code>score</code>; excluded marks are reported, never silently dropped.</li>
 </ul>
-<h2>v1.2.0 — 2026-05-31</h2>
+<h2 id="v120--2026-05-31">v1.2.0 — 2026-05-31</h2>
 <p>Reworks the <code>episodes</code> distribution to match what is actually served: the rows are
 published <strong>per mark</strong> as one gzipped CSV each, not as a single unified file. The marks
 and the row <em>values</em> are unchanged.</p>
-<h3>Storage / dataset (per-mark <code>episodes</code>)</h3>
+<h3 id="storage--dataset-per-mark-episodes">Storage / dataset (per-mark <code>episodes</code>)</h3>
 <ul>
 <li>The <code>episodes</code> dataset is published as <strong>one gzipped CSV per mark</strong> in object storage at
 <code>marks/&lt;id&gt;/episodes.csv.gz</code> (columns: <code>unit_id</code>, <code>unit_name</code>, <code>running_value</code>,
@@ -179,10 +251,10 @@ everywhere; load one mark with <code>load_dataset(repo, data_files=&quot;episode
 (or <code>huggingface_hub.hf_hub_download</code>). The <code>episodes</code> config is gone; the per-series
 mark configs are unchanged.</li>
 </ul>
-<h2>v1.1.0 — 2026-05-31</h2>
+<h2 id="v110--2026-05-31">v1.1.0 — 2026-05-31</h2>
 <p>Adds a documentation website. No dataset, schema, or scorer changes — the marks and the
 <code>episodes</code> dataset are byte-identical to v1.0.0.</p>
-<h3>Documentation site</h3>
+<h3 id="documentation-site">Documentation site</h3>
 <ul>
 <li><strong>Static GitHub Pages site</strong> (<code>make site</code> → <code>openaction2outcome site</code>): generates a
 self-contained website into the committed <code>docs/</code> folder — a landing page (coverage
@@ -193,12 +265,12 @@ Generated offline and deterministically from artifacts already in the repo, so i
 drift from the data. Served by Pages from <code>main</code> → <code>/docs</code>. See
 <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/PUBLISHING.md">PUBLISHING.md</a>.</li>
 </ul>
-<h2>v1.0.0 — 2026-05-31</h2>
+<h2 id="v100--2026-05-31">v1.0.0 — 2026-05-31</h2>
 <p>First stable release. Restructures distribution around the dataset model: there
 are now exactly <strong>two datasets</strong>, normalised on <code>mark_id</code> — the marks (metadata,
 in git) and a single row-per-unit <code>episodes</code> dataset (the rows, in object
 storage).</p>
-<h3>New dataset</h3>
+<h3 id="new-dataset">New dataset</h3>
 <ul>
 <li><strong><code>episodes</code></strong> — every mark's per-unit rows, unioned into one table for model
 training: each unit's context before the decision (<code>covariates</code>,
@@ -210,26 +282,26 @@ Hugging Face <code>episodes</code> config; pointed to by <code>datasets/episodes
 row carries <code>mark_id</code> (+ scalar <code>effect_*</code> summaries) to join back to the mark's full
 effect distribution.</li>
 </ul>
-<h3>Schema (<code>schema_version</code> 0.3.0 → 0.4.0)</h3>
+<h3 id="schema-schema-version-030--040">Schema (<code>schema_version</code> 0.3.0 → 0.4.0)</h3>
 <ul>
 <li><strong>Breaking:</strong> removed the per-mark <code>data</code> artifact (<code>DataArtifact</code>). A mark is now pure
 metadata; its rows live in the <code>episodes</code> dataset, recovered by filtering on the mark
 <code>id</code>. Per-mark episode tables are no longer published — they are a build intermediate
 feeding the episodes reshape.</li>
 </ul>
-<h3>Storage</h3>
+<h3 id="storage">Storage</h3>
 <ul>
 <li>Object storage now holds just the <code>episodes</code> dataset plus the frozen raw-input mirror
 (reproducibility). The mark-level Hugging Face records drop the <code>episode_table_*</code>
 fields. (Superseded by v1.2.0: the <code>episodes</code> dataset is published per mark, not as a
 single unified file.)</li>
 </ul>
-<h2>v0.2.0 — 2026-05-31</h2>
+<h2 id="v020--2026-05-31">v0.2.0 — 2026-05-31</h2>
 <p>Adds a third series and the first environmental-domain mark, taking the
 collection to three domains (education + health + environment). Introduces
 seam-specific validity checks beyond the standard battery, debuting with the
 bathing-water abnormal-sample-exclusion sensitivity.</p>
-<h3>Marks (admitted reference points)</h3>
+<h3 id="marks-admitted-reference-points">Marks (admitted reference points)</h3>
 <ul>
 <li><strong>bathing-water-poor-2015</strong> — sharp RDD on the English bathing-water Poor/Sufficient
 classification boundary (revised Bathing Water Directive). Running variable is the
@@ -241,12 +313,12 @@ investigation. Outcome is the same site's compliance margin four years later
 [−0.407, 0.245] (the bandwidth sweep flips sign — genuine identification
 uncertainty, honestly reported).</li>
 </ul>
-<h3>Schema</h3>
+<h3 id="schema">Schema</h3>
 <ul>
 <li>New <code>bathing-water</code> series value, and an optional <code>seam_specific_checks</code> field on
 the validity dossier for series-specific tests outside the standard battery.</li>
 </ul>
-<h3>New validity check</h3>
+<h3 id="new-validity-check">New validity check</h3>
 <ul>
 <li><strong>Abnormal-sample-exclusion sensitivity</strong> (the bathing-water manipulation analogue):
 re-includes the discretionarily-discounted extreme-weather samples, re-derives the
@@ -254,18 +326,18 @@ log-normal 90th-percentile margin near the cutoff, and confirms the effect estim
 is robust. The mark records how many samples were discounted near the boundary and
 how many sites flip Poor/Sufficient under re-inclusion.</li>
 </ul>
-<h3>Data</h3>
+<h3 id="data">Data</h3>
 <ul>
 <li>Bathing-water inputs are harvested from the Defra linked-data API (no bulk CSV
 upstream) by <code>scripts/bathingwater_harvest.py</code> into two frozen, hash-pinned CSVs
 (annual compliance + percentile statistics; per-sample microbiology for near-cutoff
 windows), mirroring the existing derived-snapshot pattern.</li>
 </ul>
-<h2>v0.1.0 — 2026-05-30</h2>
+<h2 id="v010--2026-05-30">v0.1.0 — 2026-05-30</h2>
 <p>First public release: a working causal yardstick on two domains, with both
 identification regimes implemented and the headline calibration finding
 demonstrated.</p>
-<h3>Marks (admitted reference points)</h3>
+<h3 id="marks-admitted-reference-points-1">Marks (admitted reference points)</h3>
 <ul>
 <li><strong>floor-standards-p8-2016</strong> — sharp RDD on the 2016 English school Progress 8
 floor (−0.5); outcome is each school's Progress 8 two years later. Effect
@@ -275,7 +347,7 @@ SHMI &quot;higher than expected&quot; mortality banding; outcome is the trust's 
 the next 12-month window (pooled trust-years). Effect −0.013, 95% interval
 [−0.066, 0.018].</li>
 </ul>
-<h3>Estimation</h3>
+<h3 id="estimation">Estimation</h3>
 <ul>
 <li>Model-averaged SBI estimator (stochadex SMC across a bandwidth × order × kernel
 grid; marginal-likelihood weighting within a bandwidth, uniform across). The
@@ -283,12 +355,12 @@ honest interval splits into sampling vs identification variance.</li>
 <li>Fuzzy two-stage (Wald LATE) estimator with a first-stage admission gate.</li>
 <li>Plug-in local-linear estimator kept as the comparison baseline.</li>
 </ul>
-<h3>Headline finding</h3>
+<h3 id="headline-finding">Headline finding</h3>
 <ul>
 <li>Calibration study against known truth: at a nominal 95% interval the plug-in
 method covers the truth 80% of the time, the model-averaged method 92%.</li>
 </ul>
-<h3>Tooling &amp; distribution</h3>
+<h3 id="tooling--distribution">Tooling &amp; distribution</h3>
 <ul>
 <li>CLI: <code>fetch</code>, <code>build</code>, <code>validate</code>, <code>score</code>, <code>study</code>, <code>export</code>.</li>
 <li>Two public, dependency-light Go packages: <code>pkg/schema</code> and <code>pkg/score</code>.</li>
@@ -297,7 +369,7 @@ method covers the truth 80% of the time, the model-averaged method 92%.</li>
 object storage (Cloudflare R2), referenced by URL + SHA-256.</li>
 <li>Hugging Face dataset export (one config per series) + Dataset Card.</li>
 </ul>
-<h3>Honest scoping</h3>
+<h3 id="honest-scoping">Honest scoping</h3>
 <ul>
 <li>Documented why a clean area-funding mark is deferred (UKSPF too recent for an
 outcome; the Neighbourhood Renewal Fund running variable is not openly

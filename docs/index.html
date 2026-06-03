@@ -23,7 +23,8 @@
   <img src="assets/logo.png" alt="openaction2outcome logo">
   <h1>Open Action&rarr;Outcome Datasets</h1>
   <p class="tagline">Real-world reference points for testing models that predict the effects of decisions &mdash;
-     each an institution crossing a published threshold, with the true effect recovered by regression discontinuity.</p>
+     each a real institutional decision, with the true effect recovered by a transparent quasi-experimental design
+     (regression discontinuity &amp; kink, difference-in-differences, or controlled interrupted time series).</p>
   <div class="cta">
     <a class="btn" href="downloads.html">Get the data</a>
     <a class="btn secondary" href="schema.html">Read the schema</a>
@@ -36,10 +37,28 @@
 <ul>
   <li><strong>Marks</strong> &mdash; the reference points (the metadata). One small JSON per decision: the setup,
       the effect as an honest distribution, the validity evidence it passed, and full provenance.</li>
-  <li><strong><code>episodes</code> dataset</strong> &mdash; the per-unit rows behind every mark, unioned into one
-      <em>(state, action, reward)</em> table for model training. A single Parquet, joined back to each mark on <code>mark_id</code>.</li>
+  <li><strong><code>episodes</code> dataset</strong> &mdash; the rows behind every mark as the
+      <em>(state, action, reward)</em> view for model training. Published per mark (one gzipped CSV each), joined back to each mark on <code>mark_id</code>.</li>
 </ul>
 <p>You can check two things against a mark: does your model get the <strong>effect</strong> right, and is its <strong>confidence</strong> honest?</p>
+
+<h2>Designs</h2>
+<p>A mark is <strong>identification-agnostic</strong> &mdash; the effect distribution, the uncertainty budget, and the
+   scorer are the same however comparability was established. Only the design block and the validity dossier change
+   shape across the four supported quasi-experimental families:</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Design</th><th>Comparability from</th><th>Estimand</th></tr></thead>
+  <tbody>
+    <tr><td><strong>RDD</strong> &mdash; regression discontinuity (sharp / fuzzy)</td><td>Units just either side of a published cutoff</td><td>Local effect at the cutoff</td></tr>
+    <tr><td><strong>RKD</strong> &mdash; regression-kink design</td><td>A change in the slope of a continuous policy function at a kink</td><td>Marginal effect of policy intensity</td></tr>
+    <tr><td><strong>DiD</strong> &mdash; difference-in-differences</td><td>A treated group&rsquo;s pre&rarr;post change vs a control group&rsquo;s, under parallel trends</td><td>Average effect on the treated</td></tr>
+    <tr><td><strong>ITS</strong> &mdash; controlled interrupted time series</td><td>A treated series&rsquo; break at a sharp intervention instant vs a control series sharing its pre-trend</td><td>Population effect over the post window</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Decision scores are compared <em>within</em> a design family, never pooled across; calibration scores are
+   comparable everywhere. The <a href="schema.html">schema</a> documents the per-family fields.</p>
 
 <h2>Coverage</h2>
 <div class="cards">

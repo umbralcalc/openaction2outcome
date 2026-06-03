@@ -6,6 +6,9 @@ pretty_name: "OpenAction2Outcome: an open causal yardstick"
 tags:
 - causal-inference
 - regression-discontinuity
+- difference-in-differences
+- interrupted-time-series
+- quasi-experiment
 - counterfactual
 - evaluation
 - uncertainty-quantification
@@ -35,12 +38,14 @@ truth is rarely available, so people fall back on simulators.
 
 This dataset provides that ground truth. Each **mark** is a real public-sector
 decision where an institution crossed a published threshold (a school's
-performance score, a hospital's mortality rating), which triggered an action, and
-where the **true effect** of that action is recovered by regression discontinuity
-— because units that *just* crossed the line are comparable to those that *just*
-didn't. Every mark ships with an **honest interval**: a central estimate plus a
-range that is truthful about what is genuinely uncertain (it separates ordinary
-sampling error from the identification uncertainty of modelling choices).
+performance score, a hospital's mortality rating) or a policy switched on at a
+known date, which triggered an action, and where the **true effect** of that
+action is recovered by a transparent **quasi-experimental design** — regression
+discontinuity and its kink variant, difference-in-differences, or a controlled
+interrupted time series (see *Designs* below). Every mark ships with an **honest
+interval**: a central estimate plus a range that is truthful about what is
+genuinely uncertain (it separates ordinary sampling error from the identification
+uncertainty of modelling choices).
 
 You can check two things against a mark: does your model get the **effect** right,
 and is its **confidence** honest?
@@ -57,6 +62,27 @@ needs accurate marks, not many), not a leaderboard.
 | `bathing-water-poor-2015` | Environment | bathing water | sharp RDD on the 2015 Poor/Sufficient compliance boundary | −0.095 [−0.407, 0.245] |
 
 Each series is a separate, individually-loadable subset (config).
+
+## Designs
+
+A mark is **identification-agnostic**: the effect distribution, the uncertainty
+budget, and the scorer are the same however comparability was established. Only the
+design block and the validity dossier change shape across the four supported
+quasi-experimental families (the `identification` field names which):
+
+| `identification` | Design | Comparability from | Estimand |
+|---|---|---|---|
+| `rdd-sharp` / `rdd-fuzzy` | Regression discontinuity | Units just either side of a published cutoff | Local effect at the cutoff |
+| `rdd-kink` | Regression-kink design (RKD) | A change in the slope of a continuous policy function at a kink | Marginal effect of policy intensity |
+| `did` | Difference-in-differences | A treated group's pre→post change vs a control's, under parallel trends | Average effect on the treated |
+| `its-controlled` | Controlled interrupted time series (ITS) | A treated series' break at a sharp intervention instant vs a control series sharing its pre-trend | Population effect over the post window |
+
+Decision scores are compared **within** a design family, never pooled across (a
+local-at-cutoff estimand and a population-over-window estimand answer different
+questions); calibration scores are comparable everywhere. The three marks released
+so far are all sharp designs; the DiD and ITS machinery is in place for the next
+seams. Full field reference:
+[docs/schema.md](https://github.com/umbralcalc/openaction2outcome/blob/main/docs/schema.md).
 
 ## Load it
 

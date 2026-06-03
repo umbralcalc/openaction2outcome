@@ -45,3 +45,52 @@ const (
 	// intensity ratcheted in steps, or a scheme rolled out across areas/times).
 	DiD RDDType = "did"
 )
+
+// Identification is the design-family discriminator that selects which `design`
+// sub-shape and which `dossier` block a reader should expect. It is the forward
+// generalisation of `rdd_type`: a mark is identification-agnostic everywhere
+// except those two polymorphic blocks. Old marks that carry only `rdd_type`
+// migrate via EffectiveIdentification; new marks (notably ITS) set this field
+// directly and may leave `rdd_type` empty.
+type Identification string
+
+const (
+	IDRDDSharp Identification = "rdd-sharp" // sharp regression discontinuity
+	IDRDDFuzzy Identification = "rdd-fuzzy" // fuzzy regression discontinuity
+	IDRDDKink  Identification = "rdd-kink"  // regression-kink design
+	IDDiD      Identification = "did"       // difference-in-differences
+
+	// IDITSControlled is a controlled interrupted time series: the effect is a
+	// POPULATION effect accumulated over a post-intervention window, identified by
+	// comparing a treated series' break at a sharp intervention instant to a
+	// control series under a parallel-trends-in-time assumption. Its estimand is
+	// not local-at-cutoff, so its decision scores never pool with RDD marks.
+	IDITSControlled Identification = "its-controlled"
+)
+
+// RowShape declares the shape of a mark's episode rows. RDD/DiD marks are a
+// cross-section (one row per unit × decision-period); ITS marks are a panel (one
+// row per series × time bucket). A reader keys its row decoder off it.
+type RowShape string
+
+const (
+	RowCrossSection RowShape = "cross-section"
+	RowPanel        RowShape = "panel"
+)
+
+// rddToIdentification maps the legacy rdd_type discriminator onto the forward
+// identification discriminator. An unknown/empty rdd_type maps to "".
+func rddToIdentification(t RDDType) Identification {
+	switch t {
+	case Sharp:
+		return IDRDDSharp
+	case Fuzzy:
+		return IDRDDFuzzy
+	case Kink:
+		return IDRDDKink
+	case DiD:
+		return IDDiD
+	default:
+		return ""
+	}
+}

@@ -33,6 +33,11 @@ type ValidityDossier struct {
 	// internal/bridge — so the schema stays dependency-light.
 	Bridge *BridgeChecks `json:"bridge,omitempty"`
 
+	// ITS holds the controlled-interrupted-time-series validity battery (the
+	// time-domain analogue of the RDD checks above). Present iff the mark's
+	// identification is its-controlled; nil otherwise.
+	ITS *ITSChecks `json:"its,omitempty"`
+
 	// SeamSpecificChecks holds validity checks unique to a particular series that
 	// fall outside the standard battery — e.g. the bathing-water abnormal-sample-
 	// exclusion sensitivity (the analogue of a manipulation check, since extreme-
@@ -140,4 +145,56 @@ type KernelSensitivityRow struct {
 	Central float64 `json:"central"`
 	Lower   float64 `json:"lower"`
 	Upper   float64 `json:"upper"`
+}
+
+// ITSChecks is the controlled-interrupted-time-series validity battery. Each
+// check carries the same epistemic intent as a named RDD check; the mark is
+// admitted only if they pass, and a wide interval is never itself a failure.
+// Everything here is description — the computation would live in internal/its.
+type ITSChecks struct {
+	// NoAnticipation tests for a pre-trend break or forestalling before the
+	// intervention instant (mirrors the RDD density / no-sorting test).
+	NoAnticipation TestResult `json:"no_anticipation"`
+
+	// ControlParallelism tests that treated and control share a pre-intervention
+	// trend (mirrors covariate_continuity).
+	ControlParallelism TestResult `json:"control_parallelism"`
+
+	// PlaceboDates are effect estimates at fake intervention dates in the
+	// pre-period; these should be indistinguishable from zero (mirrors
+	// placebo_cutoffs in the time axis).
+	PlaceboDates []DatePlaceboResult `json:"placebo_dates,omitempty"`
+
+	// PlaceboOutcomes are effect estimates on logically unaffected outcomes; each
+	// should show no effect (mirrors placebo_cutoffs, second axis).
+	PlaceboOutcomes []NamedTestResult `json:"placebo_outcomes,omitempty"`
+
+	// WindowSweep records estimate stability as the pre/post window lengths vary
+	// (mirrors bandwidth_sweep). Param is the window length in running_time units.
+	WindowSweep []SweepPoint `json:"window_sweep,omitempty"`
+
+	// TransitionExclusion re-estimates after dropping the implementation ramp
+	// (mirrors donut_robustness).
+	TransitionExclusion []SweepPoint `json:"transition_exclusion,omitempty"`
+
+	// DoseCheck confirms the action was actually delivered (e.g. sales/price/
+	// compliance moved at the date) — the ITS analogue of the fuzzy first stage.
+	DoseCheck *FirstStageResult `json:"dose_check,omitempty"`
+
+	// Autocorrelation records that residual serial correlation was modelled
+	// (Newey-West / ARMA errors). ITS-specific; it has no RDD analogue.
+	Autocorrelation TestResult `json:"autocorrelation"`
+
+	// Admitted is the ITS verdict; Notes explains it.
+	Admitted bool   `json:"admitted"`
+	Notes    string `json:"notes,omitempty"`
+}
+
+// DatePlaceboResult is an ITS effect estimate at a placebo (fake) intervention
+// date — the date-keyed analogue of PlaceboResult, whose key is a numeric cutoff.
+type DatePlaceboResult struct {
+	Date     string   `json:"date"`
+	Estimate float64  `json:"estimate"`
+	StdErr   *float64 `json:"std_err,omitempty"`
+	Passed   bool     `json:"passed"` // true when indistinguishable from zero
 }

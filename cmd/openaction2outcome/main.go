@@ -397,7 +397,7 @@ func cmdValidate(args []string) error {
 		if err != nil {
 			return fmt.Errorf("%s: %w", p, err)
 		}
-		design := string(m.RDDType)
+		design := string(m.EffectiveIdentification())
 		admitted := m.Dossier.Admitted
 		if m.EffectiveCategory() == schema.CategoryBridge {
 			design = "bridge"

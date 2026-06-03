@@ -106,8 +106,12 @@ var CoreColumns = []string{"unit_id", "unit_name", "running_value", "assigned", 
 // MarkArtifact points at one mark's published episodes.csv.gz and carries enough
 // to download and verify it without re-running the mint.
 type MarkArtifact struct {
-	MarkID     string   `json:"mark_id"`
-	Series     string   `json:"series"`
+	MarkID string `json:"mark_id"`
+	Series string `json:"series"`
+	// RowShape is the mark's episode-row shape: "cross-section" (RDD/DiD, one row
+	// per unit) or "panel" (ITS, one row per series × time bucket). A reader keys
+	// its row decoder off it.
+	RowShape   string   `json:"row_shape"`
 	URI        string   `json:"uri"`
 	SHA256     string   `json:"sha256"`
 	Bytes      int64    `json:"bytes"`
@@ -162,6 +166,7 @@ func NewManifest(marks []schema.Mark, distDir string, cfg publish.Config) (Manif
 		arts = append(arts, MarkArtifact{
 			MarkID:     m.ID,
 			Series:     s,
+			RowShape:   string(m.EffectiveRowShape()),
 			URI:        cfg.MarkArtifactURL(m.ID, stagedTableName),
 			SHA256:     sum,
 			Bytes:      size,

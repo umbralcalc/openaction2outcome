@@ -7,11 +7,17 @@ import (
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
 )
 
 // md is the shared markdown renderer: GFM so the dossier and schema tables
-// render. Rendering is deterministic (no timestamps, stable element order).
-var md = goldmark.New(goldmark.WithExtensions(extension.GFM))
+// render, with auto heading IDs so intra-page anchor links (e.g. the schema's
+// "see Designs" cross-references) resolve on the generated pages. Rendering is
+// deterministic (no timestamps, stable element order).
+var md = goldmark.New(
+	goldmark.WithExtensions(extension.GFM),
+	goldmark.WithParserOptions(parser.WithAutoHeadingID()),
+)
 
 // renderMarkdown converts CommonMark/GFM source to an HTML fragment, then
 // rewrites every intra-repo link so it points at the generated site (for paths

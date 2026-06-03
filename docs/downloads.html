@@ -29,7 +29,8 @@
   <p>Each unit's <em>(state, action, reward)</em> row: its context before the decision (<code>running_value</code>
      and the mark's covariates), what was done (<code>assigned</code>/<code>treated</code>), and the <code>outcome</code>
      that followed. Published <strong>per mark</strong> as a gzipped CSV; join its rows to the mark JSON on the mark id
-     for the design (cutoff, direction, action) and the full effect distribution.</p>
+     for the design and the full effect distribution. (RDD/DiD marks ship a <code>cross-section</code> row per unit;
+     ITS marks ship a <code>panel</code> row per series &times; time bucket.)</p>
   <p class="meta">3879 rows total across 3 marks · one gzipped CSV per mark<br>
      Columns: unit_id, unit_name, running_value, assigned, treated, outcome <em>(+ each mark's covariates)</em></p>
   <div class="table-wrap">

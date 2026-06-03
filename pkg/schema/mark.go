@@ -22,7 +22,19 @@ type Mark struct {
 	Series        Series  `json:"series"`
 	Domain        string  `json:"domain"`
 	UnitType      string  `json:"unit_type"`
-	RDDType       RDDType `json:"rdd_type"`
+	RDDType       RDDType `json:"rdd_type,omitempty"`
+
+	// Identification is the design-family discriminator (rdd-sharp / rdd-fuzzy /
+	// rdd-kink / did / its-controlled). It selects which Design sub-shape and which
+	// Dossier block a reader should expect. Marks minted before this field carry
+	// only RDDType; EffectiveIdentification migrates them. New ITS marks set this
+	// directly and leave RDDType empty.
+	Identification Identification `json:"identification,omitempty"`
+
+	// RowShape declares the shape of this mark's episode rows: cross-section (RDD/
+	// DiD, one row per unit) or panel (ITS, one row per series × time bucket). An
+	// empty value is derived by EffectiveRowShape (panel for ITS, else cross-section).
+	RowShape RowShape `json:"row_shape,omitempty"`
 
 	// MechanismID is the mechanism this mark belongs to — the entity on which
 	// identified marks are anchors and bridge marks interpolate. Anchor coherence
@@ -63,8 +75,14 @@ type Mark struct {
 	// in git) and the episodes dataset (in object storage), joined on ID.
 
 	// Sample is a small inline excerpt of the episode rows nearest the cutoff,
-	// for human inspection/audit without downloading the full table. Optional.
+	// for human inspection/audit without downloading the full table. Optional;
+	// cross-section marks only.
 	Sample []Observation `json:"sample,omitempty"`
+
+	// PanelSample is the ITS analogue of Sample: a small inline excerpt of the
+	// panel episode rows (treated and control series near the intervention
+	// instant). Optional; its-controlled marks only.
+	PanelSample []PanelObservation `json:"panel_sample,omitempty"`
 
 	// Effect is the mark itself: the honest interval over the true effect at the
 	// cutoff (a local-to-cutoff estimand).
@@ -107,6 +125,15 @@ type Design struct {
 	// divided by this — the marginal effect of the policy intensity. It must be
 	// non-zero for a kink, and is absent for sharp/fuzzy level designs.
 	PolicySlopeChange *float64 `json:"policy_slope_change,omitempty"`
+
+	// ITS carries the controlled-interrupted-time-series design fields (the
+	// intervention instant, pre/post windows, counterfactual model, control
+	// series) in place of the RDD-only running_variable/cutoff/direction triplet.
+	// Present iff the mark's identification is its-controlled; nil otherwise. The
+	// shared fields above (Action, Alternative, Outcome, Estimand) still apply —
+	// note an ITS Estimand is a population effect over the post window, not a
+	// local-at-cutoff effect, so its scores never pool with RDD marks.
+	ITS *ITSDesign `json:"its,omitempty"`
 }
 
 // Direction states which side of the cutoff is treated.
@@ -181,6 +208,12 @@ func (m Mark) Validate() error {
 	if err := m.validateMechanismID(); err != nil {
 		return err
 	}
+	if err := m.validateIdentificationConsistency(); err != nil {
+		return err
+	}
+	if err := m.validateRowShape(); err != nil {
+		return err
+	}
 
 	if err := m.Effect.Validate(); err != nil {
 		return fmt.Errorf("mark %q effect: %w", m.ID, err)
@@ -198,9 +231,69 @@ func (m Mark) Validate() error {
 			return err
 		}
 	default: // identified
-		if err := m.validateIdentified(); err != nil {
-			return err
+		switch m.EffectiveIdentification() {
+		case IDITSControlled:
+			if err := m.validateITS(); err != nil {
+				return err
+			}
+		case IDRDDSharp, IDRDDFuzzy, IDRDDKink, IDDiD:
+			if err := m.validateRDD(); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("mark %q: unknown identification %q (rdd_type %q)", m.ID, m.Identification, m.RDDType)
 		}
+	}
+	return nil
+}
+
+// EffectiveIdentification returns the mark's identification family, preferring
+// the explicit Identification field and otherwise migrating the legacy RDDType.
+// Returns "" for a mark that carries neither a known identification nor a known
+// rdd_type — Validate then reports it as unknown.
+func (m Mark) EffectiveIdentification() Identification {
+	if m.Identification != "" {
+		return m.Identification
+	}
+	return rddToIdentification(m.RDDType)
+}
+
+// EffectiveRowShape returns the mark's row shape, deriving an empty value: panel
+// for an ITS mark, cross-section for everything else.
+func (m Mark) EffectiveRowShape() RowShape {
+	if m.RowShape != "" {
+		return m.RowShape
+	}
+	if m.EffectiveIdentification() == IDITSControlled {
+		return RowPanel
+	}
+	return RowCrossSection
+}
+
+// validateIdentificationConsistency rejects a mark whose explicit Identification
+// contradicts its legacy RDDType (e.g. identification=rdd-fuzzy with
+// rdd_type=sharp). When only one is set there is nothing to reconcile.
+func (m Mark) validateIdentificationConsistency() error {
+	if m.Identification == "" || m.RDDType == "" {
+		return nil
+	}
+	if got := rddToIdentification(m.RDDType); got != m.Identification {
+		return fmt.Errorf("mark %q: identification %q contradicts rdd_type %q (which reads as %q)",
+			m.ID, m.Identification, m.RDDType, got)
+	}
+	return nil
+}
+
+// validateRowShape rejects an unknown row_shape and an ITS mark that declares the
+// cross-section shape (ITS rows are a panel). An empty value is derived and valid.
+func (m Mark) validateRowShape() error {
+	switch m.RowShape {
+	case "", RowCrossSection, RowPanel:
+	default:
+		return fmt.Errorf("mark %q: unknown row_shape %q", m.ID, m.RowShape)
+	}
+	if m.EffectiveIdentification() == IDITSControlled && m.RowShape == RowCrossSection {
+		return fmt.Errorf("mark %q: an its-controlled mark has panel rows, not cross-section", m.ID)
 	}
 	return nil
 }
@@ -239,22 +332,20 @@ func (m Mark) validateProvenanceLine(cat Category) error {
 	return nil
 }
 
-// validateIdentified checks the invariants specific to a design-based mark: a
-// known RDD type and direction, a first stage for fuzzy marks, no bridge block,
-// and assignment-consistent sample rows.
-func (m Mark) validateIdentified() error {
+// validateRDD checks the invariants specific to a discontinuity/DiD design-based
+// mark: a valid direction, a first stage for fuzzy marks, a policy-slope change
+// for kink marks, no bridge block, and assignment-consistent sample rows. It
+// routes on EffectiveIdentification, so a mark that sets `identification` without
+// the legacy `rdd_type` gets the same per-family checks.
+func (m Mark) validateRDD() error {
 	if m.Bridge != nil {
 		return fmt.Errorf("mark %q: identified mark must not carry a bridge block", m.ID)
 	}
-	switch m.RDDType {
-	case Sharp, Fuzzy, Kink, DiD:
-	default:
-		return fmt.Errorf("mark %q: unknown rdd_type %q", m.ID, m.RDDType)
-	}
+	id := m.EffectiveIdentification()
 	// Direction (which side of a cutoff is treated) is a discontinuity-design
 	// concept; a difference-in-differences design has treatment groups, not a
 	// cutoff side, so the check applies only to the cutoff designs.
-	if m.RDDType != DiD {
+	if id != IDDiD {
 		switch m.Design.Direction {
 		case AboveTreated, BelowTreated:
 		default:
@@ -262,13 +353,13 @@ func (m Mark) validateIdentified() error {
 		}
 	}
 	// A fuzzy mark's admission depends on a real first stage.
-	if m.RDDType == Fuzzy && m.Dossier.FirstStage == nil {
+	if id == IDRDDFuzzy && m.Dossier.FirstStage == nil {
 		return fmt.Errorf("mark %q: fuzzy mark requires a first-stage result in its dossier", m.ID)
 	}
 	// A kink mark identifies its effect from a known change in the policy slope,
 	// so that change must be present and non-zero; a level design must not carry it.
-	switch m.RDDType {
-	case Kink:
+	switch id {
+	case IDRDDKink:
 		if m.Design.PolicySlopeChange == nil || *m.Design.PolicySlopeChange == 0 {
 			return fmt.Errorf("mark %q: kink design requires a non-zero design.policy_slope_change", m.ID)
 		}
@@ -280,11 +371,51 @@ func (m Mark) validateIdentified() error {
 	// Assignment consistency of the inline sample rows (if any). This checks each
 	// row's treated side against the cutoff, so it applies only to the cutoff
 	// designs; a DiD mark's rows are panel observations, not cutoff assignments.
-	if m.RDDType != DiD {
+	if id != IDDiD {
 		for i, o := range m.Sample {
 			if err := m.checkAssignment(o); err != nil {
 				return fmt.Errorf("mark %q sample row %d (%s): %w", m.ID, i, o.UnitID, err)
 			}
+		}
+	}
+	return nil
+}
+
+// validateITS checks the invariants specific to a controlled-interrupted-time-
+// series mark: the design.its block with its mandatory fields, a control series
+// (an identified ITS mark must be controlled — uncontrolled ITS belongs in a
+// bridge), no kink-only slope change, no bridge block, and panel sample rows
+// whose post flag agrees with their signed distance from the intervention.
+func (m Mark) validateITS() error {
+	if m.Bridge != nil {
+		return fmt.Errorf("mark %q: identified mark must not carry a bridge block", m.ID)
+	}
+	if m.Design.PolicySlopeChange != nil {
+		return fmt.Errorf("mark %q: policy_slope_change is only valid for a kink design", m.ID)
+	}
+	d := m.Design.ITS
+	if d == nil {
+		return fmt.Errorf("mark %q: its-controlled mark requires a design.its block", m.ID)
+	}
+	if d.InterventionInstant == "" {
+		return fmt.Errorf("mark %q: its mark requires design.its.intervention_instant", m.ID)
+	}
+	if d.PreWindow.Start == "" || d.PreWindow.End == "" {
+		return fmt.Errorf("mark %q: its mark requires a pre_window with start and end", m.ID)
+	}
+	if d.PostWindow.Start == "" || d.PostWindow.End == "" {
+		return fmt.Errorf("mark %q: its mark requires a post_window with start and end", m.ID)
+	}
+	if d.Counterfactual.Family == "" {
+		return fmt.Errorf("mark %q: its mark requires a counterfactual.family", m.ID)
+	}
+	if d.Control == nil {
+		return fmt.Errorf("mark %q: an identified its-controlled mark requires a control series (uncontrolled ITS should be a bridge)", m.ID)
+	}
+	for i, o := range m.PanelSample {
+		if o.IsPost && o.PeriodsSinceIntervention < 0 {
+			return fmt.Errorf("mark %q panel sample row %d (%s): is_post=true but periods_since_intervention=%g is pre-intervention",
+				m.ID, i, o.SeriesID, o.PeriodsSinceIntervention)
 		}
 	}
 	return nil

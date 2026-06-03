@@ -21,11 +21,12 @@ import (
 
 // Record is the flat, columnar view of a mark for Hugging Face.
 type Record struct {
-	ID       string `json:"id"`
-	Series   string `json:"series"`
-	Domain   string `json:"domain"`
-	UnitType string `json:"unit_type"`
-	RDDType  string `json:"rdd_type"`
+	ID             string `json:"id"`
+	Series         string `json:"series"`
+	Domain         string `json:"domain"`
+	UnitType       string `json:"unit_type"`
+	RDDType        string `json:"rdd_type"`
+	Identification string `json:"identification"`
 
 	RunningVariable     string  `json:"running_variable"`
 	RunningVariableDesc string  `json:"running_variable_description"`
@@ -76,7 +77,8 @@ type source struct {
 // ToRecord flattens a mark.
 func ToRecord(m schema.Mark) Record {
 	r := Record{
-		ID: m.ID, Series: string(m.Series), Domain: m.Domain, UnitType: m.UnitType, RDDType: string(m.RDDType),
+		ID: m.ID, Series: string(m.Series), Domain: m.Domain, UnitType: m.UnitType,
+		RDDType: string(m.RDDType), Identification: string(m.EffectiveIdentification()),
 		RunningVariable: m.Design.RunningVariable.Name, RunningVariableDesc: m.Design.RunningVariable.Description,
 		Cutoff: m.Design.Cutoff, Direction: string(m.Design.Direction),
 		Action: m.Design.Action, Alternative: m.Design.Alternative,

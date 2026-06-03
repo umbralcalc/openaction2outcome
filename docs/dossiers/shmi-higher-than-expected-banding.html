@@ -19,9 +19,9 @@
   </nav>
 </header>
 <main class="content">
-<h1>shmi-higher-than-expected-banding</h1>
+<h1 id="shmi-higher-than-expected-banding">shmi-higher-than-expected-banding</h1>
 <p><strong>Category:</strong> identified (design-based truth — a pin)  ·  <strong>Series:</strong> shmi  ·  <strong>Domain:</strong> Health  ·  <strong>Unit:</strong> nhs-trust  ·  <strong>Design:</strong> sharp RDD  ·  <strong>Status:</strong> ADMITTED</p>
-<h2>The decision</h2>
+<h2 id="the-decision">The decision</h2>
 <ul>
 <li><strong>Running variable:</strong> shmi_minus_od_upper — SHMI minus the overdispersed upper control limit (positive =&gt; banded 'higher than expected') (SHMI ratio)</li>
 <li><strong>Cutoff:</strong> 0 (above-treated)</li>
@@ -30,7 +30,7 @@
 <li><strong>Outcome:</strong> shmi_next_window — The trust's SHMI in the following non-overlapping 12-month window (SHMI ratio)</li>
 <li><strong>Estimand:</strong> Sharp RD (intention-to-treat) effect at the upper control limit of being banded 'higher than expected' on the trust's SHMI in the following 12-month window (pooled trust-years, local-to-cutoff).</li>
 </ul>
-<h2>The effect</h2>
+<h2 id="the-effect">The effect</h2>
 <p><strong>-0.0131</strong> with a 95% interval of <strong>[-0.0658, 0.0177]</strong>.</p>
 <p>The interval width separates into two sources:</p>
 <div class="table-wrap"><table>
@@ -55,7 +55,7 @@
 </tr>
 </tbody>
 </table></div>
-<h2>Validity checks</h2>
+<h2 id="validity-checks">Validity checks</h2>
 <p><strong>Density / manipulation:</strong> pass — binned-density-discontinuity (McCrary-style) (p = 0.623)</p>
 <p><strong>Covariate continuity at the cutoff</strong> (covariates should not jump):</p>
 <div class="table-wrap"><table>
@@ -149,12 +149,12 @@
 </tbody>
 </table></div>
 <p><strong>Notes.</strong> Sharp intention-to-treat RDD on the SHMI 'higher than expected' banding, pooled over 3 non-overlapping reporting-window pairs (trust-years). Effect of being publicly flagged (SHMI above the overdispersed upper control limit) on the trust's SHMI in the following 12-month window. SBI honest interval [-0.0658, 0.0177] (sd 0.0238) splits into sampling sd 0.0136 and identification sd 0.0195; the plug-in interval is [-0.0616, 0.0128] (sd 0.0190). SMALL-N CAVEAT: only ~120 acute trusts per window, so the interval is wide by design. The RDD nets out SHMI's mean reversion (smooth through the cutoff); the flagging effect is the discontinuity. Pooling assumes a stable effect across windows and treats trust-years as units (within-trust serial correlation is not modelled, which understates the sampling component). COVID windows (Apr 2019 - Mar 2022 decisions) are excluded. This is intention-to-treat on the banding label, not the effect of any specific downstream intervention.</p>
-<h2>Data</h2>
+<h2 id="data">Data</h2>
 <p>The analysis-ready rows (one per unit) live in the single published <code>episodes</code> dataset, alongside every other mark's rows. Recover this mark's rows by filtering on <code>mark_id == &quot;shmi-higher-than-expected-banding&quot;</code>. The dataset's download URL and content hash are in <code>datasets/episodes.manifest.json</code>.</p>
 <ul>
 <li><strong>Covariates (state):</strong> expected_deaths, decision_shmi</li>
 </ul>
-<h2>Provenance</h2>
+<h2 id="provenance">Provenance</h2>
 <p>Point-in-time order: context as-of <code>2018-04-01</code> ≤ decision <code>2024-03-31</code> &lt; outcome <code>2025-03-31</code>.</p>
 <p><strong>Sources:</strong></p>
 <ul>

@@ -4,6 +4,37 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.8.0 — 2026-06-03
+
+Adds **controlled interrupted time series (ITS)** as a second identification strategy
+alongside regression discontinuity — the design family behind the dose / rollout
+price-instrument seams (Scotland alcohol minimum-unit pricing, London emission zones)
+where the policy lands at a sharp *instant in time* and comparability is a control
+series sharing the treated series' pre-trend. An ITS estimand is a **population** effect
+over a post-intervention window, not a local-at-cutoff effect, so its decision scores
+never pool with RDD marks (the same firewall already used for identified vs bridge).
+Purely **additive** — `schema_version` stays 0.5.0; every mark, episode file, and scorer
+minted before this keeps validating unchanged.
+
+- **`schema`**: a new `identification` discriminator (`rdd-sharp` / `rdd-fuzzy` /
+  `rdd-kink` / `did` / `its-controlled`) that selects which `design` sub-shape and which
+  `dossier` block a reader expects. Legacy `rdd_type` migrates via
+  `EffectiveIdentification`; a contradiction between the two is rejected.
+- **`schema`**: `Design.ITS` carries the ITS-only design fields (intervention instant,
+  pre/post windows, transition ramp, counterfactual model, control series) in place of
+  the RDD running_variable/cutoff/direction; `Dossier.ITS` holds the time-domain validity
+  battery (no-anticipation, control-parallelism, placebo dates/outcomes, window sweep,
+  transition exclusion, dose check, autocorrelation). New `row_shape` (`cross-section` /
+  `panel`) and a `PanelObservation` row type for the ITS panel. `Validate` enforces the
+  mandatory ITS fields, requires a control on an *identified* ITS mark (uncontrolled ITS
+  belongs in a bridge), and keeps panel rows' post-flag consistent with their distance.
+- **`internal/dossier`**: a distinct ITS dossier renderer (the time-domain analogue of the
+  RDD dossier; shared effect/provenance sections), so a reader can never mistake a
+  population-over-window estimand for a local-at-cutoff one.
+- **`internal/episodes`** / **`internal/hfexport`**: the episodes manifest gains a per-mark
+  `row_shape`, and the Hugging Face record gains an `identification` column.
+- Executes `research/schema-its-addendum.md` (the 0.5.0 proposal).
+
 ## v1.7.0 — 2026-06-02
 
 Adds the **difference-in-differences (DiD)** design — the gating prerequisite for the
