@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "id": "episodes",
   "format": "csv.gz",
   "core_columns": [
@@ -10,9 +10,10 @@
     "treated",
     "outcome"
   ],
-  "total_rows": 3879,
+  "total_rows": 4167,
   "series": [
     "bathing-water",
+    "berlin-lez-no2",
     "floor-standards",
     "shmi"
   ],
@@ -23,6 +24,7 @@
     {
       "mark_id": "bathing-water-poor-2015",
       "series": "bathing-water",
+      "row_shape": "cross-section",
       "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/bathing-water-poor-2015/episodes.csv.gz",
       "sha256": "c8d2e34b886d64cc16e8f2eefc163221bb0c34c8d55b79bf675d5a302a237e02",
       "bytes": 12821,
@@ -34,8 +36,29 @@
       ]
     },
     {
+      "mark_id": "berlin-lez-no2-2010",
+      "series": "berlin-lez-no2",
+      "row_shape": "panel",
+      "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/berlin-lez-no2-2010/episodes.csv.gz",
+      "sha256": "f557d8514abfd8327e95b101d726fb112f7fe76e503dab0110eedc4c9d79b552",
+      "bytes": 3618,
+      "rows": 288,
+      "covariates": [
+        "series_id",
+        "series_name",
+        "is_control",
+        "period",
+        "periods_since_intervention",
+        "is_post",
+        "wind_speed_kmh",
+        "temp_c",
+        "precip_mm"
+      ]
+    },
+    {
       "mark_id": "floor-standards-p8-2016",
       "series": "floor-standards",
+      "row_shape": "cross-section",
       "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/floor-standards-p8-2016/episodes.csv.gz",
       "sha256": "f2458f3df85381e1cd61b5f4d859940b1efcbc4dda6c672b22d1a20818a22005",
       "bytes": 61955,
@@ -49,6 +72,7 @@
     {
       "mark_id": "shmi-higher-than-expected-banding",
       "series": "shmi",
+      "row_shape": "cross-section",
       "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/shmi-higher-than-expected-banding/episodes.csv.gz",
       "sha256": "bdf9ef119fff440dd07684f6dad139abfc9fd8f47d9ad5cc35d77476605f915c",
       "bytes": 8606,
