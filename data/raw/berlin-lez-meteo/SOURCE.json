@@ -1,0 +1,17 @@
+{
+  "source_id": "berlin-lez-meteo",
+  "title": "Central-Berlin monthly meteorology (temperature, wind speed + direction components, precipitation) for the Umweltzone controlled-ITS, 2008-01 to 2011-12",
+  "publisher": "Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service)",
+  "landing_page": "https://open-meteo.com/en/docs/historical-weather-api",
+  "download_uri": "https://archive-api.open-meteo.com/v1/archive",
+  "r2_object_key": "raw/berlin-lez-meteo/berlin_meteo_monthly.csv",
+  "local_path": "berlin_meteo_monthly.csv",
+  "sha256": "54957b0b1d6ceea1a8b5910dad5fc84f802b802d3b6c33440d7bd3032f75d004",
+  "bytes": 2202,
+  "format": "csv",
+  "licence": "CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5)",
+  "licence_uri": "https://open-meteo.com/en/license",
+  "vintage": "Open-Meteo historical-weather (ERA5) archive for a central-Berlin point (52.52, 13.405), daily values aggregated to monthly means: temperature_2m_mean (C), wind_speed_10m_mean (km/h), direction-resolved wind components u/v (km/h), precipitation_sum (mm). One row per month over 2008-01..2011-12.",
+  "role": "confounder-meteorology",
+  "notes": "Meteorology is the dominant short-window NO2 confounder. In the controlled ITS the in-zone urban-background control series already absorbs most shared dispersion, so this join enters as the meteorology-adjusted specification arm of the model average. Wind is stored as u/v components so a monthly mean respects direction."
+}

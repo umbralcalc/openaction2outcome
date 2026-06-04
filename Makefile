@@ -18,6 +18,7 @@ build-all:                   ## mint every series
 	$(CLI) build --series floor-standards
 	$(CLI) build --series shmi
 	$(CLI) build --series bathing-water
+	$(CLI) build --series berlin-lez-no2
 
 validate:                    ## check every mark against the schema
 	$(CLI) validate

@@ -23,6 +23,44 @@
 <p>All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
 separately inside each mark).</p>
+<h2 id="v190--2026-06-04">v1.9.0 — 2026-06-04</h2>
+<p>Lands the <strong>first controlled-ITS mark</strong>: <code>berlin-lez-no2-2010</code> — the Berlin Umweltzone
+stage-2 (1 Jan 2010, green-sticker Euro-4-diesel <strong>ban</strong> inside the S-Bahn Ring) on
+roadside NO₂. It is the first identified anchor on a new <code>lez-ban-stringency-to-roadside-no2</code>
+mechanism, kept deliberately <strong>separate</strong> from charge-type zones (London ULEZ) so a future
+bridge interpolates a coherent mechanism. Effect <strong>−1.2 µg/m³, honest 95% interval
+[−6.7, +4.8]</strong> — a near-null with a wide interval: the honest reading that a standard-ban
+LEZ moved roadside NO₂ little (the Euro-standard upgrades cut particulates/soot far more
+than NOₓ). It is admitted because its validity battery is clean (a flat in-zone-traffic-
+minus-background pre-trend → clean placebos), demonstrating that a wide honest interval
+around a null is information, not a failure.</p>
+<ul>
+<li><strong><code>internal/its</code></strong>: new controlled-ITS estimator — a segmented regression on the
+treated−control monthly difference with Newey-West (Bartlett) HAC standard errors and a
+model-averaged honest interval (pre-window × seasonal harmonics × level/slope ×
+meteorology), mirroring the RDD marks' bandwidth×order×kernel averaging. Synthetic-truth
+tested (recovers a known break; the interval covers and decomposes into sampling +
+identification variance; placebos clean).</li>
+<li><strong><code>internal/series</code></strong>: an event-parametrised LEZ→NO₂ builder (<code>ulezEvent</code>) driving the
+Berlin mark, with pre-trend control matching, a placebo-adequacy guard, and the ITS
+validity battery (parallelism, no-anticipation, placebo dates, window sweep,
+meteorology-adjusted-vs-unadjusted, autocorrelation). Admission gates on the
+manufactured-break guards (placebos + no-anticipation), not on a flat pre-trend.</li>
+<li><strong><code>internal/ingest/laqn.go</code></strong>: a monthly NO₂-panel + meteorology loader (shared by the
+London and Berlin harvests).</li>
+<li><strong>data</strong>: <code>data/raw/berlin-lez-no2</code> (EEA historical/AirBase hourly NO₂ → monthly,
+<strong>CC BY 4.0</strong>) + <code>data/raw/berlin-lez-meteo</code> (Open-Meteo ERA5, CC BY 4.0). Harvested by
+<code>scripts/berlin_lez_harvest.py</code> (EEA Air Quality Download Service → per-station parquet),
+hash-pinned and frozen. Window 2008–2011, <strong>pre-COVID</strong>.</li>
+<li><strong>London ULEZ → NO₂ shelved</strong> (no admitted anchor): the 2023 and 2019 events were built
+and run on this same ITS machinery, but COVID and a curved pre-trend defeat clean
+identification, and the confounder series that would rescue it is only in non-OGL scanned
+PDFs. Documented <strong>only</strong> in <code>research/2026-06-04-ulez-no2-its-covid-confound.md</code> — its
+frozen inputs are <strong>not</strong> staged under <code>data/raw</code>/R2 (only successful marks' data is
+published) and its build wiring + charge-type mechanism were removed. Re-create the
+investigation with <code>scripts/ulez_harvest.py</code> (retained). The publish step now uploads only
+SOURCE.json-listed inputs, never the whole cache.</li>
+</ul>
 <h2 id="v180--2026-06-03">v1.8.0 — 2026-06-03</h2>
 <p>Adds <strong>controlled interrupted time series (ITS)</strong> as a second identification strategy
 alongside regression discontinuity — the design family behind the dose / rollout
@@ -379,8 +417,12 @@ admit). The fuzzy estimator runs on this real data but the mark is not admitted.
 
 </main>
 <footer class="site-footer">
-  <p>Code &amp; schema: MIT. Underlying data: UK public sector information (© Crown copyright)
-     under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</p>
+  <p>Code &amp; schema: MIT. Underlying data is open but licensed per source: UK public sector
+     information (© Crown copyright) under the
+     <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>;
+     European Environment Agency air-quality data and Open-Meteo (ERA5/Copernicus) weather data under
+     <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Each input's exact licence and
+     attribution are recorded in its <code>SOURCE.json</code> and in the mark's provenance.</p>
   <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
 </footer>
 </body>

@@ -1,0 +1,632 @@
+{
+  "schema_version": "0.5.0",
+  "id": "berlin-lez-no2-2010",
+  "series": "berlin-lez-no2",
+  "domain": "Environment",
+  "unit_type": "air-quality-monitoring-station",
+  "identification": "its-controlled",
+  "row_shape": "panel",
+  "mechanism_id": "lez-ban-stringency-to-roadside-no2",
+  "category": "identified",
+  "truth_source": "identified",
+  "design": {
+    "running_variable": {
+      "name": "month",
+      "description": "Calendar month on the running-time axis (epoch 2021-01)",
+      "units": "month",
+      "source_id": "berlin-lez-no2"
+    },
+    "cutoff": 0,
+    "direction": "",
+    "action": "Berlin Umweltzone stage 2 (1 Jan 2010): a green emissions sticker (Euro-4 diesel / Euro-1 petrol) became mandatory to drive inside the S-Bahn Ring — older non-compliant vehicles banned (not charged).",
+    "alternative": "Roads outside the Umweltzone (outside the S-Bahn Ring): no emissions-sticker requirement.",
+    "outcome": {
+      "name": "no2_concentration",
+      "description": "Monthly-mean NO2 concentration at the monitoring station",
+      "units": "µg/m³",
+      "source_id": "berlin-lez-no2"
+    },
+    "estimand": "Population effect over the post-intervention window (2010-01 to 2011-12, pre-COVID): the change in in-zone roadside NO2, net of an in-zone urban-background control series sharing the pre-intervention trend.",
+    "its": {
+      "intervention_instant": "2010-01-01",
+      "running_time": {
+        "name": "month",
+        "description": "Months since 2021-01",
+        "units": "month",
+        "source_id": "berlin-lez-no2"
+      },
+      "pre_window": {
+        "start": "2008-01",
+        "end": "2009-12"
+      },
+      "post_window": {
+        "start": "2010-01",
+        "end": "2011-12"
+      },
+      "counterfactual": {
+        "family": "segmented-regression on the treated-minus-control difference",
+        "terms": [
+          "intercept",
+          "linear-time",
+          "post-level",
+          "post-slope",
+          "seasonal-harmonics",
+          "meteorology(optional)"
+        ],
+        "seasonality": "harmonic terms at the 12-month period (1–2 pairs across specs)",
+        "justification": "The difference of treated and control roadside NO2 nets out the shared regional/meteorological trend and most seasonality; a segmented regression on that difference reads the policy break (level + optional slope) against the extrapolated pre-trend, with residual seasonality carried by harmonic terms and serial correlation handled by Newey-West HAC errors."
+      },
+      "control": {
+        "series_id": "berlin-lez-no2",
+        "role": "parallel-trend",
+        "justification": "In-zone urban-background stations share the treated traffic stations' airshed and pre-intervention trend but receive far weaker DIRECT kerbside-traffic treatment, so their series is the counterfactual for the regional/meteorological component of in-zone NO2."
+      }
+    }
+  },
+  "context": {
+    "description": "Berlin BLUME air-quality stations inside the Umweltzone (S-Bahn Ring), split into traffic (treated by the 2010 stage-2 ban) and urban-background (control, far weaker direct kerbside treatment), with a Berlin meteorology join. Data from the EEA historical (AirBase) archive.",
+    "covariate_names": [
+      "wind_speed_kmh",
+      "temp_c",
+      "precip_mm"
+    ],
+    "population": "2 treated + 4 control monitoring stations over 48 analysis months"
+  },
+  "panel_sample": [
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (aggregate)",
+      "is_control": false,
+      "period": "2009-10",
+      "periods_since_intervention": -3,
+      "is_post": false,
+      "outcome": 47.47325,
+      "covariates": {
+        "precip_mm": 92.3,
+        "temp_c": 8.268,
+        "wind_speed_kmh": 13.332
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "in-zone urban-background stations (aggregate)",
+      "is_control": true,
+      "period": "2009-10",
+      "periods_since_intervention": -3,
+      "is_post": false,
+      "outcome": 26.67755,
+      "covariates": {
+        "precip_mm": 92.3,
+        "temp_c": 8.268,
+        "wind_speed_kmh": 13.332
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (aggregate)",
+      "is_control": false,
+      "period": "2009-11",
+      "periods_since_intervention": -2,
+      "is_post": false,
+      "outcome": 48.903,
+      "covariates": {
+        "precip_mm": 67.2,
+        "temp_c": 7.54,
+        "wind_speed_kmh": 14.257
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "in-zone urban-background stations (aggregate)",
+      "is_control": true,
+      "period": "2009-11",
+      "periods_since_intervention": -2,
+      "is_post": false,
+      "outcome": 31.7785,
+      "covariates": {
+        "precip_mm": 67.2,
+        "temp_c": 7.54,
+        "wind_speed_kmh": 14.257
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (aggregate)",
+      "is_control": false,
+      "period": "2009-12",
+      "periods_since_intervention": -1,
+      "is_post": false,
+      "outcome": 52.17245,
+      "covariates": {
+        "precip_mm": 56.3,
+        "temp_c": 0.213,
+        "wind_speed_kmh": 11.49
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "in-zone urban-background stations (aggregate)",
+      "is_control": true,
+      "period": "2009-12",
+      "periods_since_intervention": -1,
+      "is_post": false,
+      "outcome": 32.406375,
+      "covariates": {
+        "precip_mm": 56.3,
+        "temp_c": 0.213,
+        "wind_speed_kmh": 11.49
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (aggregate)",
+      "is_control": false,
+      "period": "2010-01",
+      "periods_since_intervention": 0,
+      "is_post": true,
+      "outcome": 53.9184,
+      "covariates": {
+        "precip_mm": 43.6,
+        "temp_c": -5.981,
+        "wind_speed_kmh": 13.035
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "in-zone urban-background stations (aggregate)",
+      "is_control": true,
+      "period": "2010-01",
+      "periods_since_intervention": 0,
+      "is_post": true,
+      "outcome": 34.70455,
+      "covariates": {
+        "precip_mm": 43.6,
+        "temp_c": -5.981,
+        "wind_speed_kmh": 13.035
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (aggregate)",
+      "is_control": false,
+      "period": "2010-02",
+      "periods_since_intervention": 1,
+      "is_post": true,
+      "outcome": 56.97795000000001,
+      "covariates": {
+        "precip_mm": 28.3,
+        "temp_c": -1.375,
+        "wind_speed_kmh": 12.611
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "in-zone urban-background stations (aggregate)",
+      "is_control": true,
+      "period": "2010-02",
+      "periods_since_intervention": 1,
+      "is_post": true,
+      "outcome": 35.64145,
+      "covariates": {
+        "precip_mm": 28.3,
+        "temp_c": -1.375,
+        "wind_speed_kmh": 12.611
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (aggregate)",
+      "is_control": false,
+      "period": "2010-03",
+      "periods_since_intervention": 2,
+      "is_post": true,
+      "outcome": 52.6169,
+      "covariates": {
+        "precip_mm": 50.2,
+        "temp_c": 4.442,
+        "wind_speed_kmh": 13.774
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "in-zone urban-background stations (aggregate)",
+      "is_control": true,
+      "period": "2010-03",
+      "periods_since_intervention": 2,
+      "is_post": true,
+      "outcome": 31.860124999999996,
+      "covariates": {
+        "precip_mm": 50.2,
+        "temp_c": 4.442,
+        "wind_speed_kmh": 13.774
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (aggregate)",
+      "is_control": false,
+      "period": "2010-04",
+      "periods_since_intervention": 3,
+      "is_post": true,
+      "outcome": 51.13305,
+      "covariates": {
+        "precip_mm": 15.8,
+        "temp_c": 8.93,
+        "wind_speed_kmh": 12.573
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "in-zone urban-background stations (aggregate)",
+      "is_control": true,
+      "period": "2010-04",
+      "periods_since_intervention": 3,
+      "is_post": true,
+      "outcome": 27.82605,
+      "covariates": {
+        "precip_mm": 15.8,
+        "temp_c": 8.93,
+        "wind_speed_kmh": 12.573
+      }
+    }
+  ],
+  "effect": {
+    "central": -1.2428655973645468,
+    "std_dev": 2.925079576475068,
+    "interval": {
+      "level": 0.95,
+      "lower": -6.734582656718109,
+      "upper": 4.819648885795409
+    },
+    "quantiles": [
+      {
+        "p": 0.025,
+        "value": -6.734582656718109
+      },
+      {
+        "p": 0.05,
+        "value": -5.868086670327125
+      },
+      {
+        "p": 0.1,
+        "value": -4.877643244584455
+      },
+      {
+        "p": 0.25,
+        "value": -3.222401471355319
+      },
+      {
+        "p": 0.5,
+        "value": -1.3441198151303988
+      },
+      {
+        "p": 0.75,
+        "value": 0.6302736538462612
+      },
+      {
+        "p": 0.9,
+        "value": 2.5350839521269597
+      },
+      {
+        "p": 0.95,
+        "value": 3.7400240534078346
+      },
+      {
+        "p": 0.975,
+        "value": 4.819648885795409
+      }
+    ],
+    "samples": [
+      -9.150474515393665,
+      -8.060584904009836,
+      -7.5194367076031075,
+      -7.146798733532611,
+      -6.858388234618413,
+      -6.620990347977257,
+      -6.417975099262199,
+      -6.239784269719404,
+      -6.080400777624217,
+      -5.935782774299209,
+      -5.80307958365046,
+      -5.680202723160511,
+      -5.565574696911934,
+      -5.457973746987939,
+      -5.356433607687638,
+      -5.260176374975362,
+      -5.16856614797735,
+      -5.081076161074105,
+      -4.9972649432934375,
+      -4.916758677237375,
+      -4.839237913642755,
+      -4.764427408380861,
+      -4.692088238404827,
+      -4.622011608016212,
+      -4.554013927205286,
+      -4.4879328600024735,
+      -4.423624121435219,
+      -4.36095885859816,
+      -4.299821492107142,
+      -4.240107923804063,
+      -4.181724038340658,
+      -4.124584442456573,
+      -4.068611397938319,
+      -4.013733913489583,
+      -3.95988696782962,
+      -3.9070108418162253,
+      -3.855050541662048,
+      -3.8039552986693757,
+      -3.7536781335644394,
+      -3.704175475628106,
+      -3.655406828516419,
+      -3.6073344760328148,
+      -3.559923222224124,
+      -3.5131401610780344,
+      -3.466954471842125,
+      -3.4213372365963917,
+      -3.376261277217524,
+      -3.3317010092942105,
+      -3.287632310904333,
+      -3.244032404459573,
+      -3.2008797500710493,
+      -3.158153949099048,
+      -3.115835656727599,
+      -3.073906502555648,
+      -3.032349018325543,
+      -2.9911465720199004,
+      -2.9502833076526542,
+      -2.9097440901617038,
+      -2.869514454881025,
+      -2.8295805611310803,
+      -2.789929149519347,
+      -2.7505475025888115,
+      -2.711423408492493,
+      -2.6725451274071617,
+      -2.6339013604301975,
+      -2.5954812207305844,
+      -2.557274206748761,
+      -2.5192701772610473,
+      -2.481459328142842,
+      -2.4438321706811905,
+      -2.4063795113018083,
+      -2.3690924325885394,
+      -2.3319622754846927,
+      -2.2949806225758786,
+      -2.258139282363077,
+      -2.221430274442776,
+      -2.1848458155183,
+      -2.148378306172898,
+      -2.1120203183410213,
+      -2.0757645834194163,
+      -2.03960398096432,
+      -2.0035315279252695,
+      -1.9675403683697836,
+      -1.931623763656575,
+      -1.8957750830179605,
+      -1.859987794514891,
+      -1.8242554563304565,
+      -1.7885717083698784,
+      -1.7529302641370168,
+      -1.7173249028590902,
+      -1.6817494618329096,
+      -1.6461978289672738,
+      -1.6106639354973673,
+      -1.5751417488480763,
+      -1.539625265624041,
+      -1.5041085047050107,
+      -1.4685855004257609,
+      -1.4330502958203222,
+      -1.3974969359107017,
+      -1.3619194610205763,
+      -1.3263119000946268,
+      -1.2906682640042777,
+      -1.2549825388205824,
+      -1.2192486790348869,
+      -1.1834606007076371,
+      -1.1476121745254293,
+      -1.1116972187458867,
+      -1.075709492009445,
+      -1.0396426859963994,
+      -1.0034904179068374,
+      -0.9672462227400691,
+      -0.9309035453491641,
+      -0.8944557322449507,
+      -0.8578960231224737,
+      -0.8212175420813419,
+      -0.7844132885096837,
+      -0.7474761275994657,
+      -0.7103987804588008,
+      -0.6731738137844376,
+      -0.6357936290549888,
+      -0.5982504512024633,
+      -0.5605363167164168,
+      -0.5226430611313482,
+      -0.4845623058439744,
+      -0.44628544420249716,
+      -0.4078036268049976,
+      -0.3691077459385842,
+      -0.3301884190847507,
+      -0.29103597140957493,
+      -0.25164041714975594,
+      -0.2119914397970068,
+      -0.1720783709738416,
+      -0.13189016788319807,
+      -0.09141538920248038,
+      -0.050642169279345284,
+      -0.009558190471628758,
+      0.031849346542950796,
+      0.07359375468049545,
+      0.11568889480253508,
+      0.15814921274405258,
+      0.20098977928360962,
+      0.24422633335214905,
+      0.28787532881202393,
+      0.33195398517776176,
+      0.37648034269553676,
+      0.42147332225039946,
+      0.46695279062997785,
+      0.5129396317418522,
+      0.5594558244608192,
+      0.6065245278732772,
+      0.6541701747916331,
+      0.7024185745339737,
+      0.7512970261069756,
+      0.8008344430965024,
+      0.8510614917654773,
+      0.9020107440878735,
+      0.95371684771801,
+      1.0062167152143284,
+      1.0595497352167378,
+      1.113758008729798,
+      1.1688866142062375,
+      1.2249839057774987,
+      1.2821018497651444,
+      1.34029640556223,
+      1.399627958137875,
+      1.4601618108449888,
+      1.52196874896853,
+      1.5851256866290346,
+      1.6497164123703545,
+      1.7158324521648205,
+      1.783574072868666,
+      1.8530514546293033,
+      1.924386067755349,
+      1.997712298617452,
+      2.073179380952906,
+      2.150953704477372,
+      2.231221593342516,
+      2.3141926746930084,
+      2.400103995232154,
+      2.489225095512004,
+      2.581864323915952,
+      2.6783767745728992,
+      2.7791743805714546,
+      2.8847389093157068,
+      2.995638928704876,
+      3.112552304170652,
+      3.236296555315418,
+      3.3678706370724676,
+      3.508513761239188,
+      3.65979040061624,
+      3.8237169369381254,
+      4.002957297946047,
+      4.201138602879599,
+      4.423388398156751,
+      4.677312802477614,
+      4.974941095606756,
+      5.337085592652217,
+      5.805004640294461,
+      6.4822502930886206,
+      7.826323611704041
+    ],
+    "uncertainty_budget": {
+      "sampling": 6.95202340322084,
+      "specification": 1.604067125490722
+    }
+  },
+  "dossier": {
+    "density": {
+      "method": "",
+      "passed": false
+    },
+    "its": {
+      "no_anticipation": {
+        "method": "no-anticipation placebo break 6 months before the instant (should be ≈0)",
+        "statistic": 2.5559334579973507,
+        "passed": true,
+        "detail": "placebo break at 2009-07: 2.556 µg/m³ (se 1.947, assessed=true): meets"
+      },
+      "control_parallelism": {
+        "method": "pre-period parallel-trends slope of the treated-minus-control difference",
+        "statistic": 0.0018756413043479123,
+        "passed": true,
+        "detail": "pre-trend slope 0.0019 µg/m³ per month (se 0.1930, n_pre=24): difference is statistically flat; a stable non-zero pre-trend is carried by the segmented model's linear term and validated by the placebo battery"
+      },
+      "placebo_dates": [
+        {
+          "date": "2008-09",
+          "estimate": -0.18353809334691296,
+          "std_err": 1.0830128141456075,
+          "passed": true
+        },
+        {
+          "date": "2009-01",
+          "estimate": -3.0164661927890264,
+          "std_err": 3.070153116893251,
+          "passed": true
+        },
+        {
+          "date": "2009-05",
+          "estimate": -3.6012208287014937,
+          "std_err": 2.9671506925596693,
+          "passed": true
+        }
+      ],
+      "window_sweep": [
+        {
+          "param": -156,
+          "estimate": -2.363622204442566,
+          "std_err": 2.1726456962291087
+        },
+        {
+          "param": -150,
+          "estimate": -2.9169824381321163,
+          "std_err": 2.340084302521269
+        }
+      ],
+      "transition_exclusion": [
+        {
+          "param": 0,
+          "estimate": -2.363622204442566,
+          "std_err": 2.1726456962291087
+        }
+      ],
+      "autocorrelation": {
+        "method": "Newey-West HAC (Bartlett, lag 4)",
+        "statistic": 0.13891608077486112,
+        "passed": true,
+        "detail": "lag-1 residual autocorrelation 0.139, absorbed by HAC standard errors"
+      },
+      "admitted": true,
+      "notes": "Controlled ITS: model average over 16 specs (pre-window × harmonics × level/slope × meteorology) on the treated-minus-control monthly NO2 difference, Newey-West HAC (Bartlett lag 4) within each. Honest 95% interval [-6.735, 4.820] (sd 2.925) decomposes into sampling sd 2.637 and identification sd 1.267. Plug-in single-spec interval [-6.622, 1.895] (sd 2.173) is narrower because it ignores between-spec identification uncertainty. Treated = 2 in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban; control = 4 in-zone urban-background stations kept after pre-trend matching (0 dropped: []). Effect is the extra change in treated roadside NO2 net of the control series over 24 post months (2010-01..2011-12). Meteorology-adjusted refit shifts the effect to -1.147 (Δ1.217), confirming the control series already absorbs most short-window dispersion. Checks: control parallelism meets, no-anticipation meets, placebo dates meets. REGIME CAVEAT: Pinned to the Berlin Umweltzone stage 2 (green-sticker Euro-4-diesel BAN inside the S-Bahn Ring). This is a standard-BAN low-emission zone — kept SEPARATE from charge-type zones (London ULEZ) for any future bridge. Germany's 2009 Umweltprämie scrappage scheme falls in the pre-window but is national, so the controlled difference nets it out."
+    },
+    "admitted": true,
+    "notes": "Controlled ITS: model average over 16 specs (pre-window × harmonics × level/slope × meteorology) on the treated-minus-control monthly NO2 difference, Newey-West HAC (Bartlett lag 4) within each. Honest 95% interval [-6.735, 4.820] (sd 2.925) decomposes into sampling sd 2.637 and identification sd 1.267. Plug-in single-spec interval [-6.622, 1.895] (sd 2.173) is narrower because it ignores between-spec identification uncertainty. Treated = 2 in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban; control = 4 in-zone urban-background stations kept after pre-trend matching (0 dropped: []). Effect is the extra change in treated roadside NO2 net of the control series over 24 post months (2010-01..2011-12). Meteorology-adjusted refit shifts the effect to -1.147 (Δ1.217), confirming the control series already absorbs most short-window dispersion. Checks: control parallelism meets, no-anticipation meets, placebo dates meets. REGIME CAVEAT: Pinned to the Berlin Umweltzone stage 2 (green-sticker Euro-4-diesel BAN inside the S-Bahn Ring). This is a standard-BAN low-emission zone — kept SEPARATE from charge-type zones (London ULEZ) for any future bridge. Germany's 2009 Umweltprämie scrappage scheme falls in the pre-window but is national, so the controlled difference nets it out."
+  },
+  "provenance": {
+    "sources": [
+      {
+        "source_id": "berlin-lez-no2",
+        "title": "Berlin monthly-mean NO2 panel for the Umweltzone stage-2 controlled-ITS (in-zone traffic + in-zone urban-background stations), 2008-01 to 2011-12, from the EEA historical (AirBase) archive",
+        "publisher": "European Environment Agency (EEA) — Air Quality Download Service (historical/AirBase); measurements reported by Germany (Umweltbundesamt / Berlin Senate BLUME network)",
+        "download_uri": "https://eeadmz1-downloads-api-appservice.azurewebsites.net/ParquetFile/urls",
+        "landing_page": "https://aqportal.discomap.eea.europa.eu/download-data/",
+        "retrieved_at": "",
+        "licence": "CC BY 4.0 (EEA); air quality measurements reported by Germany (UBA / Berlin Senate)",
+        "sha256": "a2aedbd13aac4065bdc08461ff0e9a978d25d83550cade5f37ee5a19f7beec67",
+        "vintage": "EEA historical (AirBase, 2000-2012) air quality, hourly NO2 aggregated to monthly means over 2008-01..2011-12, one row per (station, month). Treated = in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (DEBE065 Frankfurter Allee, DEBE067 Hardenbergplatz); control = in-zone urban-background stations (DEBE010 Wedding, DEBE018 Schoeneberg, DEBE034 Neukoelln, DEBE068 Mitte). Each row carries the monthly-mean NO2 (ug/m3) and the number of valid hours (Validity==1, Value\u003e0; -999 is the missing sentinel)."
+      },
+      {
+        "source_id": "berlin-lez-meteo",
+        "title": "Central-Berlin monthly meteorology (temperature, wind speed + direction components, precipitation) for the Umweltzone controlled-ITS, 2008-01 to 2011-12",
+        "publisher": "Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service)",
+        "download_uri": "https://archive-api.open-meteo.com/v1/archive",
+        "landing_page": "https://open-meteo.com/en/docs/historical-weather-api",
+        "retrieved_at": "",
+        "licence": "CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5)",
+        "sha256": "54957b0b1d6ceea1a8b5910dad5fc84f802b802d3b6c33440d7bd3032f75d004",
+        "vintage": "Open-Meteo historical-weather (ERA5) archive for a central-Berlin point (52.52, 13.405), daily values aggregated to monthly means: temperature_2m_mean (C), wind_speed_10m_mean (km/h), direction-resolved wind components u/v (km/h), precipitation_sum (mm). One row per month over 2008-01..2011-12."
+      }
+    ],
+    "context_asof": "2009-12-31",
+    "decision_timestamp": "2010-01-01",
+    "outcome_timestamp": "2011-12-28",
+    "running_variable_vintage": "LAQN ratified hourly NO2 aggregated to monthly means, harvest window 2008-01..2011-12",
+    "decision_round": "Berlin Umweltzone stage 2, 1 January 2010",
+    "tool_versions": {
+      "go": "go1.25.2",
+      "its": "controlled-segmented-regression,newey-west-lag=4,specs=16",
+      "openaction2outcome": "0.5.0"
+    },
+    "outcome_realized": true
+  }
+}

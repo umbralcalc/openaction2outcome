@@ -49,7 +49,20 @@ d=json.load(open('datasets/episodes.manifest.json')); base='$BASE'; bucket='$BUC
 for m in d.get('marks',[]):
     print(m['mark_id']+chr(9)+bucket+'/'+m['uri'][len(base)+1:])")
   echo ">> mirroring frozen inputs     -> ${REMOTE}:${BUCKET}/raw"
-  rclone copy data/cache "${REMOTE}:${BUCKET}/raw" --progress
+  # Upload ONLY the inputs that a committed SOURCE.json points at — i.e. successful
+  # marks' frozen data. This deliberately does NOT blanket-copy data/cache, so local
+  # scratch (resumable-harvest _partial dirs) and the inputs of shelved/unsuccessful
+  # seams (documented only under research/) are never published.
+  while IFS=$'\t' read -r src key; do
+    if [ -f "$src" ]; then
+      rclone copyto "$src" "${REMOTE}:${key}" --progress
+    else
+      echo "warning: ${src} not cached — run \`make fetch\` first (skipping)" >&2
+    fi
+  done < <(python3 -c "import glob,json
+for p in sorted(glob.glob('data/raw/*/SOURCE.json')):
+    d=json.load(open(p))
+    print('data/cache/'+d['source_id']+'/'+d['local_path']+chr(9)+'$BUCKET'+'/'+d['r2_object_key'])")
 fi
 
 echo ">> verifying published artifacts resolve and match recorded hashes"

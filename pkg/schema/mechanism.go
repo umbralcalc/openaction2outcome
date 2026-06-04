@@ -79,6 +79,16 @@ var canonicalMechanisms = map[string]Mechanism{
 		PopulationDefinition: "designated bathing waters in England",
 		Regime:               "rBWD (2015–) classification",
 	},
+	"lez-ban-stringency-to-roadside-no2": {
+		ID:                   "lez-ban-stringency-to-roadside-no2",
+		Name:                 "LEZ ban stringency → roadside NO2",
+		Domain:               "Environment",
+		Description:          "Standard-BAN low-emission zones (non-compliant vehicles prohibited, not charged) and their effect on roadside NO2 — kept SEPARATE from charge-type zones (London ULEZ) so a future bridge interpolates within a coherent mechanism. First anchor: Berlin Umweltzone stage 2 (2010, green-sticker Euro-4-diesel ban inside the S-Bahn Ring). NOTE: LEZ effects on NO2 are known to be modest (the Euro-standard upgrades cut particulates/soot far more than NOx, since real-world diesel NOx stayed high through Euro 4/5), so anchors on this mechanism may carry near-null central effects with honest wide intervals — a valid causal result.",
+		PolicyVariable:       "emission-zone ban stringency at a sharp switch-on instant (time / dose)",
+		OutcomeConstruct:     "roadside NO2 concentration relative to an urban-background control series",
+		PopulationDefinition: "roadside air-quality monitoring stations within the zone's airshed",
+		Regime:               "standard-based low-emission zone (ban on non-compliant vehicles)",
+	},
 }
 
 // MechanismByID returns the canonical mechanism for an id, or false if unknown.
