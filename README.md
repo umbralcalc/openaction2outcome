@@ -188,7 +188,9 @@ Three series so far:
 
 ## Licensing
 
-Code and schema: MIT (see [LICENSE](LICENSE)). The underlying data is UK public
-sector information (© Crown copyright) under the
-[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/);
-each input records its own licence in `data/raw/<id>/SOURCE.json`.
+Code and schema: MIT (see [LICENSE](LICENSE)). The underlying data is open but
+licensed per source: UK public sector information (© Crown copyright) under the
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/),
+and European Environment Agency air-quality data plus Open-Meteo (ERA5/Copernicus)
+weather data under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each
+input records its own licence and required attribution in `data/raw/<id>/SOURCE.json`.

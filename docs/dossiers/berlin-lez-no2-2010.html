@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>berlin-lez-no2-2010 · openaction2outcome</title>
+<link rel="icon" href="../assets/logo.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html">
+    <img src="../assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a><a href="../downloads.html">Datasets</a><a href="../schema.html">Schema</a><a href="../dossiers/index.html" class="current">Dossiers</a><a href="../changelog.html">Changelog</a>
+    <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
+    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+<h1 id="berlin-lez-no2-2010">berlin-lez-no2-2010</h1>
+<p><strong>Category:</strong> identified (design-based truth — a pin)  ·  <strong>Series:</strong> berlin-lez-no2  ·  <strong>Domain:</strong> Environment  ·  <strong>Unit:</strong> air-quality-monitoring-station  ·  <strong>Design:</strong> controlled interrupted time series  ·  <strong>Status:</strong> ADMITTED</p>
+<blockquote>
+<p>The estimand is a <strong>population</strong> effect accumulated over the post-intervention window, not a local-at-cutoff effect. Its decision scores are never pooled with RDD marks.</p>
+</blockquote>
+<h2 id="the-decision">The decision</h2>
+<ul>
+<li><strong>Action:</strong> Berlin Umweltzone stage 2 (1 Jan 2010): a green emissions sticker (Euro-4 diesel / Euro-1 petrol) became mandatory to drive inside the S-Bahn Ring — older non-compliant vehicles banned (not charged).</li>
+<li><strong>Alternative:</strong> Roads outside the Umweltzone (outside the S-Bahn Ring): no emissions-sticker requirement.</li>
+<li><strong>Outcome:</strong> no2_concentration — Monthly-mean NO2 concentration at the monitoring station (µg/m³)</li>
+<li><strong>Estimand:</strong> Population effect over the post-intervention window (2010-01 to 2011-12, pre-COVID): the change in in-zone roadside NO2, net of an in-zone urban-background control series sharing the pre-intervention trend.</li>
+<li><strong>Intervention instant:</strong> 2010-01-01 (time axis: month, units month)</li>
+<li><strong>Pre-window:</strong> 2008-01 → 2009-12</li>
+<li><strong>Post-window:</strong> 2010-01 → 2011-12</li>
+<li><strong>Counterfactual:</strong> segmented-regression on the treated-minus-control difference, seasonality: harmonic terms at the 12-month period (1–2 pairs across specs) — The difference of treated and control roadside NO2 nets out the shared regional/meteorological trend and most seasonality; a segmented regression on that difference reads the policy break (level + optional slope) against the extrapolated pre-trend, with residual seasonality carried by harmonic terms and serial correlation handled by Newey-West HAC errors.</li>
+<li><strong>Control series:</strong> berlin-lez-no2 (parallel-trend) — In-zone urban-background stations share the treated traffic stations' airshed and pre-intervention trend but receive far weaker DIRECT kerbside-traffic treatment, so their series is the counterfactual for the regional/meteorological component of in-zone NO2.</li>
+</ul>
+<h2 id="the-effect">The effect</h2>
+<p><strong>-1.2429</strong> with a 95% interval of <strong>[-6.7346, 4.8196]</strong>.</p>
+<p>The interval width separates into two sources:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>source</th>
+<th>standard deviation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sampling (finite data)</td>
+<td>2.6367</td>
+</tr>
+<tr>
+<td>identification (bandwidth / order / kernel choice)</td>
+<td>1.2665</td>
+</tr>
+<tr>
+<td><strong>total</strong></td>
+<td><strong>2.9251</strong></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="validity-checks">Validity checks</h2>
+<p><strong>No anticipation (no pre-trend break / forestalling):</strong> pass — no-anticipation placebo break 6 months before the instant (should be ≈0)</p>
+<p><strong>Control parallelism (shared pre-intervention trend):</strong> pass — pre-period parallel-trends slope of the treated-minus-control difference</p>
+<p><strong>Placebo dates</strong> (effect should vanish at fake pre-period dates):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>placebo date</th>
+<th>estimate</th>
+<th>indistinguishable from zero</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2008-09</td>
+<td>-0.1835</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>2009-01</td>
+<td>-3.0165</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>2009-05</td>
+<td>-3.6012</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Window sweep</strong> (estimate vs pre/post window length):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>window length</th>
+<th>estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-156</td>
+<td>-2.3636</td>
+</tr>
+<tr>
+<td>-150</td>
+<td>-2.9170</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Transition exclusion</strong> (re-estimate after dropping the implementation ramp):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ramp width</th>
+<th>estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>-2.3636</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Autocorrelation modelled (Newey-West / ARMA errors):</strong> pass — Newey-West HAC (Bartlett, lag 4)</p>
+<p><strong>Notes.</strong> Controlled ITS: model average over 16 specs (pre-window × harmonics × level/slope × meteorology) on the treated-minus-control monthly NO2 difference, Newey-West HAC (Bartlett lag 4) within each. Honest 95% interval [-6.735, 4.820] (sd 2.925) decomposes into sampling sd 2.637 and identification sd 1.267. Plug-in single-spec interval [-6.622, 1.895] (sd 2.173) is narrower because it ignores between-spec identification uncertainty. Treated = 2 in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban; control = 4 in-zone urban-background stations kept after pre-trend matching (0 dropped: []). Effect is the extra change in treated roadside NO2 net of the control series over 24 post months (2010-01..2011-12). Meteorology-adjusted refit shifts the effect to -1.147 (Δ1.217), confirming the control series already absorbs most short-window dispersion. Checks: control parallelism meets, no-anticipation meets, placebo dates meets. REGIME CAVEAT: Pinned to the Berlin Umweltzone stage 2 (green-sticker Euro-4-diesel BAN inside the S-Bahn Ring). This is a standard-BAN low-emission zone — kept SEPARATE from charge-type zones (London ULEZ) for any future bridge. Germany's 2009 Umweltprämie scrappage scheme falls in the pre-window but is national, so the controlled difference nets it out.</p>
+<h2 id="data">Data</h2>
+<p>The analysis-ready panel rows (one per series × time bucket) live in the single published <code>episodes</code> dataset, alongside every other mark's rows. Recover this mark's rows by filtering on <code>mark_id == &quot;berlin-lez-no2-2010&quot;</code>; the row shape is <code>panel</code>. The dataset's download URL and content hash are in <code>datasets/episodes.manifest.json</code>.</p>
+<ul>
+<li><strong>Covariates (state):</strong> wind_speed_kmh, temp_c, precip_mm</li>
+</ul>
+<h2 id="provenance">Provenance</h2>
+<p>Point-in-time order: context as-of <code>2009-12-31</code> ≤ decision <code>2010-01-01</code> &lt; outcome <code>2011-12-28</code>.</p>
+<p><strong>Sources:</strong></p>
+<ul>
+<li>Berlin monthly-mean NO2 panel for the Umweltzone stage-2 controlled-ITS (in-zone traffic + in-zone urban-background stations), 2008-01 to 2011-12, from the EEA historical (AirBase) archive — European Environment Agency (EEA) — Air Quality Download Service (historical/AirBase); measurements reported by Germany (Umweltbundesamt / Berlin Senate BLUME network). Licence: CC BY 4.0 (EEA); air quality measurements reported by Germany (UBA / Berlin Senate). SHA-256 <code>a2aedbd13aac4065bdc08461ff0e9a978d25d83550cade5f37ee5a19f7beec67</code>.</li>
+<li>Central-Berlin monthly meteorology (temperature, wind speed + direction components, precipitation) for the Umweltzone controlled-ITS, 2008-01 to 2011-12 — Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service). Licence: CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5). SHA-256 <code>54957b0b1d6ceea1a8b5910dad5fc84f802b802d3b6c33440d7bd3032f75d004</code>.</li>
+</ul>
+<p><strong>Reproducibility:</strong> go go1.25.2, its controlled-segmented-regression,newey-west-lag=4,specs=16, openaction2outcome 0.5.0. The mark and its data table re-mint byte-for-byte from the frozen inputs.</p>
+
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data is open but licensed per source: UK public sector
+     information (© Crown copyright) under the
+     <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>;
+     European Environment Agency air-quality data and Open-Meteo (ERA5/Copernicus) weather data under
+     <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Each input's exact licence and
+     attribution are recorded in its <code>SOURCE.json</code> and in the mark's provenance.</p>
+  <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>

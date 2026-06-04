@@ -4,6 +4,42 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.9.0 — 2026-06-04
+
+Lands the **first controlled-ITS mark**: `berlin-lez-no2-2010` — the Berlin Umweltzone
+stage-2 (1 Jan 2010, green-sticker Euro-4-diesel **ban** inside the S-Bahn Ring) on
+roadside NO₂. It is the first identified anchor on a new `lez-ban-stringency-to-roadside-no2`
+mechanism, kept deliberately **separate** from charge-type zones (London ULEZ) so a future
+bridge interpolates a coherent mechanism. Effect **−1.2 µg/m³, honest 95% interval
+[−6.7, +4.8]** — a near-null with a wide interval: the honest reading that a standard-ban
+LEZ moved roadside NO₂ little (the Euro-standard upgrades cut particulates/soot far more
+than NOₓ). It is admitted because its validity battery is clean (a flat in-zone-traffic-
+minus-background pre-trend → clean placebos), demonstrating that a wide honest interval
+around a null is information, not a failure.
+
+- **`internal/its`**: new controlled-ITS estimator — a segmented regression on the
+  treated−control monthly difference with Newey-West (Bartlett) HAC standard errors and a
+  model-averaged honest interval (pre-window × seasonal harmonics × level/slope ×
+  meteorology), mirroring the RDD marks' bandwidth×order×kernel averaging. Synthetic-truth
+  tested (recovers a known break; the interval covers and decomposes into sampling +
+  identification variance; placebos clean).
+- **`internal/series`**: an event-parametrised LEZ→NO₂ builder (`ulezEvent`) driving the
+  Berlin mark, with pre-trend control matching, a placebo-adequacy guard, and the ITS
+  validity battery (parallelism, no-anticipation, placebo dates, window sweep,
+  meteorology-adjusted-vs-unadjusted, autocorrelation). Admission gates on the
+  manufactured-break guards (placebos + no-anticipation), not on a flat pre-trend.
+- **`internal/ingest/laqn.go`**: a monthly NO₂-panel + meteorology loader (shared by the
+  London and Berlin harvests).
+- **data**: `data/raw/berlin-lez-no2` (EEA historical/AirBase hourly NO₂ → monthly,
+  **CC BY 4.0**) + `data/raw/berlin-lez-meteo` (Open-Meteo ERA5, CC BY 4.0). Harvested by
+  `scripts/berlin_lez_harvest.py` (EEA Air Quality Download Service → per-station parquet),
+  hash-pinned and frozen. Window 2008–2011, **pre-COVID**.
+- **London ULEZ → NO₂ shelved** as a declared seam (`emission-zone-stringency-to-roadside-no2`,
+  no admitted anchor): the 2023 and 2019 events were built and run, but COVID and a curved
+  pre-trend defeat clean identification, and the confounder series that would rescue it is
+  only in non-OGL scanned PDFs. See `research/2026-06-04-ulez-no2-its-covid-confound.md`.
+  The build is wired (`--series ulez-no2`) and reproducible but excluded from `build-all`.
+
 ## v1.8.0 — 2026-06-03
 
 Adds **controlled interrupted time series (ITS)** as a second identification strategy

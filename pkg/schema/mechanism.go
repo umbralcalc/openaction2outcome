@@ -79,6 +79,26 @@ var canonicalMechanisms = map[string]Mechanism{
 		PopulationDefinition: "designated bathing waters in England",
 		Regime:               "rBWD (2015–) classification",
 	},
+	"emission-zone-stringency-to-roadside-no2": {
+		ID:                   "emission-zone-stringency-to-roadside-no2",
+		Name:                 "Emission-zone stringency → roadside NO2",
+		Domain:               "Environment",
+		Description:          "Low-emission-zone stringency and its effect on roadside NO2: switching on an emission zone restricts non-compliant vehicles and should cut kerbside NO2. The London ULEZ expansions (central 2019, inner 2021, London-wide 2023) and European city LEZs would be anchors at different stringency/coverage points on ONE policy axis. DECLARED SEAM, NO ADMITTED ANCHOR YET: the controlled-ITS build (internal/series/ulezno2.go) was implemented and run on real LAQN data for both the 2019 and 2023 London events, but neither cleanly identifies — COVID contaminates the entire usable window (the 2019 post-period has only ~10 months before the Mar-2020 traffic collapse; the 2023 pre-period IS the post-COVID rebound, whose nonlinear curvature the placebo battery correctly flags). The plug-in effect is negative (~-5 to -6 ug/m3 for 2019, consistent with the literature) but is not robust to the counterfactual trend specification, so the honest model-averaged interval spans zero and the marks are reported-but-not-admitted. A pre-COVID European LEZ (Berlin Umweltzone, Milan Area C) would be the cleaner first anchor; see research/2026-06-04-ulez-no2-its-covid-confound.md.",
+		PolicyVariable:       "emission-zone stringency/coverage at a sharp switch-on instant (time / dose)",
+		OutcomeConstruct:     "roadside NO2 concentration relative to an urban-background control series",
+		PopulationDefinition: "roadside air-quality monitoring stations within the zone's airshed",
+		Regime:               "standard-based low-emission zone (daily charge for non-compliant vehicles)",
+	},
+	"lez-ban-stringency-to-roadside-no2": {
+		ID:                   "lez-ban-stringency-to-roadside-no2",
+		Name:                 "LEZ ban stringency → roadside NO2",
+		Domain:               "Environment",
+		Description:          "Standard-BAN low-emission zones (non-compliant vehicles prohibited, not charged) and their effect on roadside NO2 — kept SEPARATE from charge-type zones (London ULEZ) so a future bridge interpolates within a coherent mechanism. First anchor: Berlin Umweltzone stage 2 (2010, green-sticker Euro-4-diesel ban inside the S-Bahn Ring). NOTE: LEZ effects on NO2 are known to be modest (the Euro-standard upgrades cut particulates/soot far more than NOx, since real-world diesel NOx stayed high through Euro 4/5), so anchors on this mechanism may carry near-null central effects with honest wide intervals — a valid causal result.",
+		PolicyVariable:       "emission-zone ban stringency at a sharp switch-on instant (time / dose)",
+		OutcomeConstruct:     "roadside NO2 concentration relative to an urban-background control series",
+		PopulationDefinition: "roadside air-quality monitoring stations within the zone's airshed",
+		Regime:               "standard-based low-emission zone (ban on non-compliant vehicles)",
+	},
 }
 
 // MechanismByID returns the canonical mechanism for an id, or false if unknown.

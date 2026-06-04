@@ -1,0 +1,17 @@
+{
+  "source_id": "berlin-lez-no2",
+  "title": "Berlin monthly-mean NO2 panel for the Umweltzone stage-2 controlled-ITS (in-zone traffic + in-zone urban-background stations), 2008-01 to 2011-12, from the EEA historical (AirBase) archive",
+  "publisher": "European Environment Agency (EEA) — Air Quality Download Service (historical/AirBase); measurements reported by Germany (Umweltbundesamt / Berlin Senate BLUME network)",
+  "landing_page": "https://aqportal.discomap.eea.europa.eu/download-data/",
+  "download_uri": "https://eeadmz1-downloads-api-appservice.azurewebsites.net/ParquetFile/urls",
+  "r2_object_key": "raw/berlin-lez-no2/berlin_no2_monthly.csv",
+  "local_path": "berlin_no2_monthly.csv",
+  "sha256": "a2aedbd13aac4065bdc08461ff0e9a978d25d83550cade5f37ee5a19f7beec67",
+  "bytes": 25209,
+  "format": "csv",
+  "licence": "CC BY 4.0 (EEA); air quality measurements reported by Germany (UBA / Berlin Senate)",
+  "licence_uri": "https://www.eea.europa.eu/legal/copyright",
+  "vintage": "EEA historical (AirBase, 2000-2012) air quality, hourly NO2 aggregated to monthly means over 2008-01..2011-12, one row per (station, month). Treated = in-zone (S-Bahn Ring) traffic stations subject to the 2010 Umweltzone stage-2 ban (DEBE065 Frankfurter Allee, DEBE067 Hardenbergplatz); control = in-zone urban-background stations (DEBE010 Wedding, DEBE018 Schoeneberg, DEBE034 Neukoelln, DEBE068 Mitte). Each row carries the monthly-mean NO2 (ug/m3) and the number of valid hours (Validity==1, Value>0; -999 is the missing sentinel).",
+  "role": "outcome-and-treatment-panel",
+  "notes": "The EEA Air Quality Download Service serves historical (pre-2013, AirBase) data as one Azure-blob parquet per sampling point (hourly, 1995-2012). This canonical file was assembled once by scripts/berlin_lez_harvest.py (per-station parquet -> valid-hour filter -> monthly mean). The Go build reads only this frozen, hash-pinned file. LIMITATION: only two in-zone traffic NO2 stations have historical EEA coverage of 2008-2011 (the pre-2013 Berlin traffic network was small), so the treated aggregate is thin and the honest interval is correspondingly wide."
+}

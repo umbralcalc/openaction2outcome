@@ -80,8 +80,8 @@
   <h3>Marks <span class="badge">metadata</span></h3>
   <p>One JSON per decision: the design, the effect distribution, the validity dossier, and provenance.
      The full nested marks live in git.</p>
-  <p class="meta">3 marks · 19.6 KB zipped<br>
-     SHA-256 <code>833b4e030e2ba1a0fb3f03e76de1588a75d2b26202daa9173f011d53a96def6b</code></p>
+  <p class="meta">4 marks · 26.4 KB zipped<br>
+     SHA-256 <code>d46be1f37fc5f20198631390aa7aceae8d8a12af38895e5daf1cf3c6fd9b34bc</code></p>
   <div class="actions">
     <a class="btn" href="downloads/marks.zip">Download all marks (zip)</a>
     <a class="btn secondary" href="https://github.com/umbralcalc/openaction2outcome/tree/main/marks">Browse on GitHub</a>
@@ -119,6 +119,22 @@ ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</c
       <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
       <td>150.0 KB</td>
       <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/bathing-water-samples-2015-2024/bathing_water_samples.csv">download</a> · <a href="https://environment.data.gov.uk/data/bathing-water-quality/">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Central-Berlin monthly meteorology (temperature, wind speed &#43; direction components, precipitation) for the Umweltzone controlled-ITS, 2008-01 to 2011-12<br><code>berlin-lez-meteo</code></td>
+      <td>Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service)</td>
+      <td><a href="https://open-meteo.com/en/license">CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5)</a></td>
+      <td>2.2 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/berlin-lez-meteo/berlin_meteo_monthly.csv">download</a> · <a href="https://archive-api.open-meteo.com/v1/archive">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Berlin monthly-mean NO2 panel for the Umweltzone stage-2 controlled-ITS (in-zone traffic &#43; in-zone urban-background stations), 2008-01 to 2011-12, from the EEA historical (AirBase) archive<br><code>berlin-lez-no2</code></td>
+      <td>European Environment Agency (EEA) — Air Quality Download Service (historical/AirBase); measurements reported by Germany (Umweltbundesamt / Berlin Senate BLUME network)</td>
+      <td><a href="https://www.eea.europa.eu/legal/copyright">CC BY 4.0 (EEA); air quality measurements reported by Germany (UBA / Berlin Senate)</a></td>
+      <td>24.6 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/berlin-lez-no2/berlin_no2_monthly.csv">download</a> · <a href="https://eeadmz1-downloads-api-appservice.azurewebsites.net/ParquetFile/urls">original</a></td>
     </tr>
   
     <tr>
@@ -161,14 +177,50 @@ ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</c
       <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/shmi-historical-oct24-sep25/SHMI_data_Oct24-Sep25.zip">download</a> · <a href="https://files.digital.nhs.uk/9E/F90BCF/SHMI%20data%2C%20Oct24-Sep25.zip">original</a></td>
     </tr>
   
+    <tr>
+      <td>London Air Quality Network monthly-mean NO2 panel for the ULEZ controlled-ITS (treated outer-London roadside/kerbside &#43; control urban-background/suburban stations), 2021-09 to 2026-04<br><code>ulez-no2-laqn</code></td>
+      <td>London Air Quality Network (Imperial College London / King&#39;s College London ERG)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>156.4 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/ulez-no2-laqn/laqn_no2_monthly.csv">download</a> · <a href="https://api.erg.ic.ac.uk/AirQuality/Data/SiteSpecies/">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>London Air Quality Network monthly-mean NO2 panel for the 2019 central-ULEZ controlled-ITS (treated central congestion-charge-zone roadside &#43; control outer-London roadside stations), 2017-01 to 2020-06<br><code>ulez-no2-laqn-2019</code></td>
+      <td>London Air Quality Network (Imperial College London / King&#39;s College London ERG)</td>
+      <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
+      <td>108.0 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/ulez-no2-laqn-2019/laqn_no2_monthly.csv">download</a> · <a href="https://api.erg.ic.ac.uk/AirQuality/Data/SiteSpecies/">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Central-London monthly meteorology (temperature, wind speed &#43; direction components, precipitation) for the ULEZ controlled-ITS, 2021-09 to 2026-04<br><code>ulez-no2-meteo</code></td>
+      <td>Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service)</td>
+      <td><a href="https://open-meteo.com/en/license">CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5)</a></td>
+      <td>2.5 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/ulez-no2-meteo/laqn_meteo_monthly.csv">download</a> · <a href="https://archive-api.open-meteo.com/v1/archive">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Central-London monthly meteorology (temperature, wind speed &#43; direction components, precipitation) for the 2019 central-ULEZ controlled-ITS, 2017-01 to 2020-06<br><code>ulez-no2-meteo-2019</code></td>
+      <td>Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service)</td>
+      <td><a href="https://open-meteo.com/en/license">CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5)</a></td>
+      <td>1.9 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/ulez-no2-meteo-2019/laqn_meteo_monthly.csv">download</a> · <a href="https://archive-api.open-meteo.com/v1/archive">original</a></td>
+    </tr>
+  
   </tbody>
 </table>
 </div>
 
 </main>
 <footer class="site-footer">
-  <p>Code &amp; schema: MIT. Underlying data: UK public sector information (© Crown copyright)
-     under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</p>
+  <p>Code &amp; schema: MIT. Underlying data is open but licensed per source: UK public sector
+     information (© Crown copyright) under the
+     <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>;
+     European Environment Agency air-quality data and Open-Meteo (ERA5/Copernicus) weather data under
+     <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Each input's exact licence and
+     attribution are recorded in its <code>SOURCE.json</code> and in the mark's provenance.</p>
   <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
 </footer>
 </body>

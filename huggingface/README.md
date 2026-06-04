@@ -179,12 +179,16 @@ carry that identification uncertainty so the gap is measurable.
 
 ## Provenance & licence
 
-Built from UK open data (© Crown copyright) under the
-[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/):
-DfE Key Stage 4 performance tables and NHS England SHMI. Each mark records its
-sources, licences, and point-in-time timestamps (`context_asof ≤ decision <
-outcome`). The schema and scorer are MIT-licensed. Marks are minted
-**deterministically** — same inputs, same bytes out.
+Built from open data, licensed per source. UK public sector inputs (© Crown
+copyright) — DfE Key Stage 4 performance tables, NHS England SHMI, and Environment
+Agency bathing-water classifications — are under the
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/);
+European Environment Agency air-quality data and Open-Meteo (ERA5/Copernicus)
+weather data are under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Each mark records its sources, their exact licences and required attribution, and
+point-in-time timestamps (`context_asof ≤ decision < outcome`). The schema and
+scorer are MIT-licensed. Marks are minted **deterministically** — same inputs,
+same bytes out.
 
 - Code, full marks, dossiers, and scorer: <https://github.com/umbralcalc/openaction2outcome>
 - Per-mark validity dossiers: [dossiers/](https://github.com/umbralcalc/openaction2outcome/tree/main/dossiers)

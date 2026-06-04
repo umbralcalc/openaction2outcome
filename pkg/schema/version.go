@@ -23,6 +23,8 @@ const (
 	SeriesFloorStandards Series = "floor-standards" // school × performance floor
 	SeriesSHMI           Series = "shmi"            // NHS trust × mortality banding (fuzzy)
 	SeriesBathingWater   Series = "bathing-water"   // designated bathing water × Poor/Sufficient classification (sharp)
+	SeriesULEZNO2        Series = "ulez-no2"        // London ULEZ expansion × roadside NO2 (controlled ITS)
+	SeriesBerlinLEZ      Series = "berlin-lez-no2"  // Berlin Umweltzone × roadside NO2 (controlled ITS)
 )
 
 // RDDType distinguishes sharp assignment (crossing the cutoff deterministically
