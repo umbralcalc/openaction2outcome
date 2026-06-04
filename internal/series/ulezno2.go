@@ -512,6 +512,14 @@ func eventTag(ev ulezEvent) string {
 	return "2023"
 }
 
+// passFail renders a boolean check verdict as "pass"/"FAIL".
+func passFail(ok bool) string {
+	if ok {
+		return "pass"
+	}
+	return "FAIL"
+}
+
 // pickInt returns v if non-zero, else def.
 func pickInt(v, def int) int {
 	if v != 0 {

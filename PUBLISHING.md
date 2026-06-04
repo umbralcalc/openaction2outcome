@@ -44,7 +44,13 @@ second dataset, but they live in git, not object storage.)
    secret_access_key = <R2_SECRET_ACCESS_KEY>
    endpoint = https://<ACCOUNT_ID>.r2.cloudflarestorage.com
    acl = private
+   no_check_bucket = true
    ```
+   `no_check_bucket = true` is required for Cloudflare R2: without it, rclone calls
+   `CreateBucket` before writing each *new* object, which a bucket-scoped R2 API token
+   rejects with `403 AccessDenied` (existing objects still upload, so the failure only
+   shows up the first time you publish a newly-minted mark). Add it to an existing remote
+   with `rclone config update r2 no_check_bucket true`.
 
 ## Mint → stage → upload
 
