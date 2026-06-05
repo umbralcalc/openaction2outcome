@@ -31,7 +31,7 @@
      that followed. Published <strong>per mark</strong> as a gzipped CSV; join its rows to the mark JSON on the mark id
      for the design and the full effect distribution. (RDD/DiD marks ship a <code>cross-section</code> row per unit;
      ITS marks ship a <code>panel</code> row per series &times; time bucket.)</p>
-  <p class="meta">4167 rows total across 4 marks · one gzipped CSV per mark<br>
+  <p class="meta">4297 rows total across 5 marks · one gzipped CSV per mark<br>
      Columns: unit_id, unit_name, running_value, assigned, treated, outcome <em>(+ each mark's covariates)</em></p>
   <div class="table-wrap">
   <table>
@@ -57,6 +57,17 @@
         <td>
           <a class="btn secondary" href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/berlin-lez-no2-2010/episodes.csv.gz">episodes.csv.gz</a> <span class="meta">3.5 KB</span>
           <br><span class="meta">SHA-256 <code>f557d8514abfd8327e95b101d726fb112f7fe76e503dab0110eedc4c9d79b552</code></span>
+        </td>
+      </tr>
+    
+      <tr>
+        <td><code>ca-menthol-smoking-2016</code><br><a href="dossiers/ca-menthol-smoking-2016.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/ca-menthol-smoking-2016.json">mark JSON</a></td>
+        <td>ca-menthol-smoking</td>
+        <td>−1.7889 · 95% CI [−3.0876, −0.4901]</td>
+        <td>130</td>
+        <td>
+          <a class="btn secondary" href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/ca-menthol-smoking-2016/episodes.csv.gz">episodes.csv.gz</a> <span class="meta">1.4 KB</span>
+          <br><span class="meta">SHA-256 <code>a83f5d0504d917d837d54280216fa44c4f44517f573072fa607aaef70104ae31</code></span>
         </td>
       </tr>
     
@@ -91,8 +102,8 @@
   <h3>Marks <span class="badge">metadata</span></h3>
   <p>One JSON per decision: the design, the effect distribution, the validity dossier, and provenance.
      The full nested marks live in git.</p>
-  <p class="meta">4 marks · 26.4 KB zipped<br>
-     SHA-256 <code>8f769c2ee0f56ba2b14903c62df76750fe74331388fe0339daaabc5e40638e62</code></p>
+  <p class="meta">5 marks · 31.6 KB zipped<br>
+     SHA-256 <code>66249987d8c8788b702ed8eea80f5ef2fb1e0ce112136f3efeeb17235c24d726</code></p>
   <div class="actions">
     <a class="btn" href="downloads/marks.zip">Download all marks (zip)</a>
     <a class="btn secondary" href="https://github.com/umbralcalc/openaction2outcome/tree/main/marks">Browse on GitHub</a>
@@ -149,6 +160,14 @@ ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</c
     </tr>
   
     <tr>
+      <td>Adult (12&#43;) current-smoking prevalence by province and year, Canada 2007-2019 (CCHS, stitched across the 2015 redesign)<br><code>ca-menthol-smoking</code></td>
+      <td>Statistics Canada</td>
+      <td><a href="https://www.statcan.gc.ca/en/reference/licence">Statistics Canada Open Licence</a></td>
+      <td>4.1 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/ca-menthol-smoking/statcan_smoking_panel.csv">download</a> · <a href="https://www150.statcan.gc.ca/n1/tbl/csv/13100096-eng.zip">original</a></td>
+    </tr>
+  
+    <tr>
       <td>English Indices of Deprivation 2019 — File 10: Local Authority District Summaries (lower-tier)<br><code>imd2019-file10-lad-lower-tier</code></td>
       <td>Ministry of Housing, Communities &amp; Local Government (MHCLG)</td>
       <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
@@ -190,8 +209,10 @@ ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</c
      information (© Crown copyright) under the
      <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>;
      European Environment Agency air-quality data and Open-Meteo (ERA5/Copernicus) weather data under
-     <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Each input's exact licence and
-     attribution are recorded in its <code>SOURCE.json</code> and in the mark's provenance.</p>
+     <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; and Statistics Canada data
+     under the <a href="https://www.statcan.gc.ca/en/reference/licence">Statistics Canada Open Licence</a>.
+     Each input's exact licence and attribution are recorded in its <code>SOURCE.json</code> and in the
+     mark's provenance.</p>
   <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
 </footer>
 </body>

@@ -27,7 +27,10 @@
 // folded into the effect.
 package did
 
-import "math"
+import (
+	"math"
+	"sort"
+)
 
 // Unit is one panel unit's time series and its treatment-group membership.
 type Unit struct {
@@ -121,8 +124,17 @@ func PreTrend(units []Unit, treatTime, h float64) (slope, se float64, nPoints in
 			}
 		}
 	}
+	// Gather the pre-period times in sorted order so the OLS sums below run in a
+	// deterministic sequence — float addition is not associative, so iterating the
+	// byTime map in Go's randomised order would make the slope wobble between rebuilds.
+	times := make([]float64, 0, len(byTime))
+	for t := range byTime {
+		times = append(times, t)
+	}
+	sort.Float64s(times)
 	var ts, ds []float64
-	for t, a := range byTime {
+	for _, t := range times {
+		a := byTime[t]
 		if a.nT == 0 || a.nC == 0 {
 			continue
 		}

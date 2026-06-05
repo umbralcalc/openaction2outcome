@@ -502,8 +502,10 @@ func cmdBuild(args []string) error {
 		mark, err = series.BuildULEZNO22023(*rawDir, *cacheDir, *distDir, cfg)
 	case "berlin-lez-no2":
 		mark, err = series.BuildBerlinLEZ(*rawDir, *cacheDir, *distDir, cfg)
+	case "ca-menthol-smoking":
+		mark, err = series.BuildCAMenthol(*rawDir, *cacheDir, *distDir, cfg)
 	case "":
-		return fmt.Errorf("build: --series is required (floor-standards, shmi, bathing-water, berlin-lez-no2)")
+		return fmt.Errorf("build: --series is required (floor-standards, shmi, bathing-water, berlin-lez-no2, ca-menthol-smoking)")
 	default:
 		return fmt.Errorf("build: unknown or not-yet-implemented series %q", *seriesName)
 	}

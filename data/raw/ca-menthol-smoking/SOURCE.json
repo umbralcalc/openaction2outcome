@@ -1,0 +1,17 @@
+{
+  "source_id": "ca-menthol-smoking",
+  "title": "Adult (12+) current-smoking prevalence by province and year, Canada 2007-2019 (CCHS, stitched across the 2015 redesign)",
+  "publisher": "Statistics Canada",
+  "landing_page": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1310009601",
+  "download_uri": "https://www150.statcan.gc.ca/n1/tbl/csv/13100096-eng.zip",
+  "r2_object_key": "raw/ca-menthol-smoking/statcan_smoking_panel.csv",
+  "local_path": "statcan_smoking_panel.csv",
+  "sha256": "8d87bdd566bfa0a77bec28cf18f61c71b2178457d2df03627e956463ad0f6299",
+  "bytes": 4221,
+  "format": "csv",
+  "licence": "Statistics Canada Open Licence",
+  "licence_uri": "https://www.statcan.gc.ca/en/reference/licence",
+  "vintage": "Canadian Community Health Survey current-smoker (daily or occasional) prevalence, 'Total, 12 years and over', both sexes, percent + 95% CI, one row per (province, year). Stitched from two StatCan tables across the 2015 CCHS redesign: 13-10-0451 (health indicators, 2007-2014, pre-redesign) and 13-10-0096 (health characteristics annual estimates, 2015-2019). Ontario's pre-2015 province total is the 'Ontario by Health Unit' rollup; all other provinces use their plain name.",
+  "role": "outcome-panel",
+  "notes": "Attribution required by the Statistics Canada Open Licence: 'Adapted from Statistics Canada, tables 13-10-0451 and 13-10-0096. This does not constitute an endorsement by Statistics Canada of this product.' The two source tables download only as full-table zips (13-10-0096 ~5 MB; 13-10-0451 ~140 MB); scripts/menthol_harvest.py downloads both (via curl for the large one), subsets to the smoking total + CI, and writes this compact frozen file. The 2015 redesign is a level break common to all provinces, so the difference-in-differences nets it out. The menthol-ban treatment dates are design constants in the builder (Canada Gazette / provincial legislation), not part of this frozen outcome panel."
+}

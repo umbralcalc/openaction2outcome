@@ -10,10 +10,11 @@
     "treated",
     "outcome"
   ],
-  "total_rows": 4167,
+  "total_rows": 4297,
   "series": [
     "bathing-water",
     "berlin-lez-no2",
+    "ca-menthol-smoking",
     "floor-standards",
     "shmi"
   ],
@@ -53,6 +54,25 @@
         "wind_speed_kmh",
         "temp_c",
         "precip_mm"
+      ]
+    },
+    {
+      "mark_id": "ca-menthol-smoking-2016",
+      "series": "ca-menthol-smoking",
+      "row_shape": "panel",
+      "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/ca-menthol-smoking-2016/episodes.csv.gz",
+      "sha256": "a83f5d0504d917d837d54280216fa44c4f44517f573072fa607aaef70104ae31",
+      "bytes": 1463,
+      "rows": 130,
+      "covariates": [
+        "province",
+        "province_name",
+        "year",
+        "ban_year",
+        "is_post",
+        "smoking_pct",
+        "smoking_lo",
+        "smoking_hi"
       ]
     },
     {

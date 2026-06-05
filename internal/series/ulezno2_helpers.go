@@ -19,29 +19,41 @@ type ulezStation struct {
 }
 
 // monthlyMean aggregates a set of station series into a per-month cross-station
-// mean, keeping only months with at least minN stations contributing.
+// mean, keeping only months with at least minN stations contributing. The per-month
+// values are gathered in a DETERMINISTIC order (sorted station code, then sorted
+// month) before summing: float addition is not associative, so summing in Go's
+// randomised map-iteration order would make the monthly means — and hence the whole
+// mark — differ in the last digits on every rebuild.
 func monthlyMean(stations map[string]*ulezStation, minN int) map[int]float64 {
-	type acc struct {
-		sum float64
-		n   int
+	codes := make([]string, 0, len(stations))
+	for code := range stations {
+		codes = append(codes, code)
 	}
-	by := map[int]*acc{}
-	for _, s := range stations {
-		for t, v := range s.byT {
-			a := by[t]
-			if a == nil {
-				a = &acc{}
-				by[t] = a
-			}
-			a.sum += v
-			a.n++
+	sort.Strings(codes)
+
+	byMonth := map[int][]float64{}
+	for _, code := range codes {
+		s := stations[code]
+		months := make([]int, 0, len(s.byT))
+		for t := range s.byT {
+			months = append(months, t)
+		}
+		sort.Ints(months)
+		for _, t := range months {
+			byMonth[t] = append(byMonth[t], s.byT[t])
 		}
 	}
+
 	out := map[int]float64{}
-	for t, a := range by {
-		if a.n >= minN {
-			out[t] = a.sum / float64(a.n)
+	for t, vals := range byMonth {
+		if len(vals) < minN {
+			continue
 		}
+		var sum float64 // vals is in sorted-station order → deterministic
+		for _, v := range vals {
+			sum += v
+		}
+		out[t] = sum / float64(len(vals))
 	}
 	return out
 }

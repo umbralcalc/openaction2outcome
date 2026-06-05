@@ -99,6 +99,16 @@ var canonicalMechanisms = map[string]Mechanism{
 		PopulationDefinition: "roadside air-quality monitoring stations within the zone's airshed",
 		Regime:               "standard-based low-emission zone (ban on non-compliant vehicles)",
 	},
+	"menthol-restriction-to-smoking": {
+		ID:                   "menthol-restriction-to-smoking",
+		Name:                 "Menthol/flavour restriction → smoking prevalence",
+		Domain:               "Health",
+		Description:          "Bans on menthol (and other characterising flavours) in cigarettes and their effect on adult smoking prevalence, identified by difference-in-differences across jurisdictions that restrict at different times/intensities. First anchor: Canada's staggered provincial menthol bans (2015-2017), treated vs the provinces covered only by the federal Oct-2017 ban. The intended anchor family spans a restriction-INTENSITY axis — menthol-only (Canadian provinces) through comprehensive flavour bans (Massachusetts 2020, California 2022) — across two countries, the cross-country bridge target. Effects on TOTAL smoking are diluted by substitution to non-menthol products, so central effects are smaller than the menthol-specific reductions in the literature.",
+		PolicyVariable:       "flavour-restriction intensity at a jurisdiction's ban effective date (dose / time)",
+		OutcomeConstruct:     "adult current-smoking prevalence relative to a not-yet-restricting control group",
+		PopulationDefinition: "the adult population of a province/state with a survey-measured smoking rate",
+		Regime:               "characterising-flavour (menthol) sales restriction",
+	},
 }
 
 // MechanismByID returns the canonical mechanism for an id, or false if unknown.

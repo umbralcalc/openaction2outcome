@@ -4,6 +4,32 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.10.0 — 2026-06-05
+
+Lands the **first difference-in-differences mark**: `ca-menthol-smoking-2016` — Canada's
+staggered provincial menthol-cigarette bans (NS/PE/AB 2015, NB/QC 2016, ON/NL 2017) vs the
+provinces covered only by the federal 2 Oct 2017 ban (BC, MB, SK), on adult current-smoking
+prevalence. **ATT −1.79 pp, honest 95% interval [−3.09, −0.49]** — the corpus's first mark
+whose interval **excludes zero**: a real, design-identified reduction, with parallel
+pre-trends holding and a fake pre-period ban showing no effect. The ~1.8 pp on *total*
+smoking is the literature's ~3 pp *menthol-specific* effect diluted by substitution. First
+anchor on a new `menthol-restriction-to-smoking` mechanism — the cross-country bridge
+partner for US comprehensive flavour bans.
+
+- **`internal/did` put to work** (the estimator existed but nothing used it): unit-clustered
+  2×2 with the pre/post window sweep folded into the honest interval (sampling + specification).
+- **First DiD schema-fit**: `internal/dossier` gains a `renderDiD` path (treated/control,
+  parallel trends, placebo year, window sweep, leave-one-province-out — not RDD
+  manipulation/continuity checks); panel episode rows (province × year).
+- **Data**: adult current-smoking prevalence by province × year from the Canadian Community
+  Health Survey, stitched across the 2015 CCHS redesign from StatCan tables 13-10-0451
+  (2007–2014) + 13-10-0096 (2015+) — the redesign is a common shock the DiD differences out.
+  **Statistics Canada Open Licence** (a third open licence in the corpus, alongside OGL v3.0
+  and CC BY 4.0). Frozen + hash-pinned via `scripts/menthol_harvest.py`.
+- Validity caveats in the dossier: the federal Oct-2017 ban caps the clean post window at
+  2017; only 3 control provinces, so the interval is wide; the effect is on total (not
+  menthol-specific) smoking.
+
 ## v1.9.0 — 2026-06-04
 
 Lands the **first controlled-ITS mark**: `berlin-lez-no2-2010` — the Berlin Umweltzone

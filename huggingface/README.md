@@ -184,7 +184,9 @@ copyright) — DfE Key Stage 4 performance tables, NHS England SHMI, and Environ
 Agency bathing-water classifications — are under the
 [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/);
 European Environment Agency air-quality data and Open-Meteo (ERA5/Copernicus)
-weather data are under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+weather data are under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/);
+and Statistics Canada data (Canadian Community Health Survey) is under the
+[Statistics Canada Open Licence](https://www.statcan.gc.ca/en/reference/licence).
 Each mark records its sources, their exact licences and required attribution, and
 point-in-time timestamps (`context_asof ≤ decision < outcome`). The schema and
 scorer are MIT-licensed. Marks are minted **deterministically** — same inputs,

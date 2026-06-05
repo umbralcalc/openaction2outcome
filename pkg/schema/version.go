@@ -25,6 +25,7 @@ const (
 	SeriesBathingWater   Series = "bathing-water"   // designated bathing water × Poor/Sufficient classification (sharp)
 	SeriesULEZNO2        Series = "ulez-no2"        // London ULEZ expansion × roadside NO2 (controlled ITS)
 	SeriesBerlinLEZ      Series = "berlin-lez-no2"  // Berlin Umweltzone × roadside NO2 (controlled ITS)
+	SeriesCAMenthol      Series = "ca-menthol-smoking" // Canadian provincial menthol bans × smoking (DiD)
 )
 
 // RDDType distinguishes sharp assignment (crossing the cutoff deterministically

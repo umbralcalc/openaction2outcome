@@ -173,6 +173,8 @@ is stored and published is described in [PUBLISHING.md](PUBLISHING.md).
 Code and schema: MIT (see [LICENSE](LICENSE)). The underlying data is open but
 licensed per source: UK public sector information (© Crown copyright) under the
 [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/),
-and European Environment Agency air-quality data plus Open-Meteo (ERA5/Copernicus)
-weather data under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each
+European Environment Agency air-quality data plus Open-Meteo (ERA5/Copernicus)
+weather data under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), and
+Statistics Canada data under the
+[Statistics Canada Open Licence](https://www.statcan.gc.ca/en/reference/licence). Each
 input records its own licence and required attribution in `data/raw/<id>/SOURCE.json`.

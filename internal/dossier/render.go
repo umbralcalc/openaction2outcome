@@ -23,7 +23,98 @@ func Render(m schema.Mark) string {
 	if m.EffectiveIdentification() == schema.IDITSControlled {
 		return renderITS(m)
 	}
+	if m.EffectiveIdentification() == schema.IDDiD {
+		return renderDiD(m)
+	}
 	return renderIdentified(m)
+}
+
+// renderDiD renders the dossier for a difference-in-differences mark. The design is
+// a treated-vs-control comparison under parallel trends (no cutoff/running variable),
+// so the validity section reads parallel pre-trends, a placebo pre-period treatment,
+// the window sweep, and leave-one-unit-out — not the RDD manipulation/continuity
+// checks. Effect and provenance sections are shared.
+func renderDiD(m schema.Mark) string {
+	var b strings.Builder
+	w := func(format string, a ...any) { fmt.Fprintf(&b, format, a...) }
+
+	w("# %s\n\n", m.ID)
+	verdict := "ADMITTED"
+	if !m.Dossier.Admitted {
+		verdict = "NOT ADMITTED"
+	}
+	w("**Category:** identified (design-based truth — a pin)  ·  **Series:** %s  ·  **Domain:** %s  ·  **Unit:** %s  ·  **Design:** difference-in-differences  ·  **Status:** %s\n\n",
+		m.Series, m.Domain, m.UnitType, verdict)
+	w("> The estimand is the **ATT** — the average effect on the treated group, identified by comparing its pre→post change to a control group under parallel trends. Not a local-at-cutoff effect; never pooled with RDD marks.\n\n")
+
+	// Design.
+	d := m.Design
+	w("## The decision\n\n")
+	w("- **Action (treated):** %s\n", d.Action)
+	w("- **Alternative (control):** %s\n", d.Alternative)
+	w("- **Outcome:** %s — %s (%s)\n", d.Outcome.Name, d.Outcome.Description, d.Outcome.Units)
+	w("- **Time axis:** %s — %s\n", d.RunningVariable.Name, d.RunningVariable.Description)
+	w("- **Estimand:** %s\n\n", d.Estimand)
+
+	// Effect (DiD-appropriate uncertainty-budget label).
+	w("## The effect\n\n")
+	e := m.Effect
+	if e.Interval != nil {
+		w("**%g** with a %.0f%% interval of **[%g, %g]**.\n\n", round4(e.Central), 100*e.Interval.Level, round4(e.Interval.Lower), round4(e.Interval.Upper))
+	} else {
+		w("**%g**.\n\n", round4(e.Central))
+	}
+	if ub := e.UncertaintyBudget; ub != nil {
+		w("The interval width separates into two sources:\n\n")
+		w("| source | standard deviation |\n|---|---|\n")
+		if ub.Sampling != nil {
+			w("| sampling (unit-clustered) | %.4f |\n", math.Sqrt(*ub.Sampling))
+		}
+		if ub.Specification != nil {
+			w("| specification (pre/post window choice) | %.4f |\n", math.Sqrt(*ub.Specification))
+		}
+		if e.StdDev != nil {
+			w("| **total** | **%.4f** |\n", *e.StdDev)
+		}
+		w("\n")
+	}
+
+	// Validity battery.
+	w("## Validity checks\n\n")
+	dd := m.Dossier
+	for _, c := range dd.SeamSpecificChecks {
+		w("%s\n\n", passLine(c.Name, c.Passed, c.Method+" — "+c.Detail, c.PValue))
+	}
+	if len(dd.PlaceboCutoffs) > 0 {
+		w("**Placebo (fake pre-period treatment date)** (effect should vanish):\n\n")
+		w("| placebo year | estimate | indistinguishable from zero |\n|---|---|---|\n")
+		for _, p := range dd.PlaceboCutoffs {
+			w("| %g | %.4f | %s |\n", p.Cutoff, p.Estimate, tick(p.Passed))
+		}
+		w("\n")
+	}
+	if len(dd.BandwidthSweep) > 0 {
+		w("**Window sweep** (ATT vs pre/post half-width):\n\n")
+		w("| half-width | estimate |\n|---|---|\n")
+		for _, s := range dd.BandwidthSweep {
+			w("| %g | %.4f |\n", s.Param, s.Estimate)
+		}
+		w("\n")
+	}
+	if dd.Notes != "" {
+		w("**Notes.** %s\n\n", dd.Notes)
+	}
+
+	// Data.
+	w("## Data\n\n")
+	w("The analysis-ready panel rows (one per unit × period) live in the single published "+
+		"`episodes` dataset, alongside every other mark's rows. Recover this mark's rows by "+
+		"filtering on `mark_id == %q`; the row shape is `panel`. The dataset's download URL and "+
+		"content hash are in `datasets/episodes.manifest.json`.\n\n", m.ID)
+
+	// Provenance.
+	writeProvenance(&b, m)
+	return b.String()
 }
 
 // renderIdentified renders the dossier for a design-based (RDD) mark.

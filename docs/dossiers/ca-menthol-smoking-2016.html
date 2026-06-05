@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ca-menthol-smoking-2016 · openaction2outcome</title>
+<link rel="icon" href="../assets/logo.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html">
+    <img src="../assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a><a href="../downloads.html">Datasets</a><a href="../schema.html">Schema</a><a href="../dossiers/index.html" class="current">Dossiers</a><a href="../changelog.html">Changelog</a>
+    <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
+    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+<h1 id="ca-menthol-smoking-2016">ca-menthol-smoking-2016</h1>
+<p><strong>Category:</strong> identified (design-based truth — a pin)  ·  <strong>Series:</strong> ca-menthol-smoking  ·  <strong>Domain:</strong> Health  ·  <strong>Unit:</strong> province  ·  <strong>Design:</strong> difference-in-differences  ·  <strong>Status:</strong> ADMITTED</p>
+<blockquote>
+<p>The estimand is the <strong>ATT</strong> — the average effect on the treated group, identified by comparing its pre→post change to a control group under parallel trends. Not a local-at-cutoff effect; never pooled with RDD marks.</p>
+</blockquote>
+<h2 id="the-decision">The decision</h2>
+<ul>
+<li><strong>Action (treated):</strong> Provincial menthol-cigarette ban (2015-2017): the province prohibited the sale of menthol-flavoured cigarettes ahead of the federal ban.</li>
+<li><strong>Alternative (control):</strong> No provincial menthol ban — menthol cigarettes remained legal until the federal ban took effect on 2 Oct 2017.</li>
+<li><strong>Outcome:</strong> current_smoking_prevalence — Adult (12+) current-smoker (daily or occasional) prevalence, CCHS (percent)</li>
+<li><strong>Time axis:</strong> year — Calendar year (the DiD time axis)</li>
+<li><strong>Estimand:</strong> ATT of a provincial menthol-cigarette ban on adult current-smoking prevalence (treated provinces vs federal-only control provinces, 2007-2014 pre vs 2016-2017 post), under parallel trends.</li>
+</ul>
+<h2 id="the-effect">The effect</h2>
+<p><strong>-1.7889</strong> with a 95% interval of <strong>[-3.0876, -0.4901]</strong>.</p>
+<p>The interval width separates into two sources:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>source</th>
+<th>standard deviation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sampling (unit-clustered)</td>
+<td>0.5523</td>
+</tr>
+<tr>
+<td>specification (pre/post window choice)</td>
+<td>0.3661</td>
+</tr>
+<tr>
+<td><strong>total</strong></td>
+<td><strong>0.6626</strong></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="validity-checks">Validity checks</h2>
+<p><strong>parallel_trends:</strong> pass — cross-group pre-period trend slope of (treated − control) smoking prevalence (should be ≈0) — pre-trend slope -0.802 pp/yr (se 1.689): trends are statistically parallel</p>
+<p><strong>placebo_pre_period_ban:</strong> pass — fake menthol ban at 2012 using pre-period data only (should be ≈0) — placebo ATT 1.631 pp (sd 0.996): pass</p>
+<p><strong>leave_one_province_out:</strong> pass — drop each treated province in turn; the ATT sign should be stable — leave-one-out ATT ranges [-2.106, -1.431] vs full -1.789; sign stable=true</p>
+<p><strong>Placebo (fake pre-period treatment date)</strong> (effect should vanish):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>placebo year</th>
+<th>estimate</th>
+<th>indistinguishable from zero</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2012</td>
+<td>1.6310</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Window sweep</strong> (ATT vs pre/post half-width):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>half-width</th>
+<th>estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>-0.9000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>-1.7889</td>
+</tr>
+<tr>
+<td>4</td>
+<td>-1.3595</td>
+</tr>
+<tr>
+<td>5</td>
+<td>-1.4448</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Notes.</strong> Difference-in-differences (unit-clustered, window sweep folded into the interval): 7 treated provinces with a provincial menthol ban (NS/PE/AB 2015, NB/QC 2016, ON/NL 2017) vs 3 control provinces covered only by the federal 2 Oct 2017 ban (BC, MB, SK). ATT = -1.789 pp on adult current-smoking prevalence, honest 95% interval [-3.088, -0.490] (sd 0.663 = sampling 0.552 + specification 0.366). Pre-period 2007-2014 (spans and differences out the 2015 CCHS redesign), post window 2016-2017 (before the federal ban universalises treatment); 2015 dropped as the rollout ramp. Checks: parallel pre-trends pass (cross-group pre-slope -0.802), placebo pre-period ban pass. CAVEATS: the federal Oct-2017 ban caps the clean post window at 2017; the effect is on TOTAL smoking, diluted by substitution to non-menthol products, so it is smaller than the menthol-specific reductions in the literature; with only 3 control provinces the unit-clustered interval is wide.</p>
+<h2 id="data">Data</h2>
+<p>The analysis-ready panel rows (one per unit × period) live in the single published <code>episodes</code> dataset, alongside every other mark's rows. Recover this mark's rows by filtering on <code>mark_id == &quot;ca-menthol-smoking-2016&quot;</code>; the row shape is <code>panel</code>. The dataset's download URL and content hash are in <code>datasets/episodes.manifest.json</code>.</p>
+<h2 id="provenance">Provenance</h2>
+<p>Point-in-time order: context as-of <code>2014-12-31</code> ≤ decision <code>2015-05-31</code> &lt; outcome <code>2017-12-31</code>.</p>
+<p><strong>Sources:</strong></p>
+<ul>
+<li>Adult (12+) current-smoking prevalence by province and year, Canada 2007-2019 (CCHS, stitched across the 2015 redesign) — Statistics Canada. Licence: Statistics Canada Open Licence. SHA-256 <code>8d87bdd566bfa0a77bec28cf18f61c71b2178457d2df03627e956463ad0f6299</code>.</li>
+</ul>
+<p><strong>Reproducibility:</strong> did unit-clustered-2x2,split=2015,windows=[2 3 4 5], go go1.25.2, openaction2outcome 0.5.0. The mark and its data table re-mint byte-for-byte from the frozen inputs.</p>
+
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data is open but licensed per source: UK public sector
+     information (© Crown copyright) under the
+     <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>;
+     European Environment Agency air-quality data and Open-Meteo (ERA5/Copernicus) weather data under
+     <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; and Statistics Canada data
+     under the <a href="https://www.statcan.gc.ca/en/reference/licence">Statistics Canada Open Licence</a>.
+     Each input's exact licence and attribution are recorded in its <code>SOURCE.json</code> and in the
+     mark's provenance.</p>
+  <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>
