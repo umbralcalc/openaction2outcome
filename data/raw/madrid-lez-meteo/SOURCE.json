@@ -1,0 +1,17 @@
+{
+  "source_id": "madrid-lez-meteo",
+  "title": "Central-Madrid monthly meteorology (temperature, wind speed + direction components, precipitation) for the Madrid Central controlled-ITS, 2017-01 to 2019-12",
+  "publisher": "Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service)",
+  "landing_page": "https://open-meteo.com/en/docs/historical-weather-api",
+  "download_uri": "https://archive-api.open-meteo.com/v1/archive",
+  "r2_object_key": "raw/madrid-lez-meteo/madrid_meteo_monthly.csv",
+  "local_path": "madrid_meteo_monthly.csv",
+  "sha256": "c2f1c6806e0acdb3e6175bc507843d5639286096abb823748bb8669d71f728f1",
+  "bytes": 1642,
+  "format": "csv",
+  "licence": "CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5)",
+  "licence_uri": "https://open-meteo.com/en/license",
+  "vintage": "Open-Meteo historical-weather (ERA5) archive for a central-Madrid point (40.4168, -3.7038), daily values aggregated to monthly means: temperature_2m_mean (C), wind_speed_10m_mean (km/h), direction-resolved wind components u/v (km/h), precipitation_sum (mm). One row per month over 2017-01..2019-12.",
+  "role": "confounder-meteorology",
+  "notes": "Meteorology is the dominant short-window NO2 confounder. In the controlled ITS the municipal urban/suburban-background control series already absorbs most shared dispersion, so this join enters as the meteorology-adjusted specification arm of the model average. Wind is stored as u/v components so a monthly mean respects direction."
+}

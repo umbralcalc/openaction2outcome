@@ -19,6 +19,7 @@ build-all:                   ## mint every series
 	$(CLI) build --series shmi
 	$(CLI) build --series bathing-water
 	$(CLI) build --series berlin-lez-no2
+	$(CLI) build --series madrid-lez-no2
 	$(CLI) build --series ca-menthol-smoking
 
 validate:                    ## check every mark against the schema

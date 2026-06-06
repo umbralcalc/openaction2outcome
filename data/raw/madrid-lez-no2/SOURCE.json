@@ -1,0 +1,17 @@
+{
+  "source_id": "madrid-lez-no2",
+  "title": "Madrid monthly-mean NO2 panel for the Madrid Central (LEZ) controlled-ITS (in-zone Centro station + municipal urban/suburban-background controls), 2017-01 to 2019-12, from the EEA verified (E1a) air-quality archive",
+  "publisher": "European Environment Agency (EEA) — Air Quality Download Service (verified E1a); measurements reported by Spain (Madrid City Council municipal SIVPICA network)",
+  "landing_page": "https://aqportal.discomap.eea.europa.eu/download-data/",
+  "download_uri": "https://eeadmz1-downloads-api-appservice.azurewebsites.net/ParquetFile/urls",
+  "r2_object_key": "raw/madrid-lez-no2/madrid_no2_monthly.csv",
+  "local_path": "madrid_no2_monthly.csv",
+  "sha256": "d3cd7480ecf930f5e5646791d433342990ad0d6e1ac173528d2167c9851d729f",
+  "bytes": 46778,
+  "format": "csv",
+  "licence": "CC BY 4.0 (EEA); air quality measurements reported by Spain (Madrid City Council)",
+  "licence_uri": "https://www.eea.europa.eu/legal/copyright",
+  "vintage": "EEA verified (E1a, 2013+) air quality, hourly NO2 aggregated to monthly means over 2017-01..2019-12, one row per (station, month). Treated = the in-zone Madrid Central station 28079035 Plaza del Carmen (Centro, urban background, inside the 30 Nov 2018 LEZ); control = 14 municipal urban/suburban-background stations away from the zone boundary (28079017 Villaverde, 28079018 Farolillo, 28079024 Casa de Campo, 28079027 Barajas Pueblo, 28079036 Moratalaz, 28079039 Barrio del Pilar, 28079040 Vallecas, 28079047 Mendez Alvaro, 28079054 Ensanche de Vallecas, 28079055 Urbanizacion Embajada, 28079057 Sanchinarro, 28079058 El Pardo, 28079059 Juan Carlos I, 28079060 Tres Olivos). Each row carries the monthly-mean NO2 (ug/m3) and the number of valid hours (Validity==1, Value>0).",
+  "role": "outcome-and-treatment-panel",
+  "notes": "The EEA Air Quality Download Service serves verified (E1a) data as one Azure-blob parquet per sampling point (hourly NO2, 2013-2025). This canonical file was assembled once by scripts/madrid_lez_harvest.py (per-station parquet -> valid-hour filter -> monthly mean). The Go build reads only this frozen, hash-pinned file. TREATED is a single in-zone monitor (Plaza del Carmen, the station used in the published Madrid Central evaluations) so the treated aggregate is thin and the honest interval is correspondingly wide. CONTROL excludes traffic and near-boundary stations (Plaza de Espana, Escuelas Aguirre, Cuatro Caminos, Retiro): the published work finds positive boundary spillover, so near-zone stations are contaminated controls. The post window is capped at 2019-06, before the July 2019 sanction moratorium softened enforcement (visible in the data as the treated-minus-control excess creeping back from 2019-07) and well before COVID."
+}

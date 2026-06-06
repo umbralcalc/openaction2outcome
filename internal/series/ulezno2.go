@@ -205,6 +205,56 @@ func berlinLEZEvent() ulezEvent {
 	}
 }
 
+// madridLEZEvent is the Madrid Central anchor (30 Nov 2018, the Centro access-BAN
+// low-emission zone). Treated is the single in-zone monitor (Plaza del Carmen, the
+// station used in the published Madrid Central evaluations); control is the municipal
+// urban/suburban-background network away from the zone boundary. The post window is
+// capped at 2019-06 — before the July 2019 sanction moratorium softened enforcement
+// (visible in the harvested series as the in-zone excess creeping back) and entirely
+// pre-COVID. Like Berlin, this is a standard access-BAN LEZ (not a charge scheme).
+//
+// Design family: minted as `its-controlled` to match the Berlin mark exactly, so the
+// two anchors share one design family and bracket the same "LEZ access-ban stringency
+// -> NO2" mechanism for a future bridge (Berlin 2010 = an honest null at a modest
+// stage-2 tightening; Madrid 2018 = a sharp central-core restriction).
+func madridLEZEvent() ulezEvent {
+	return ulezEvent{
+		markID:        "madrid-lez-no2-2018",
+		series:        schema.SeriesMadridLEZ,
+		mechanismID:   "lez-ban-stringency-to-roadside-no2",
+		instant:       "2018-11-30",
+		no2SourceID:   "madrid-lez-no2",
+		meteoSourceID: "madrid-lez-meteo",
+		t0:            -25, // 2018-12 (first full post month; the LEZ took effect 30 Nov 2018)
+		hasTransition: false,
+		minTreated:    1, // a single in-zone station (Plaza del Carmen)
+		minControl:    3,
+		prePrimary:    -48, // 2017-01
+		preEnd:        -26, // 2018-11
+		postEnd:       -19, // 2019-06 (pre-moratorium, pre-COVID cap)
+		// Only 7 post months: a post-slope change is not reliably identified, so the
+		// grid uses level-break specs over the two adequate pre-windows (23 and 17 months).
+		specPre:   []int{-48, -42}, // 2017-01, 2017-07
+		specSlope: []bool{false},
+		// Placebos sit in [-40,-33], the band leaving >=8 pre months each side within
+		// the 2017-01..2018-11 pre-period (edge dates are skipped by the adequacy guard).
+		placeboTs:     []int{-40, -37, -34}, // 2017-09, 2017-12, 2018-03
+		naLead:        6,
+		harvestWindow: "2017-01..2019-12",
+		action:        "Madrid Central switch-on (30 Nov 2018): a ~472-ha access-restriction low-emission zone covering the Centro district barred non-resident combustion vehicles from the city core — older non-compliant vehicles banned (not charged).",
+		alternative:   "Roads outside Madrid Central (the rest of the municipality): no access restriction, no emission-standard requirement.",
+		estimand:      "Population effect over the post-intervention window (2018-12 to 2019-06, pre-moratorium and pre-COVID): the change in in-zone (Centro) NO2, net of a municipal urban/suburban-background control series sharing the pre-intervention trend.",
+		contextDesc:   "Madrid City Council (SIVPICA) air-quality stations, split into the in-zone Centro station (treated by the 2018 Madrid Central LEZ) and municipal urban/suburban-background stations away from the zone boundary (control), with a central-Madrid meteorology join. Data from the EEA verified (E1a) archive.",
+		treatedLabel:  "in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ",
+		controlLabel:  "municipal urban/suburban-background stations away from the zone boundary",
+		controlRole:   "parallel-trend",
+		controlJustif: "Municipal urban/suburban-background stations away from the Madrid Central boundary share the in-zone station's airshed and pre-intervention trend but lie OUTSIDE the access restriction, so their series is the counterfactual for the regional/meteorological component of in-zone NO2. Traffic stations and near-boundary stations (Plaza de Espana, Escuelas Aguirre, Cuatro Caminos, Retiro) are excluded because the published Madrid Central evaluations find positive boundary spillover — near-zone stations are treatment-contaminated controls, not clean counterfactuals.",
+		regimeCaveat:  "Pinned to Madrid Central (30 Nov 2018, an access-BAN LEZ over the Centro core). This is a standard-BAN low-emission zone — the same regime family as the Berlin Umweltzone, kept SEPARATE from charge-type zones (London ULEZ) for any future bridge. The July 2019 sanction moratorium and July 2020 TSJM annulment fall AFTER the capped post window, so the effect is read on the fully-enforced regime. Madrid's pre-2018 APR Centro residential-priority area and episodic high-NO2 traffic protocols sit in the pre-window and are city-wide, so the controlled difference nets them out.",
+		decisionRound: "Madrid Central switch-on, 30 November 2018",
+		contextAsOf:   "2018-11-29",
+	}
+}
+
 var ulezEpisodeColumns = []string{
 	"series_id", "series_name", "is_control", "period", "periods_since_intervention",
 	"is_post", "outcome", "wind_speed_kmh", "temp_c", "precip_mm",
@@ -285,6 +335,13 @@ func BuildULEZNO22023(rawDir, cacheDir, distDir string, cfg publish.Config) (sch
 // standard-BAN low-emission zone, the same ITS machinery as the ULEZ events.
 func BuildBerlinLEZ(rawDir, cacheDir, distDir string, cfg publish.Config) (schema.Mark, error) {
 	return buildULEZ(rawDir, cacheDir, distDir, cfg, berlinLEZEvent())
+}
+
+// BuildMadridLEZ mints the Madrid Central (2018) controlled-ITS mark — a standard
+// access-BAN low-emission zone, the second anchor on the LEZ-ban → NO2 mechanism and
+// the same ITS machinery as the Berlin event.
+func BuildMadridLEZ(rawDir, cacheDir, distDir string, cfg publish.Config) (schema.Mark, error) {
+	return buildULEZ(rawDir, cacheDir, distDir, cfg, madridLEZEvent())
 }
 
 // buildULEZ is the event-parametrised controlled-ITS builder.

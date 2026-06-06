@@ -10,12 +10,13 @@
     "treated",
     "outcome"
   ],
-  "total_rows": 4297,
+  "total_rows": 4837,
   "series": [
     "bathing-water",
     "berlin-lez-no2",
     "ca-menthol-smoking",
     "floor-standards",
+    "madrid-lez-no2",
     "shmi"
   ],
   "join_key": "mark_id -\u003e the mark's id (the file is keyed by mark; join its rows to the mark JSON, and to the per-series Hugging Face configs)",
@@ -87,6 +88,26 @@
         "ks2_prior_attainment",
         "pct_disadvantaged_fsm",
         "ks4_cohort_size"
+      ]
+    },
+    {
+      "mark_id": "madrid-lez-no2-2018",
+      "series": "madrid-lez-no2",
+      "row_shape": "panel",
+      "uri": "https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/madrid-lez-no2-2018/episodes.csv.gz",
+      "sha256": "64b8fdba65fd81b526ec0b4230f6cdcf5d826a26cd1690ef322d061b008fbeef",
+      "bytes": 5983,
+      "rows": 540,
+      "covariates": [
+        "series_id",
+        "series_name",
+        "is_control",
+        "period",
+        "periods_since_intervention",
+        "is_post",
+        "wind_speed_kmh",
+        "temp_c",
+        "precip_mm"
       ]
     },
     {

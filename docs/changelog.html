@@ -23,6 +23,35 @@
 <p>All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
 separately inside each mark).</p>
+<h2 id="v1110--2026-06-06">v1.11.0 — 2026-06-06</h2>
+<p>Lands the <strong>second LEZ→NO₂ anchor</strong>: <code>madrid-lez-no2-2018</code> — <strong>Madrid Central</strong> (30 Nov
+2018, a ~472-ha access-<strong>ban</strong> low-emission zone over the Centro district) on in-zone NO₂.
+Same data source and licence as the Berlin mark (<strong>EEA</strong>, CC BY 4.0), same <code>its-controlled</code>
+design family, same <code>lez-ban-stringency-to-roadside-no2</code> mechanism — so the two now bracket
+that mechanism for a future <strong>environmental bridge</strong> (the round-2 unlock). Effect <strong>−11.6
+µg/m³, honest 95% interval [−17.0, −6.4]</strong> — a large, design-identified in-zone reduction
+whose interval <strong>excludes zero</strong>, in sharp contrast to Berlin's null: a central-core access
+restriction moves NO₂ far more than a city-ring Euro-standard tightening. Mechanism
+coherence holds (both are access <strong>bans</strong>, kept separate from charge-type zones).</p>
+<ul>
+<li><strong>Treated</strong> = the single in-zone monitor used in the published Madrid Central evaluations
+(<code>28079035</code> Plaza del Carmen, Centro). <strong>Control</strong> = 14 municipal urban/suburban-background
+stations away from the zone boundary; traffic and near-boundary stations (Plaza de España,
+Escuelas Aguirre, Cuatro Caminos, Retiro) are <strong>excluded</strong> because the literature finds
+positive boundary spillover — near-zone stations are treatment-contaminated controls.</li>
+<li><strong>Seam validated in the data</strong>: the post window is capped at <strong>2019-06</strong>, before the
+July 2019 sanction moratorium softened enforcement (and well before COVID). The
+treated-minus-control in-zone excess collapses from ~12 → ~1.6 µg/m³ at the switch-on,
+then <strong>creeps back from 2019-07</strong> as enforcement weakens — a visible confounder/seam the
+short window sidesteps. Validity battery clean: flat pre-trend (slope 0.006 µg/m³/month),
+three null placebo dates, no anticipation, stable window sweep.</li>
+<li><strong>Reuse, no new estimator</strong>: the Berlin <code>ulezEvent</code>/<code>buildULEZ</code> controlled-ITS machinery
+drives Madrid unchanged; the EEA <strong>verified (E1a, 2013+)</strong> parquet archive is the recent-
+data sibling of Berlin's historical (AirBase) archive. Frozen + hash-pinned via
+<code>scripts/madrid_lez_harvest.py</code>. A single in-zone station makes the treated aggregate thin,
+so the (sampling-led) interval is honest about that — but the effect is large enough to
+clearly exclude zero.</li>
+</ul>
 <h2 id="v1100--2026-06-05">v1.10.0 — 2026-06-05</h2>
 <p>Lands the <strong>first difference-in-differences mark</strong>: <code>ca-menthol-smoking-2016</code> — Canada's
 staggered provincial menthol-cigarette bans (NS/PE/AB 2015, NB/QC 2016, ON/NL 2017) vs the

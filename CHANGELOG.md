@@ -4,6 +4,36 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.11.0 — 2026-06-06
+
+Lands the **second LEZ→NO₂ anchor**: `madrid-lez-no2-2018` — **Madrid Central** (30 Nov
+2018, a ~472-ha access-**ban** low-emission zone over the Centro district) on in-zone NO₂.
+Same data source and licence as the Berlin mark (**EEA**, CC BY 4.0), same `its-controlled`
+design family, same `lez-ban-stringency-to-roadside-no2` mechanism — so the two now bracket
+that mechanism for a future **environmental bridge** (the round-2 unlock). Effect **−11.6
+µg/m³, honest 95% interval [−17.0, −6.4]** — a large, design-identified in-zone reduction
+whose interval **excludes zero**, in sharp contrast to Berlin's null: a central-core access
+restriction moves NO₂ far more than a city-ring Euro-standard tightening. Mechanism
+coherence holds (both are access **bans**, kept separate from charge-type zones).
+
+- **Treated** = the single in-zone monitor used in the published Madrid Central evaluations
+  (`28079035` Plaza del Carmen, Centro). **Control** = 14 municipal urban/suburban-background
+  stations away from the zone boundary; traffic and near-boundary stations (Plaza de España,
+  Escuelas Aguirre, Cuatro Caminos, Retiro) are **excluded** because the literature finds
+  positive boundary spillover — near-zone stations are treatment-contaminated controls.
+- **Seam validated in the data**: the post window is capped at **2019-06**, before the
+  July 2019 sanction moratorium softened enforcement (and well before COVID). The
+  treated-minus-control in-zone excess collapses from ~12 → ~1.6 µg/m³ at the switch-on,
+  then **creeps back from 2019-07** as enforcement weakens — a visible confounder/seam the
+  short window sidesteps. Validity battery clean: flat pre-trend (slope 0.006 µg/m³/month),
+  three null placebo dates, no anticipation, stable window sweep.
+- **Reuse, no new estimator**: the Berlin `ulezEvent`/`buildULEZ` controlled-ITS machinery
+  drives Madrid unchanged; the EEA **verified (E1a, 2013+)** parquet archive is the recent-
+  data sibling of Berlin's historical (AirBase) archive. Frozen + hash-pinned via
+  `scripts/madrid_lez_harvest.py`. A single in-zone station makes the treated aggregate thin,
+  so the (sampling-led) interval is honest about that — but the effect is large enough to
+  clearly exclude zero.
+
 ## v1.10.0 — 2026-06-05
 
 Lands the **first difference-in-differences mark**: `ca-menthol-smoking-2016` — Canada's

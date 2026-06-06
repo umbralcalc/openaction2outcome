@@ -1,0 +1,632 @@
+{
+  "schema_version": "0.5.0",
+  "id": "madrid-lez-no2-2018",
+  "series": "madrid-lez-no2",
+  "domain": "Environment",
+  "unit_type": "air-quality-monitoring-station",
+  "identification": "its-controlled",
+  "row_shape": "panel",
+  "mechanism_id": "lez-ban-stringency-to-roadside-no2",
+  "category": "identified",
+  "truth_source": "identified",
+  "design": {
+    "running_variable": {
+      "name": "month",
+      "description": "Calendar month on the running-time axis (epoch 2021-01)",
+      "units": "month",
+      "source_id": "madrid-lez-no2"
+    },
+    "cutoff": 0,
+    "direction": "",
+    "action": "Madrid Central switch-on (30 Nov 2018): a ~472-ha access-restriction low-emission zone covering the Centro district barred non-resident combustion vehicles from the city core — older non-compliant vehicles banned (not charged).",
+    "alternative": "Roads outside Madrid Central (the rest of the municipality): no access restriction, no emission-standard requirement.",
+    "outcome": {
+      "name": "no2_concentration",
+      "description": "Monthly-mean NO2 concentration at the monitoring station",
+      "units": "µg/m³",
+      "source_id": "madrid-lez-no2"
+    },
+    "estimand": "Population effect over the post-intervention window (2018-12 to 2019-06, pre-moratorium and pre-COVID): the change in in-zone (Centro) NO2, net of a municipal urban/suburban-background control series sharing the pre-intervention trend.",
+    "its": {
+      "intervention_instant": "2018-11-30",
+      "running_time": {
+        "name": "month",
+        "description": "Months since 2021-01",
+        "units": "month",
+        "source_id": "madrid-lez-no2"
+      },
+      "pre_window": {
+        "start": "2017-01",
+        "end": "2018-11"
+      },
+      "post_window": {
+        "start": "2018-12",
+        "end": "2019-06"
+      },
+      "counterfactual": {
+        "family": "segmented-regression on the treated-minus-control difference",
+        "terms": [
+          "intercept",
+          "linear-time",
+          "post-level",
+          "post-slope",
+          "seasonal-harmonics",
+          "meteorology(optional)"
+        ],
+        "seasonality": "harmonic terms at the 12-month period (1–2 pairs across specs)",
+        "justification": "The difference of treated and control roadside NO2 nets out the shared regional/meteorological trend and most seasonality; a segmented regression on that difference reads the policy break (level + optional slope) against the extrapolated pre-trend, with residual seasonality carried by harmonic terms and serial correlation handled by Newey-West HAC errors."
+      },
+      "control": {
+        "series_id": "madrid-lez-no2",
+        "role": "parallel-trend",
+        "justification": "Municipal urban/suburban-background stations away from the Madrid Central boundary share the in-zone station's airshed and pre-intervention trend but lie OUTSIDE the access restriction, so their series is the counterfactual for the regional/meteorological component of in-zone NO2. Traffic stations and near-boundary stations (Plaza de Espana, Escuelas Aguirre, Cuatro Caminos, Retiro) are excluded because the published Madrid Central evaluations find positive boundary spillover — near-zone stations are treatment-contaminated controls, not clean counterfactuals."
+      }
+    }
+  },
+  "context": {
+    "description": "Madrid City Council (SIVPICA) air-quality stations, split into the in-zone Centro station (treated by the 2018 Madrid Central LEZ) and municipal urban/suburban-background stations away from the zone boundary (control), with a central-Madrid meteorology join. Data from the EEA verified (E1a) archive.",
+    "covariate_names": [
+      "wind_speed_kmh",
+      "temp_c",
+      "precip_mm"
+    ],
+    "population": "1 treated + 14 control monitoring stations over 30 analysis months"
+  },
+  "panel_sample": [
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ (aggregate)",
+      "is_control": false,
+      "period": "2018-09",
+      "periods_since_intervention": -3,
+      "is_post": false,
+      "outcome": 46.6351,
+      "covariates": {
+        "precip_mm": 15.3,
+        "temp_c": 23.48,
+        "wind_speed_kmh": 8.25
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "municipal urban/suburban-background stations away from the zone boundary (aggregate)",
+      "is_control": true,
+      "period": "2018-09",
+      "periods_since_intervention": -3,
+      "is_post": false,
+      "outcome": 32.51195714285714,
+      "covariates": {
+        "precip_mm": 15.3,
+        "temp_c": 23.48,
+        "wind_speed_kmh": 8.25
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ (aggregate)",
+      "is_control": false,
+      "period": "2018-10",
+      "periods_since_intervention": -2,
+      "is_post": false,
+      "outcome": 48.5331,
+      "covariates": {
+        "precip_mm": 89,
+        "temp_c": 14.471,
+        "wind_speed_kmh": 10.445
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "municipal urban/suburban-background stations away from the zone boundary (aggregate)",
+      "is_control": true,
+      "period": "2018-10",
+      "periods_since_intervention": -2,
+      "is_post": false,
+      "outcome": 35.60339285714286,
+      "covariates": {
+        "precip_mm": 89,
+        "temp_c": 14.471,
+        "wind_speed_kmh": 10.445
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ (aggregate)",
+      "is_control": false,
+      "period": "2018-11",
+      "periods_since_intervention": -1,
+      "is_post": false,
+      "outcome": 40.5105,
+      "covariates": {
+        "precip_mm": 63.1,
+        "temp_c": 9.293,
+        "wind_speed_kmh": 10.537
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "municipal urban/suburban-background stations away from the zone boundary (aggregate)",
+      "is_control": true,
+      "period": "2018-11",
+      "periods_since_intervention": -1,
+      "is_post": false,
+      "outcome": 36.45332142857142,
+      "covariates": {
+        "precip_mm": 63.1,
+        "temp_c": 9.293,
+        "wind_speed_kmh": 10.537
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ (aggregate)",
+      "is_control": false,
+      "period": "2018-12",
+      "periods_since_intervention": 0,
+      "is_post": true,
+      "outcome": 52.5884,
+      "covariates": {
+        "precip_mm": 12.9,
+        "temp_c": 6.206,
+        "wind_speed_kmh": 7.416
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "municipal urban/suburban-background stations away from the zone boundary (aggregate)",
+      "is_control": true,
+      "period": "2018-12",
+      "periods_since_intervention": 0,
+      "is_post": true,
+      "outcome": 51.28262142857143,
+      "covariates": {
+        "precip_mm": 12.9,
+        "temp_c": 6.206,
+        "wind_speed_kmh": 7.416
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ (aggregate)",
+      "is_control": false,
+      "period": "2019-01",
+      "periods_since_intervention": 1,
+      "is_post": true,
+      "outcome": 54.7736,
+      "covariates": {
+        "precip_mm": 15.2,
+        "temp_c": 4.532,
+        "wind_speed_kmh": 10.158
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "municipal urban/suburban-background stations away from the zone boundary (aggregate)",
+      "is_control": true,
+      "period": "2019-01",
+      "periods_since_intervention": 1,
+      "is_post": true,
+      "outcome": 51.79590000000001,
+      "covariates": {
+        "precip_mm": 15.2,
+        "temp_c": 4.532,
+        "wind_speed_kmh": 10.158
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ (aggregate)",
+      "is_control": false,
+      "period": "2019-02",
+      "periods_since_intervention": 2,
+      "is_post": true,
+      "outcome": 51.8313,
+      "covariates": {
+        "precip_mm": 7.7,
+        "temp_c": 8.086,
+        "wind_speed_kmh": 8.614
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "municipal urban/suburban-background stations away from the zone boundary (aggregate)",
+      "is_control": true,
+      "period": "2019-02",
+      "periods_since_intervention": 2,
+      "is_post": true,
+      "outcome": 51.82142142857143,
+      "covariates": {
+        "precip_mm": 7.7,
+        "temp_c": 8.086,
+        "wind_speed_kmh": 8.614
+      }
+    },
+    {
+      "series_id": "treated-roadside",
+      "series_name": "in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ (aggregate)",
+      "is_control": false,
+      "period": "2019-03",
+      "periods_since_intervention": 3,
+      "is_post": true,
+      "outcome": 33.9926,
+      "covariates": {
+        "precip_mm": 11,
+        "temp_c": 11.671,
+        "wind_speed_kmh": 11.248
+      }
+    },
+    {
+      "series_id": "control-roadside",
+      "series_name": "municipal urban/suburban-background stations away from the zone boundary (aggregate)",
+      "is_control": true,
+      "period": "2019-03",
+      "periods_since_intervention": 3,
+      "is_post": true,
+      "outcome": 33.09851428571428,
+      "covariates": {
+        "precip_mm": 11,
+        "temp_c": 11.671,
+        "wind_speed_kmh": 11.248
+      }
+    }
+  ],
+  "effect": {
+    "central": -11.608786469666665,
+    "std_dev": 2.6943129267931267,
+    "interval": {
+      "level": 0.95,
+      "lower": -17.00994348227333,
+      "upper": -6.431977648254648
+    },
+    "quantiles": [
+      {
+        "p": 0.025,
+        "value": -17.009943482273336
+      },
+      {
+        "p": 0.05,
+        "value": -16.112599580059033
+      },
+      {
+        "p": 0.1,
+        "value": -15.085989054006738
+      },
+      {
+        "p": 0.25,
+        "value": -13.397399484556658
+      },
+      {
+        "p": 0.5,
+        "value": -11.566913891126731
+      },
+      {
+        "p": 0.75,
+        "value": -9.778743396973397
+      },
+      {
+        "p": 0.9,
+        "value": -8.193102366228835
+      },
+      {
+        "p": 0.95,
+        "value": -7.24954266360796
+      },
+      {
+        "p": 0.975,
+        "value": -6.431977648254648
+      }
+    ],
+    "samples": [
+      -19.437785060503387,
+      -18.362386114762117,
+      -17.814950495992136,
+      -17.43408243369899,
+      -17.137591353001454,
+      -16.8926585237692,
+      -16.682704925104034,
+      -16.498137389467324,
+      -16.332884480590785,
+      -16.18284983958474,
+      -16.04513357362518,
+      -15.917604325084667,
+      -15.798647701973103,
+      -15.687010276111735,
+      -15.58169854744003,
+      -15.481911102017964,
+      -15.386991648116062,
+      -15.296395645297856,
+      -15.20966604984709,
+      -15.126415333852453,
+      -15.04631192043427,
+      -14.969069790403381,
+      -14.894440407450158,
+      -14.822206365667181,
+      -14.7521763351157,
+      -14.68418099855499,
+      -14.618069754083777,
+      -14.55370801612477,
+      -14.490974988551574,
+      -14.429761813831355,
+      -14.369970024195755,
+      -14.31151023733959,
+      -14.254301051557356,
+      -14.198268104662752,
+      -14.143343268276702,
+      -14.08946395467348,
+      -14.036572517747857,
+      -13.98461573310487,
+      -13.933544344997227,
+      -13.883312670006745,
+      -13.83387824910864,
+      -13.78520154116395,
+      -13.737245652027458,
+      -13.6899760943904,
+      -13.643360574242223,
+      -13.597368800465954,
+      -13.551972314604214,
+      -13.507144338267182,
+      -13.462859636017061,
+      -13.419094391867883,
+      -13.37582609779604,
+      -13.333033452873678,
+      -13.290696271820764,
+      -13.248795401928213,
+      -13.207312647437966,
+      -13.166230700580314,
+      -13.125533078567017,
+      -13.08520406592346,
+      -13.045228661616196,
+      -13.005592530495576,
+      -12.966281958628201,
+      -12.927283812141798,
+      -12.88858549924694,
+      -12.850174935136558,
+      -12.812040509496256,
+      -12.774171056386553,
+      -12.736555826283023,
+      -12.699184460082034,
+      -12.662046964899243,
+      -12.625133691504956,
+      -12.58843531325573,
+      -12.551942806394965,
+      -12.515647431607341,
+      -12.479540716722457,
+      -12.443614440472711,
+      -12.407860617218912,
+      -12.372271482564692,
+      -12.33683947978771,
+      -12.301557247021634,
+      -12.266417605128524,
+      -12.23141354620602,
+      -12.196538222678345,
+      -12.161784936923958,
+      -12.127147131396438,
+      -12.092618379198331,
+      -12.058192375070622,
+      -12.02386292676313,
+      -11.9896239467535,
+      -11.955469444284589,
+      -11.921393517691897,
+      -11.88739034699449,
+      -11.853454186724353,
+      -11.819579358970447,
+      -11.785760246615048,
+      -11.751991286740882,
+      -11.718266964188654,
+      -11.684581805245312,
+      -11.650930371444048,
+      -11.617307253457767,
+      -11.583707065068097,
+      -11.550124437192483,
+      -11.516554011952227,
+      -11.482990436764421,
+      -11.44942835844099,
+      -11.415862417277918,
+      -11.382287241117773,
+      -11.348697439368426,
+      -11.315087596960595,
+      -11.281452268226523,
+      -11.247785970681605,
+      -11.214083178690245,
+      -11.18033831699654,
+      -11.14654575409961,
+      -11.112699795452514,
+      -11.078794676462575,
+      -11.044824555269873,
+      -11.010783505279225,
+      -10.976665507419572,
+      -10.942464442102938,
+      -10.908174080853296,
+      -10.873788077573593,
+      -10.839299959416813,
+      -10.80470311722446,
+      -10.769990795492802,
+      -10.735156081824218,
+      -10.70019189581722,
+      -10.665090977344892,
+      -10.629845874167064,
+      -10.594448928816487,
+      -10.558892264694002,
+      -10.52316777130137,
+      -10.487267088533745,
+      -10.451181589946106,
+      -10.414902364899277,
+      -10.378420199481834,
+      -10.341725556093184,
+      -10.304808551561116,
+      -10.267658933653571,
+      -10.230266055828832,
+      -10.19261885005115,
+      -10.154705797479078,
+      -10.116514896811516,
+      -10.078033630051198,
+      -10.039248925416448,
+      -10.000147117099232,
+      -9.960713901529875,
+      -9.920934289765704,
+      -9.88079255557141,
+      -9.840272178701888,
+      -9.799355782832425,
+      -9.758025067504978,
+      -9.716260733370746,
+      -9.674042399906217,
+      -9.631348514659727,
+      -9.588156252944408,
+      -9.544441406728211,
+      -9.500178261276048,
+      -9.4553394578685,
+      -9.409895840646822,
+      -9.363816285307152,
+      -9.317067506975096,
+      -9.269613844121249,
+      -9.221417014809862,
+      -9.172435840883395,
+      -9.122625934845406,
+      -9.07193934317436,
+      -9.020324138532661,
+      -8.967723951763492,
+      -8.914077432609389,
+      -8.859317625629345,
+      -8.803371244688321,
+      -8.74615782544629,
+      -8.687588730215339,
+      -8.627565973017099,
+      -8.565980824153147,
+      -8.502712142393278,
+      -8.437624367993802,
+      -8.370565089756479,
+      -8.301362072161993,
+      -8.229819591221428,
+      -8.15571387554143,
+      -8.078787375282449,
+      -7.998741475492347,
+      -7.9152271147641695,
+      -7.82783253784511,
+      -7.736067056123851,
+      -7.63933913497546,
+      -7.536926234474313,
+      -7.427932349221578,
+      -7.31122664686651,
+      -7.185352042172113,
+      -7.048383961880411,
+      -6.89770245998435,
+      -6.7296043295408765,
+      -6.5385968338846965,
+      -6.315993559059093,
+      -6.046766237000652,
+      -5.701123965883079,
+      -5.204309694169167,
+      -4.226403630097932
+    ],
+    "uncertainty_budget": {
+      "sampling": 6.594817473612471,
+      "specification": 0.6645046738720749
+    }
+  },
+  "dossier": {
+    "density": {
+      "method": "",
+      "passed": false
+    },
+    "its": {
+      "no_anticipation": {
+        "method": "no-anticipation placebo break 6 months before the instant (should be ≈0)",
+        "statistic": -1.6695452746457657,
+        "passed": true,
+        "detail": "placebo break at 2018-06: -1.670 µg/m³ (se 1.372, assessed=true): pass"
+      },
+      "control_parallelism": {
+        "method": "pre-period parallel-trends slope of the treated-minus-control difference",
+        "statistic": 0.006306408808582754,
+        "passed": true,
+        "detail": "pre-trend slope 0.0063 µg/m³ per month (se 0.1619, n_pre=23): difference is statistically flat; a stable non-zero pre-trend is carried by the segmented model's linear term and validated by the placebo battery"
+      },
+      "placebo_dates": [
+        {
+          "date": "2017-09",
+          "estimate": -1.6232486813690759,
+          "std_err": 2.0534663428204913,
+          "passed": true
+        },
+        {
+          "date": "2017-12",
+          "estimate": -2.7761633651820703,
+          "std_err": 4.319120764779963,
+          "passed": true
+        },
+        {
+          "date": "2018-03",
+          "estimate": 0.2006538570909977,
+          "std_err": 2.505146695480786,
+          "passed": true
+        }
+      ],
+      "window_sweep": [
+        {
+          "param": -48,
+          "estimate": -10.705975599860492,
+          "std_err": 2.582135154981189
+        },
+        {
+          "param": -42,
+          "estimate": -10.847002864925493,
+          "std_err": 2.344354719204901
+        }
+      ],
+      "transition_exclusion": [
+        {
+          "param": 0,
+          "estimate": -10.705975599860492,
+          "std_err": 2.582135154981189
+        }
+      ],
+      "autocorrelation": {
+        "method": "Newey-West HAC (Bartlett, lag 4)",
+        "statistic": -0.05760540760355413,
+        "passed": true,
+        "detail": "lag-1 residual autocorrelation -0.058, absorbed by HAC standard errors"
+      },
+      "admitted": true,
+      "notes": "Controlled ITS: model average over 8 specs (pre-window × harmonics × level/slope × meteorology) on the treated-minus-control monthly NO2 difference, Newey-West HAC (Bartlett lag 4) within each. Honest 95% interval [-17.010, -6.432] (sd 2.694) decomposes into sampling sd 2.568 and identification sd 0.815. Plug-in single-spec interval [-15.767, -5.645] (sd 2.582) is narrower because it ignores between-spec identification uncertainty. Treated = 1 in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ; control = 14 municipal urban/suburban-background stations away from the zone boundary kept after pre-trend matching (0 dropped: []). Effect is the extra change in treated roadside NO2 net of the control series over 7 post months (2018-12..2019-06). Meteorology-adjusted refit shifts the effect to -12.556 (Δ-1.850), confirming the control series already absorbs most short-window dispersion. Checks: control parallelism pass, no-anticipation pass, placebo dates pass. REGIME CAVEAT: Pinned to Madrid Central (30 Nov 2018, an access-BAN LEZ over the Centro core). This is a standard-BAN low-emission zone — the same regime family as the Berlin Umweltzone, kept SEPARATE from charge-type zones (London ULEZ) for any future bridge. The July 2019 sanction moratorium and July 2020 TSJM annulment fall AFTER the capped post window, so the effect is read on the fully-enforced regime. Madrid's pre-2018 APR Centro residential-priority area and episodic high-NO2 traffic protocols sit in the pre-window and are city-wide, so the controlled difference nets them out."
+    },
+    "admitted": true,
+    "notes": "Controlled ITS: model average over 8 specs (pre-window × harmonics × level/slope × meteorology) on the treated-minus-control monthly NO2 difference, Newey-West HAC (Bartlett lag 4) within each. Honest 95% interval [-17.010, -6.432] (sd 2.694) decomposes into sampling sd 2.568 and identification sd 0.815. Plug-in single-spec interval [-15.767, -5.645] (sd 2.582) is narrower because it ignores between-spec identification uncertainty. Treated = 1 in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ; control = 14 municipal urban/suburban-background stations away from the zone boundary kept after pre-trend matching (0 dropped: []). Effect is the extra change in treated roadside NO2 net of the control series over 7 post months (2018-12..2019-06). Meteorology-adjusted refit shifts the effect to -12.556 (Δ-1.850), confirming the control series already absorbs most short-window dispersion. Checks: control parallelism pass, no-anticipation pass, placebo dates pass. REGIME CAVEAT: Pinned to Madrid Central (30 Nov 2018, an access-BAN LEZ over the Centro core). This is a standard-BAN low-emission zone — the same regime family as the Berlin Umweltzone, kept SEPARATE from charge-type zones (London ULEZ) for any future bridge. The July 2019 sanction moratorium and July 2020 TSJM annulment fall AFTER the capped post window, so the effect is read on the fully-enforced regime. Madrid's pre-2018 APR Centro residential-priority area and episodic high-NO2 traffic protocols sit in the pre-window and are city-wide, so the controlled difference nets them out."
+  },
+  "provenance": {
+    "sources": [
+      {
+        "source_id": "madrid-lez-no2",
+        "title": "Madrid monthly-mean NO2 panel for the Madrid Central (LEZ) controlled-ITS (in-zone Centro station + municipal urban/suburban-background controls), 2017-01 to 2019-12, from the EEA verified (E1a) air-quality archive",
+        "publisher": "European Environment Agency (EEA) — Air Quality Download Service (verified E1a); measurements reported by Spain (Madrid City Council municipal SIVPICA network)",
+        "download_uri": "https://eeadmz1-downloads-api-appservice.azurewebsites.net/ParquetFile/urls",
+        "landing_page": "https://aqportal.discomap.eea.europa.eu/download-data/",
+        "retrieved_at": "",
+        "licence": "CC BY 4.0 (EEA); air quality measurements reported by Spain (Madrid City Council)",
+        "sha256": "d3cd7480ecf930f5e5646791d433342990ad0d6e1ac173528d2167c9851d729f",
+        "vintage": "EEA verified (E1a, 2013+) air quality, hourly NO2 aggregated to monthly means over 2017-01..2019-12, one row per (station, month). Treated = the in-zone Madrid Central station 28079035 Plaza del Carmen (Centro, urban background, inside the 30 Nov 2018 LEZ); control = 14 municipal urban/suburban-background stations away from the zone boundary (28079017 Villaverde, 28079018 Farolillo, 28079024 Casa de Campo, 28079027 Barajas Pueblo, 28079036 Moratalaz, 28079039 Barrio del Pilar, 28079040 Vallecas, 28079047 Mendez Alvaro, 28079054 Ensanche de Vallecas, 28079055 Urbanizacion Embajada, 28079057 Sanchinarro, 28079058 El Pardo, 28079059 Juan Carlos I, 28079060 Tres Olivos). Each row carries the monthly-mean NO2 (ug/m3) and the number of valid hours (Validity==1, Value\u003e0)."
+      },
+      {
+        "source_id": "madrid-lez-meteo",
+        "title": "Central-Madrid monthly meteorology (temperature, wind speed + direction components, precipitation) for the Madrid Central controlled-ITS, 2017-01 to 2019-12",
+        "publisher": "Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service)",
+        "download_uri": "https://archive-api.open-meteo.com/v1/archive",
+        "landing_page": "https://open-meteo.com/en/docs/historical-weather-api",
+        "retrieved_at": "",
+        "licence": "CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5)",
+        "sha256": "c2f1c6806e0acdb3e6175bc507843d5639286096abb823748bb8669d71f728f1",
+        "vintage": "Open-Meteo historical-weather (ERA5) archive for a central-Madrid point (40.4168, -3.7038), daily values aggregated to monthly means: temperature_2m_mean (C), wind_speed_10m_mean (km/h), direction-resolved wind components u/v (km/h), precipitation_sum (mm). One row per month over 2017-01..2019-12."
+      }
+    ],
+    "context_asof": "2018-11-29",
+    "decision_timestamp": "2018-11-30",
+    "outcome_timestamp": "2019-06-28",
+    "running_variable_vintage": "LAQN ratified hourly NO2 aggregated to monthly means, harvest window 2017-01..2019-12",
+    "decision_round": "Madrid Central switch-on, 30 November 2018",
+    "tool_versions": {
+      "go": "go1.25.2",
+      "its": "controlled-segmented-regression,newey-west-lag=4,specs=8",
+      "openaction2outcome": "0.5.0"
+    },
+    "outcome_realized": true
+  }
+}

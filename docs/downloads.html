@@ -31,7 +31,7 @@
      that followed. Published <strong>per mark</strong> as a gzipped CSV; join its rows to the mark JSON on the mark id
      for the design and the full effect distribution. (RDD/DiD marks ship a <code>cross-section</code> row per unit;
      ITS marks ship a <code>panel</code> row per series &times; time bucket.)</p>
-  <p class="meta">4297 rows total across 5 marks · one gzipped CSV per mark<br>
+  <p class="meta">4837 rows total across 6 marks · one gzipped CSV per mark<br>
      Columns: unit_id, unit_name, running_value, assigned, treated, outcome <em>(+ each mark's covariates)</em></p>
   <div class="table-wrap">
   <table>
@@ -83,6 +83,17 @@
       </tr>
     
       <tr>
+        <td><code>madrid-lez-no2-2018</code><br><a href="dossiers/madrid-lez-no2-2018.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/madrid-lez-no2-2018.json">mark JSON</a></td>
+        <td>madrid-lez-no2</td>
+        <td>−11.6088 · 95% CI [−17.0099, −6.432]</td>
+        <td>540</td>
+        <td>
+          <a class="btn secondary" href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/marks/madrid-lez-no2-2018/episodes.csv.gz">episodes.csv.gz</a> <span class="meta">5.8 KB</span>
+          <br><span class="meta">SHA-256 <code>64b8fdba65fd81b526ec0b4230f6cdcf5d826a26cd1690ef322d061b008fbeef</code></span>
+        </td>
+      </tr>
+    
+      <tr>
         <td><code>shmi-higher-than-expected-banding</code><br><a href="dossiers/shmi-higher-than-expected-banding.html">dossier</a> · <a href="https://github.com/umbralcalc/openaction2outcome/blob/main/marks/shmi-higher-than-expected-banding.json">mark JSON</a></td>
         <td>shmi</td>
         <td>−0.0131 · 95% CI [−0.0658, 0.0177]</td>
@@ -102,8 +113,8 @@
   <h3>Marks <span class="badge">metadata</span></h3>
   <p>One JSON per decision: the design, the effect distribution, the validity dossier, and provenance.
      The full nested marks live in git.</p>
-  <p class="meta">5 marks · 31.6 KB zipped<br>
-     SHA-256 <code>66249987d8c8788b702ed8eea80f5ef2fb1e0ce112136f3efeeb17235c24d726</code></p>
+  <p class="meta">6 marks · 38.8 KB zipped<br>
+     SHA-256 <code>541f56162629f5f3ee6861421188366e40d06f6d7fb7972cf8cc3f444c24633a</code></p>
   <div class="actions">
     <a class="btn" href="downloads/marks.zip">Download all marks (zip)</a>
     <a class="btn secondary" href="https://github.com/umbralcalc/openaction2outcome/tree/main/marks">Browse on GitHub</a>
@@ -189,6 +200,22 @@ ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</c
       <td><a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a></td>
       <td>10.8 MB</td>
       <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/ks4-2017-2018-final/england_ks4final_2017-2018.csv">download</a> · <a href="https://www.compare-school-performance.service.gov.uk/download-data?download=true&amp;regions=0&amp;filters=KS4&amp;fileformat=csv&amp;year=2017-2018">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Central-Madrid monthly meteorology (temperature, wind speed &#43; direction components, precipitation) for the Madrid Central controlled-ITS, 2017-01 to 2019-12<br><code>madrid-lez-meteo</code></td>
+      <td>Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service)</td>
+      <td><a href="https://open-meteo.com/en/license">CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5)</a></td>
+      <td>1.6 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/madrid-lez-meteo/madrid_meteo_monthly.csv">download</a> · <a href="https://archive-api.open-meteo.com/v1/archive">original</a></td>
+    </tr>
+  
+    <tr>
+      <td>Madrid monthly-mean NO2 panel for the Madrid Central (LEZ) controlled-ITS (in-zone Centro station &#43; municipal urban/suburban-background controls), 2017-01 to 2019-12, from the EEA verified (E1a) air-quality archive<br><code>madrid-lez-no2</code></td>
+      <td>European Environment Agency (EEA) — Air Quality Download Service (verified E1a); measurements reported by Spain (Madrid City Council municipal SIVPICA network)</td>
+      <td><a href="https://www.eea.europa.eu/legal/copyright">CC BY 4.0 (EEA); air quality measurements reported by Spain (Madrid City Council)</a></td>
+      <td>45.7 KB</td>
+      <td><a href="https://pub-8d0395b8e53947d791b1e20255172cc3.r2.dev/raw/madrid-lez-no2/madrid_no2_monthly.csv">download</a> · <a href="https://eeadmz1-downloads-api-appservice.azurewebsites.net/ParquetFile/urls">original</a></td>
     </tr>
   
     <tr>

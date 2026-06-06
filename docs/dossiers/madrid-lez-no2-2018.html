@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>madrid-lez-no2-2018 · openaction2outcome</title>
+<link rel="icon" href="../assets/logo.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html">
+    <img src="../assets/logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a><a href="../downloads.html">Datasets</a><a href="../schema.html">Schema</a><a href="../dossiers/index.html" class="current">Dossiers</a><a href="../changelog.html">Changelog</a>
+    <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
+    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
+  </nav>
+</header>
+<main class="content">
+<h1 id="madrid-lez-no2-2018">madrid-lez-no2-2018</h1>
+<p><strong>Category:</strong> identified (design-based truth — a pin)  ·  <strong>Series:</strong> madrid-lez-no2  ·  <strong>Domain:</strong> Environment  ·  <strong>Unit:</strong> air-quality-monitoring-station  ·  <strong>Design:</strong> controlled interrupted time series  ·  <strong>Status:</strong> ADMITTED</p>
+<blockquote>
+<p>The estimand is a <strong>population</strong> effect accumulated over the post-intervention window, not a local-at-cutoff effect. Its decision scores are never pooled with RDD marks.</p>
+</blockquote>
+<h2 id="the-decision">The decision</h2>
+<ul>
+<li><strong>Action:</strong> Madrid Central switch-on (30 Nov 2018): a ~472-ha access-restriction low-emission zone covering the Centro district barred non-resident combustion vehicles from the city core — older non-compliant vehicles banned (not charged).</li>
+<li><strong>Alternative:</strong> Roads outside Madrid Central (the rest of the municipality): no access restriction, no emission-standard requirement.</li>
+<li><strong>Outcome:</strong> no2_concentration — Monthly-mean NO2 concentration at the monitoring station (µg/m³)</li>
+<li><strong>Estimand:</strong> Population effect over the post-intervention window (2018-12 to 2019-06, pre-moratorium and pre-COVID): the change in in-zone (Centro) NO2, net of a municipal urban/suburban-background control series sharing the pre-intervention trend.</li>
+<li><strong>Intervention instant:</strong> 2018-11-30 (time axis: month, units month)</li>
+<li><strong>Pre-window:</strong> 2017-01 → 2018-11</li>
+<li><strong>Post-window:</strong> 2018-12 → 2019-06</li>
+<li><strong>Counterfactual:</strong> segmented-regression on the treated-minus-control difference, seasonality: harmonic terms at the 12-month period (1–2 pairs across specs) — The difference of treated and control roadside NO2 nets out the shared regional/meteorological trend and most seasonality; a segmented regression on that difference reads the policy break (level + optional slope) against the extrapolated pre-trend, with residual seasonality carried by harmonic terms and serial correlation handled by Newey-West HAC errors.</li>
+<li><strong>Control series:</strong> madrid-lez-no2 (parallel-trend) — Municipal urban/suburban-background stations away from the Madrid Central boundary share the in-zone station's airshed and pre-intervention trend but lie OUTSIDE the access restriction, so their series is the counterfactual for the regional/meteorological component of in-zone NO2. Traffic stations and near-boundary stations (Plaza de Espana, Escuelas Aguirre, Cuatro Caminos, Retiro) are excluded because the published Madrid Central evaluations find positive boundary spillover — near-zone stations are treatment-contaminated controls, not clean counterfactuals.</li>
+</ul>
+<h2 id="the-effect">The effect</h2>
+<p><strong>-11.6088</strong> with a 95% interval of <strong>[-17.0099, -6.432]</strong>.</p>
+<p>The interval width separates into two sources:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>source</th>
+<th>standard deviation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sampling (finite data)</td>
+<td>2.5680</td>
+</tr>
+<tr>
+<td>identification (bandwidth / order / kernel choice)</td>
+<td>0.8152</td>
+</tr>
+<tr>
+<td><strong>total</strong></td>
+<td><strong>2.6943</strong></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="validity-checks">Validity checks</h2>
+<p><strong>No anticipation (no pre-trend break / forestalling):</strong> pass — no-anticipation placebo break 6 months before the instant (should be ≈0)</p>
+<p><strong>Control parallelism (shared pre-intervention trend):</strong> pass — pre-period parallel-trends slope of the treated-minus-control difference</p>
+<p><strong>Placebo dates</strong> (effect should vanish at fake pre-period dates):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>placebo date</th>
+<th>estimate</th>
+<th>indistinguishable from zero</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2017-09</td>
+<td>-1.6232</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>2017-12</td>
+<td>-2.7762</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>2018-03</td>
+<td>0.2007</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Window sweep</strong> (estimate vs pre/post window length):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>window length</th>
+<th>estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-48</td>
+<td>-10.7060</td>
+</tr>
+<tr>
+<td>-42</td>
+<td>-10.8470</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Transition exclusion</strong> (re-estimate after dropping the implementation ramp):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ramp width</th>
+<th>estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>-10.7060</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Autocorrelation modelled (Newey-West / ARMA errors):</strong> pass — Newey-West HAC (Bartlett, lag 4)</p>
+<p><strong>Notes.</strong> Controlled ITS: model average over 8 specs (pre-window × harmonics × level/slope × meteorology) on the treated-minus-control monthly NO2 difference, Newey-West HAC (Bartlett lag 4) within each. Honest 95% interval [-17.010, -6.432] (sd 2.694) decomposes into sampling sd 2.568 and identification sd 0.815. Plug-in single-spec interval [-15.767, -5.645] (sd 2.582) is narrower because it ignores between-spec identification uncertainty. Treated = 1 in-zone (Madrid Central / Centro) station subject to the 2018 access-ban LEZ; control = 14 municipal urban/suburban-background stations away from the zone boundary kept after pre-trend matching (0 dropped: []). Effect is the extra change in treated roadside NO2 net of the control series over 7 post months (2018-12..2019-06). Meteorology-adjusted refit shifts the effect to -12.556 (Δ-1.850), confirming the control series already absorbs most short-window dispersion. Checks: control parallelism pass, no-anticipation pass, placebo dates pass. REGIME CAVEAT: Pinned to Madrid Central (30 Nov 2018, an access-BAN LEZ over the Centro core). This is a standard-BAN low-emission zone — the same regime family as the Berlin Umweltzone, kept SEPARATE from charge-type zones (London ULEZ) for any future bridge. The July 2019 sanction moratorium and July 2020 TSJM annulment fall AFTER the capped post window, so the effect is read on the fully-enforced regime. Madrid's pre-2018 APR Centro residential-priority area and episodic high-NO2 traffic protocols sit in the pre-window and are city-wide, so the controlled difference nets them out.</p>
+<h2 id="data">Data</h2>
+<p>The analysis-ready panel rows (one per series × time bucket) live in the single published <code>episodes</code> dataset, alongside every other mark's rows. Recover this mark's rows by filtering on <code>mark_id == &quot;madrid-lez-no2-2018&quot;</code>; the row shape is <code>panel</code>. The dataset's download URL and content hash are in <code>datasets/episodes.manifest.json</code>.</p>
+<ul>
+<li><strong>Covariates (state):</strong> wind_speed_kmh, temp_c, precip_mm</li>
+</ul>
+<h2 id="provenance">Provenance</h2>
+<p>Point-in-time order: context as-of <code>2018-11-29</code> ≤ decision <code>2018-11-30</code> &lt; outcome <code>2019-06-28</code>.</p>
+<p><strong>Sources:</strong></p>
+<ul>
+<li>Madrid monthly-mean NO2 panel for the Madrid Central (LEZ) controlled-ITS (in-zone Centro station + municipal urban/suburban-background controls), 2017-01 to 2019-12, from the EEA verified (E1a) air-quality archive — European Environment Agency (EEA) — Air Quality Download Service (verified E1a); measurements reported by Spain (Madrid City Council municipal SIVPICA network). Licence: CC BY 4.0 (EEA); air quality measurements reported by Spain (Madrid City Council). SHA-256 <code>d3cd7480ecf930f5e5646791d433342990ad0d6e1ac173528d2167c9851d729f</code>.</li>
+<li>Central-Madrid monthly meteorology (temperature, wind speed + direction components, precipitation) for the Madrid Central controlled-ITS, 2017-01 to 2019-12 — Open-Meteo (ERA5 reanalysis, Copernicus Climate Change Service). Licence: CC BY 4.0 (Open-Meteo); contains modified Copernicus Climate Change Service information (ERA5). SHA-256 <code>c2f1c6806e0acdb3e6175bc507843d5639286096abb823748bb8669d71f728f1</code>.</li>
+</ul>
+<p><strong>Reproducibility:</strong> go go1.25.2, its controlled-segmented-regression,newey-west-lag=4,specs=8, openaction2outcome 0.5.0. The mark and its data table re-mint byte-for-byte from the frozen inputs.</p>
+
+</main>
+<footer class="site-footer">
+  <p>Code &amp; schema: MIT. Underlying data is open but licensed per source: UK public sector
+     information (© Crown copyright) under the
+     <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>;
+     European Environment Agency air-quality data and Open-Meteo (ERA5/Copernicus) weather data under
+     <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; and Statistics Canada data
+     under the <a href="https://www.statcan.gc.ca/en/reference/licence">Statistics Canada Open Licence</a>.
+     Each input's exact licence and attribution are recorded in its <code>SOURCE.json</code> and in the
+     mark's provenance.</p>
+  <p><a href="https://github.com/umbralcalc/openaction2outcome">Source on GitHub</a> · generated from the marks &amp; dossiers — do not edit by hand.</p>
+</footer>
+</body>
+</html>
