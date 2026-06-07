@@ -34,7 +34,6 @@ func genSite(t *testing.T) (root, out string) {
 		LogoPath:      filepath.Join(root, "docs", "assets", "logo.png"),
 		OutDir:        out,
 		RepoURL:       "https://github.com/umbralcalc/openaction2outcome",
-		HFRepo:        "umbralcalc/openaction2outcome",
 	}
 	if err := Generate(cfg); err != nil {
 		t.Fatalf("Generate: %v", err)
@@ -68,14 +67,13 @@ func TestDownloadsPageHasManifestData(t *testing.T) {
 	_, out := genSite(t)
 	dl := read(t, filepath.Join(out, "downloads.html"))
 	// Episode rows are published per mark as a gzipped CSV — the page must link
-	// each mark's actual artifact, plus the marks zip and the HF mirror.
+	// each mark's actual artifact, plus the marks zip.
 	for _, want := range []string{
 		"marks/bathing-water-poor-2015/episodes.csv.gz",
 		"marks/floor-standards-p8-2016/episodes.csv.gz",
 		"marks/shmi-higher-than-expected-banding/episodes.csv.gz",
 		// the bathing-water file's content hash, from the manifest (verifiable download)
 		"c8d2e34b886d64cc16e8f2eefc163221bb0c34c8d55b79bf675d5a302a237e02",
-		"huggingface.co/datasets/umbralcalc/openaction2outcome",
 		"downloads/marks.zip",
 	} {
 		if !strings.Contains(dl, want) {

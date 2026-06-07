@@ -9,8 +9,7 @@ SHA-256, so changing where they are served does not affect integrity.
 Only **two datasets** are published, normalised on the mark `id`: the marks (metadata, in
 git) and the `episodes` dataset (the per-unit rows, in R2). The episode rows are published
 **per mark** — one gzipped CSV each — so `dist/marks/<id>/episodes.csv.gz` is what gets
-uploaded (not a build intermediate any more). The same per-mark files are also mirrored
-into the Hugging Face dataset (same schema); there is no unioned re-encoding anywhere.
+uploaded (not a build intermediate any more); there is no unioned re-encoding anywhere.
 
 ## What gets published where
 
@@ -62,8 +61,8 @@ openaction2outcome fetch
 #    rows to dist/marks/<id>/episodes.csv.gz (this file is what gets uploaded)
 openaction2outcome build --series floor-standards   # ... and shmi, bathing-water
 
-# 3. write the per-mark episodes manifest (+ mirror the CSVs into the Hugging Face dir)
-openaction2outcome export        # -> datasets/episodes.manifest.json (+ dist/hf/...)
+# 3. write the per-mark episodes manifest (URL + hash + size for each CSV)
+openaction2outcome manifest      # -> datasets/episodes.manifest.json
 
 # 4. upload: each mark's episodes.csv.gz, and the frozen raw inputs
 ./scripts/publish.sh             # rclone-copies dist/marks/*/episodes.csv.gz + data/cache, then verifies hashes
@@ -85,47 +84,6 @@ A model author never needs the mint. They:
 No account, no server, nothing hosted by us beyond a handful of static object-storage
 files (plus the frozen-input mirror for reproducibility).
 
-# Publishing to Hugging Face Datasets
-
-Both datasets are mirrored to Hugging Face Datasets — the discovery channel for the
-target audience. Git remains the source of truth; HF carries a flattened, loadable
-view of the marks (one record per mark: the effect distribution + design) plus the
-row-per-unit `episodes` config. The full nested marks stay in this repo.
-
-## Generate the dataset directory
-
-```sh
-make hf            # -> dist/hf/ : README.md (Dataset Card) + one <series>.jsonl per config
-```
-
-Each series is a separate config (subset): `floor-standards`, `shmi`.
-
-## Push it (needs a Hugging Face token)
-
-```sh
-pip install -U huggingface_hub
-huggingface-cli login            # paste a token from https://huggingface.co/settings/tokens
-huggingface-cli upload umbralcalc/openaction2outcome dist/hf . --repo-type dataset
-```
-
-The Dataset Card (`huggingface/README.md` in this repo) is the canonical HF
-documentation; `make hf` copies it into `dist/hf/README.md`. Consumers then:
-
-```python
-from datasets import load_dataset
-ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]
-```
-
-These per-series configs are the mark-level view (metadata + effect distribution).
-The per-unit rows are not in them — they are in the **`episodes` config**.
-
-`make hf` (i.e. `export`) also mirrors each mark's `episodes.csv.gz` into
-`dist/hf/episodes/<id>.csv.gz` — the **same files** served from object storage, same
-schema, no unioned re-encoding. A Hugging Face user loads one mark's rows with
-`load_dataset(repo, data_files="episodes/<id>.csv.gz")` (or `hf_hub_download`). So Hugging
-Face carries both datasets joined on the mark `id` — the marks (the per-series configs)
-and the per-mark episode rows — one row shape everywhere.
-
 # The documentation site (GitHub Pages)
 
 The project ships a static website — download buttons, the schema, the per-mark dossiers,
@@ -145,17 +103,17 @@ self-contained static site into `docs/`:
 
 - **`index.html`** — the landing page; coverage cards are generated from the marks.
 - **`downloads.html`** — a per-mark `episodes.csv.gz` download (URL + SHA-256 + size from
-  the manifest), a generated `downloads/marks.zip` (content-addressed), the Hugging Face
-  mirror, and a table of the frozen raw inputs (from each `data/raw/*/SOURCE.json`,
-  preferring the object-store mirror URL when `publish.json:base_url` is configured).
+  the manifest), a generated `downloads/marks.zip` (content-addressed), and a table of the
+  frozen raw inputs (from each `data/raw/*/SOURCE.json`, preferring the object-store mirror
+  URL when `publish.json:base_url` is configured).
 - **`schema.html`** and **`changelog.html`** — the repo markdown,
   rendered (single source of truth; intra-repo links are rewritten to the site's pages or
   to GitHub).
 - **`dossiers/`** — an index plus one page per mark, rendered from `dossiers/*.md`.
 
 Re-run `make site` after a mint (or after editing the docs) and commit `docs/`. Flags let
-you override the repo/Hugging Face URLs (`--repo-url`, `--hf-repo`) and any input/output
-path; see `openaction2outcome site -h`.
+you override the repo URL (`--repo-url`) and any input/output path; see
+`openaction2outcome site -h`.
 
 ## Enable Pages (one-time)
 

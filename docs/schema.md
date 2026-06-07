@@ -188,9 +188,6 @@ lives in object storage, published **per mark** (one gzipped CSV each), pointed 
 lists every mark's file with its download URL + SHA-256 + size, so each download is
 verifiable. You only need it if you want to train or refit on the rows; scoring a model
 does not require it. A mark's file *is* its rows — download `marks/<id>/episodes.csv.gz`.
-(The same per-mark files are also mirrored into the Hugging Face dataset at
-`episodes/<id>.csv.gz` — same schema — so an HF user can load one mark's rows with
-`load_dataset(repo, data_files="episodes/<id>.csv.gz")`.)
 
 Each per-mark CSV is the **(state, action, reward)** view, in this dataset's own terms —
 the context before the decision, what was done, and the outcome that followed. A mark's
@@ -228,10 +225,6 @@ For these rows the per-mark constants read from the mark JSON are the threshold
 
 For these rows the per-mark constants are the `intervention_instant`, the
 `counterfactual` spec, and the `effect` distribution, joined on the mark `id`.
-
-> Hugging Face carries the **same per-mark CSVs** (mirrored at `episodes/<id>.csv.gz`),
-> not a separate unioned table — one row shape everywhere. The mark-level metadata + effect
-> distribution are the per-series configs (`floor-standards`, `shmi`, `bathing-water`).
 
 ---
 

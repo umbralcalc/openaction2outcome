@@ -15,7 +15,6 @@
   <nav class="site-nav">
     {{range .Nav}}<a href="{{$.Prefix}}{{.Href}}"{{if .Current}} class="current"{{end}}>{{.Label}}</a>{{end}}
     <a class="ext" href="{{.RepoURL}}">GitHub</a>
-    <a class="ext" href="{{.HFURL}}">🤗 Hugging Face</a>
   </nav>
 </header>
 <main class="content">

@@ -19,7 +19,7 @@
     "madrid-lez-no2",
     "shmi"
   ],
-  "join_key": "mark_id -\u003e the mark's id (the file is keyed by mark; join its rows to the mark JSON, and to the per-series Hugging Face configs)",
+  "join_key": "mark_id -\u003e the mark's id (the file is keyed by mark; join its rows to the mark JSON)",
   "outcome": "the later observed outcome; the outcome cell is empty when a unit has no linked outcome (e.g. attrition)",
   "description": "Each mark's per-unit episode rows, published as one gzipped CSV per mark: a unit's context before the decision (covariates, running_value), what was done (assigned/treated), and the outcome that followed — the (state, action, reward) view for model training. The design (cutoff, direction, action) and the full effect distribution stay in the mark JSON, joinable on the mark id.",
   "marks": [

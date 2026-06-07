@@ -10,9 +10,7 @@
 // marks/<id>/episodes.csv.gz, and the slim git-tracked manifest lists every
 // mark's file with its sha256 + size (see NewManifest). A consumer downloads a
 // mark's file and joins its rows to the mark JSON on the mark id for the design
-// (cutoff, direction, action) and the full effect distribution. The same per-mark
-// CSVs are mirrored into the Hugging Face dataset directory (same schema), so
-// there is one row shape everywhere — no unioned re-encoding.
+// (cutoff, direction, action) and the full effect distribution.
 package episodes
 
 import (
@@ -71,31 +69,6 @@ func LoadTable(m schema.Mark, distDir string) (header []string, rows [][]string,
 		return nil, nil, fmt.Errorf("mark %q episode rows are empty", m.ID)
 	}
 	return all[0], all[1:], nil
-}
-
-// CopyToHF mirrors every mark's staged episodes.csv.gz into the Hugging Face
-// dataset directory at hfDir/episodes/<id>.csv.gz, so a Hugging Face user can pull
-// a mark's rows directly (same schema as the object-storage file). It returns the
-// repo-relative paths written, in mark order.
-func CopyToHF(marks []schema.Mark, distDir, hfDir string) ([]string, error) {
-	outDir := filepath.Join(hfDir, "episodes")
-	if err := os.MkdirAll(outDir, 0o755); err != nil {
-		return nil, err
-	}
-	var written []string
-	for _, m := range marks {
-		src := filepath.Join(distDir, "marks", m.ID, stagedTableName)
-		b, err := os.ReadFile(src)
-		if err != nil {
-			return nil, fmt.Errorf("mark %q episodes not staged at %s (run `openaction2outcome build`): %w", m.ID, src, err)
-		}
-		rel := filepath.Join("episodes", m.ID+".csv.gz")
-		if err := os.WriteFile(filepath.Join(hfDir, rel), b, 0o644); err != nil {
-			return nil, err
-		}
-		written = append(written, rel)
-	}
-	return written, nil
 }
 
 // CoreColumns are the fixed leading columns of every per-mark episodes.csv.gz,
@@ -183,7 +156,7 @@ func NewManifest(marks []schema.Mark, distDir string, cfg publish.Config) (Manif
 		CoreColumns:   CoreColumns,
 		TotalRows:     total,
 		Series:        series,
-		JoinKey:       "mark_id -> the mark's id (the file is keyed by mark; join its rows to the mark JSON, and to the per-series Hugging Face configs)",
+		JoinKey:       "mark_id -> the mark's id (the file is keyed by mark; join its rows to the mark JSON)",
 		Outcome:       "the later observed outcome; the outcome cell is empty when a unit has no linked outcome (e.g. attrition)",
 		Description:   "Each mark's per-unit episode rows, published as one gzipped CSV per mark: a unit's context before the decision (covariates, running_value), what was done (assigned/treated), and the outcome that followed — the (state, action, reward) view for model training. The design (cutoff, direction, action) and the full effect distribution stay in the mark JSON, joinable on the mark id.",
 		Marks:         arts,

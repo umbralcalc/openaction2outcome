@@ -15,7 +15,6 @@
   <nav class="site-nav">
     <a href="index.html">Home</a><a href="downloads.html" class="current">Datasets</a><a href="schema.html">Schema</a><a href="dossiers/index.html">Dossiers</a><a href="changelog.html">Changelog</a>
     <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
-    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
   </nav>
 </header>
 <main class="content">
@@ -119,15 +118,6 @@
     <a class="btn" href="downloads/marks.zip">Download all marks (zip)</a>
     <a class="btn secondary" href="https://github.com/umbralcalc/openaction2outcome/tree/main/marks">Browse on GitHub</a>
   </div>
-</div>
-
-<div class="download">
-  <h3>Hugging Face mirror</h3>
-  <p>The marks are also mirrored to Hugging Face Datasets as one config per series, for discovery and
-     one-line loading.</p>
-  <pre><code>from datasets import load_dataset
-ds = load_dataset("umbralcalc/openaction2outcome", "floor-standards")["test"]</code></pre>
-  <div class="actions"><a class="btn secondary" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">Open on Hugging Face &rarr;</a></div>
 </div>
 
 <h2>Frozen raw inputs <span class="badge">reproducibility</span></h2>

@@ -41,7 +41,6 @@ type page struct {
 	Prefix  string        // path-to-root: "" for a root page, "../" one level down
 	Body    template.HTML // the page-specific HTML
 	RepoURL string
-	HFURL   string
 	Nav     []navItem
 }
 

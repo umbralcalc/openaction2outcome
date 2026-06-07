@@ -6,7 +6,7 @@
 //	validate  Check every mark against the schema and point-in-time invariants.
 //	score     Score a submission against the marks (decision + calibration).
 //	study     Run the calibration study (plug-in vs model-averaged coverage).
-//	export    Assemble a Hugging Face-ready dataset directory from the marks.
+//	manifest  Write the per-mark episodes dataset manifest from the staged tables.
 //	site      Generate the static GitHub Pages site (docs/) from the marks + docs.
 package main
 
@@ -21,7 +21,6 @@ import (
 	"github.com/umbralcalc/openaction2outcome/internal/bridge"
 	"github.com/umbralcalc/openaction2outcome/internal/dossier"
 	"github.com/umbralcalc/openaction2outcome/internal/episodes"
-	"github.com/umbralcalc/openaction2outcome/internal/hfexport"
 	"github.com/umbralcalc/openaction2outcome/internal/ingest"
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
 	"github.com/umbralcalc/openaction2outcome/internal/sbi"
@@ -48,8 +47,8 @@ func main() {
 		err = cmdFetch(os.Args[2:])
 	case "study":
 		err = cmdStudy(os.Args[2:])
-	case "export":
-		err = cmdExport(os.Args[2:])
+	case "manifest":
+		err = cmdManifest(os.Args[2:])
 	case "site":
 		err = cmdSite(os.Args[2:])
 	case "-h", "--help", "help":
@@ -75,8 +74,8 @@ usage:
   openaction2outcome build --series NAME [--raw DIR] [--cache DIR] [--dist DIR] [--marks DIR]
   openaction2outcome validate [--marks DIR]
   openaction2outcome score --submission FILE [--marks DIR] [--out FILE]
-  openaction2outcome export [--marks DIR] [--card FILE] [--out DIR]
-  openaction2outcome site [--out DIR] [--repo-url URL] [--hf-repo REPO]
+  openaction2outcome manifest [--marks DIR] [--dist DIR] [--manifest FILE]
+  openaction2outcome site [--out DIR] [--repo-url URL]
 `)
 }
 
@@ -269,16 +268,13 @@ func fmtCov(xs []float64) string {
 	return s
 }
 
-// cmdExport assembles a Hugging Face-ready dataset directory (per-series JSONL +
-// Dataset Card) from the minted marks, staged for `huggingface-cli upload`. It
-// writes the per-mark episodes manifest (the object-storage dataset is one gzipped
-// CSV per mark, listed with its sha256), and mirrors those same per-mark CSVs into
-// the Hugging Face directory so an HF user can load one mark's rows directly.
-func cmdExport(args []string) error {
-	fs := flag.NewFlagSet("export", flag.ExitOnError)
+// cmdManifest writes the per-mark episodes dataset manifest from the minted marks.
+// The object-storage dataset is one gzipped CSV per mark; the manifest is the slim,
+// git-tracked pointer that lists each file with its sha256 and size, so a consumer's
+// download verifies. Run after `build` has staged the per-mark episode tables.
+func cmdManifest(args []string) error {
+	fs := flag.NewFlagSet("manifest", flag.ExitOnError)
 	marksDir := fs.String("marks", "marks", "directory of mark JSON files")
-	cardPath := fs.String("card", "huggingface/README.md", "Dataset Card to ship as README.md")
-	out := fs.String("out", "dist/hf", "output directory (push this to Hugging Face)")
 	distDir := fs.String("dist", "dist", "directory holding the staged per-mark episode tables")
 	manifestPath := fs.String("manifest", "datasets/episodes.manifest.json", "git-tracked pointer to the published episodes dataset")
 	cfgPath := fs.String("publish-config", "publish.json", "publish config (object-store base URL)")
@@ -293,12 +289,8 @@ func cmdExport(args []string) error {
 		return err
 	}
 	if len(marks) == 0 {
-		return fmt.Errorf("export: no marks under %s", *marksDir)
+		return fmt.Errorf("manifest: no marks under %s", *marksDir)
 	}
-	if err := hfexport.Export(marks, *out, *cardPath); err != nil {
-		return err
-	}
-	fmt.Printf("exported %d mark(s) -> %s (README.md + per-series .jsonl)\n", len(marks), *out)
 
 	// Write the per-mark episodes manifest (the object-storage dataset is one
 	// gzipped CSV per mark; the manifest lists each file + its hash).
@@ -310,16 +302,6 @@ func cmdExport(args []string) error {
 		return err
 	}
 	fmt.Printf("wrote manifest %s (%d marks, %d rows total)\n", *manifestPath, len(mf.Marks), mf.TotalRows)
-
-	// Mirror the same per-mark CSVs into the Hugging Face dataset dir (same
-	// schema as object storage — no unioned re-encoding) so an HF user can pull a
-	// mark's rows directly.
-	written, err := episodes.CopyToHF(marks, *distDir, *out)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("mirrored %d per-mark episodes.csv.gz -> %s/episodes/\n", len(written), *out)
-	fmt.Printf("push with: huggingface-cli upload <user>/openaction2outcome %s . --repo-type dataset\n", *out)
 	return nil
 }
 
@@ -341,7 +323,6 @@ func cmdSite(args []string) error {
 	fs.StringVar(&cfg.LogoPath, "logo", "docs/assets/logo.png", "logo to copy into the site")
 	fs.StringVar(&cfg.OutDir, "out", "docs", "output directory (the Pages /docs folder)")
 	fs.StringVar(&cfg.RepoURL, "repo-url", "https://github.com/umbralcalc/openaction2outcome", "GitHub repo base URL")
-	fs.StringVar(&cfg.HFRepo, "hf-repo", "umbralcalc/openaction2outcome", "Hugging Face dataset repo")
 	fs.Parse(args)
 
 	if err := site.Generate(cfg); err != nil {
@@ -540,7 +521,7 @@ func cmdBuild(args []string) error {
 	fmt.Printf("minted %s (%s, admitted=%v, effect=%.4g [%.4g, %.4g])\n",
 		out, mark.Series, mark.Dossier.Admitted, mark.Effect.Central,
 		mark.Effect.Interval.Lower, mark.Effect.Interval.Upper)
-	fmt.Printf("staged  %s/marks/%s/episodes.csv.gz  (build intermediate; reshaped into the episodes dataset by `export`)\n", *distDir, mark.ID)
+	fmt.Printf("staged  %s/marks/%s/episodes.csv.gz  (build intermediate; listed in the episodes dataset by `manifest`)\n", *distDir, mark.ID)
 	return nil
 }
 

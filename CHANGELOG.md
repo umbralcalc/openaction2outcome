@@ -4,6 +4,26 @@ All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format `schema_version` is tracked
 separately inside each mark).
 
+## v1.12.0 — 2026-06-07
+
+Removes the **Hugging Face distribution path**. The corpus's value is the design and the
+honest interval per mark, not bulk rows for training — a poor fit for the Hub, whose
+audience and tooling are oriented around large fungible datasets. Distribution moves to the
+blog + the existing GitHub Pages site and object-storage downloads, so we stop carrying HF
+scaffolding we don't use.
+
+- **Deleted** `internal/hfexport` (mark → per-series JSONL flattener) and `huggingface/`
+  (the Dataset Card), with their tests.
+- The `export` CLI command is **renamed to `manifest`** and now does only what survived the
+  removal: write `datasets/episodes.manifest.json` (URL + SHA-256 + size per mark). It no
+  longer assembles a `dist/hf/` directory, copies a Dataset Card, or mirrors the per-mark
+  CSVs (`episodes.CopyToHF` is gone). The Makefile target `hf` becomes `manifest`.
+- The generated **site** drops the Hugging Face nav link and the "Hugging Face mirror"
+  downloads block; `site --hf-repo` and the `Config.HFRepo`/`hfURL` plumbing are removed.
+- Docs updated throughout (README, PUBLISHING, `docs/schema.md`, the episodes manifest's
+  `join_key`): the published artifacts are the marks (git) and the per-mark `episodes`
+  CSVs (object storage) — nothing mirrored to HF.
+
 ## v1.11.0 — 2026-06-06
 
 Lands the **second LEZ→NO₂ anchor**: `madrid-lez-no2-2018` — **Madrid Central** (30 Nov

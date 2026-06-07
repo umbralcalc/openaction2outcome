@@ -1,9 +1,6 @@
 package episodes
 
 import (
-	"bytes"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/umbralcalc/openaction2outcome/internal/publish"
@@ -38,35 +35,6 @@ func stageMark(t *testing.T, distDir, id string, series schema.Series, header []
 }
 
 var testHeader = []string{"unit_id", "unit_name", "running_value", "assigned", "treated", "outcome", "cov_a", "cov_b"}
-
-func TestCopyToHF(t *testing.T) {
-	dist := t.TempDir()
-	m := stageMark(t, dist, "m1", schema.SeriesFloorStandards, testHeader, [][]string{
-		{"u1", "U1", "-0.8", "true", "true", "0.2", "1.5", "10"},
-	})
-
-	hf := t.TempDir()
-	written, err := CopyToHF([]schema.Mark{m}, dist, hf)
-	if err != nil {
-		t.Fatalf("CopyToHF: %v", err)
-	}
-	if len(written) != 1 || written[0] != filepath.Join("episodes", "m1.csv.gz") {
-		t.Fatalf("written = %v, want [episodes/m1.csv.gz]", written)
-	}
-	// The HF copy must be byte-identical to the staged object-storage file —
-	// same schema, same bytes, no unioned re-encoding.
-	src, err := os.ReadFile(filepath.Join(dist, "marks", "m1", stagedTableName))
-	if err != nil {
-		t.Fatal(err)
-	}
-	dst, err := os.ReadFile(filepath.Join(hf, "episodes", "m1.csv.gz"))
-	if err != nil {
-		t.Fatalf("read HF copy: %v", err)
-	}
-	if !bytes.Equal(src, dst) {
-		t.Error("HF episodes copy differs from the staged object-storage file")
-	}
-}
 
 func TestLoadTableMissing(t *testing.T) {
 	m := schema.Mark{ID: "nope"}

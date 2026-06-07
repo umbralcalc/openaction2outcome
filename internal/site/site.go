@@ -41,11 +41,7 @@ type Config struct {
 	LogoPath      string // logo to copy into the site
 	OutDir        string // where to write the site (the Pages /docs folder)
 	RepoURL       string // GitHub repo base, e.g. https://github.com/umbralcalc/openaction2outcome
-	HFRepo        string // Hugging Face dataset repo, e.g. umbralcalc/openaction2outcome
 }
-
-// hfURL is the public Hugging Face dataset page for the configured repo.
-func (c Config) hfURL() string { return "https://huggingface.co/datasets/" + c.HFRepo }
 
 // Generate writes the full static site into cfg.OutDir.
 func Generate(cfg Config) error {
@@ -154,7 +150,7 @@ func (cfg Config) writePage(relOut, title, active, prefix string, body template.
 	var buf bytes.Buffer
 	if err := layout.Execute(&buf, page{
 		Title: title, Active: active, Prefix: prefix, Body: body,
-		RepoURL: cfg.RepoURL, HFURL: cfg.hfURL(), Nav: nav,
+		RepoURL: cfg.RepoURL, Nav: nav,
 	}); err != nil {
 		return err
 	}
@@ -255,8 +251,6 @@ func (cfg Config) renderDownloads(marks []schema.Mark, zipBytes []byte, zipSum s
 		"MarksZip":         map[string]any{"Count": len(marks), "Bytes": int64(len(zipBytes)), "SHA256": zipSum},
 		"Sources":          sources,
 		"RepoURL":          cfg.RepoURL,
-		"HFURL":            cfg.hfURL(),
-		"HFRepo":           cfg.HFRepo,
 	})
 }
 

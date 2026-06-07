@@ -33,8 +33,7 @@ if [ "$VERIFY_ONLY" -eq 0 ]; then
   fi
   # The episodes dataset is published per mark: one gzipped CSV each, under
   # marks/<id>/episodes.csv.gz (the exact object key is recorded in the manifest).
-  # The marks metadata itself lives in git, not R2. The same per-mark CSVs are also
-  # mirrored into the Hugging Face dataset (pushed with huggingface-cli, not here).
+  # The marks metadata itself lives in git, not R2.
   while IFS=$'\t' read -r id key; do
     [ -z "$id" ] && continue
     src="dist/marks/${id}/episodes.csv.gz"

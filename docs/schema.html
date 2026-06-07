@@ -15,7 +15,6 @@
   <nav class="site-nav">
     <a href="index.html">Home</a><a href="downloads.html">Datasets</a><a href="schema.html" class="current">Schema</a><a href="dossiers/index.html">Dossiers</a><a href="changelog.html">Changelog</a>
     <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
-    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
   </nav>
 </header>
 <main class="content">
@@ -519,10 +518,7 @@ lives in object storage, published <strong>per mark</strong> (one gzipped CSV ea
 <a href="downloads.html"><code>datasets/episodes.manifest.json</code></a>. The manifest
 lists every mark's file with its download URL + SHA-256 + size, so each download is
 verifiable. You only need it if you want to train or refit on the rows; scoring a model
-does not require it. A mark's file <em>is</em> its rows — download <code>marks/&lt;id&gt;/episodes.csv.gz</code>.
-(The same per-mark files are also mirrored into the Hugging Face dataset at
-<code>episodes/&lt;id&gt;.csv.gz</code> — same schema — so an HF user can load one mark's rows with
-<code>load_dataset(repo, data_files=&quot;episodes/&lt;id&gt;.csv.gz&quot;)</code>.)</p>
+does not require it. A mark's file <em>is</em> its rows — download <code>marks/&lt;id&gt;/episodes.csv.gz</code>.</p>
 <p>Each per-mark CSV is the <strong>(state, action, reward)</strong> view, in this dataset's own terms —
 the context before the decision, what was done, and the outcome that followed. A mark's
 <code>row_shape</code> says which of two column layouts its file uses.</p>
@@ -631,11 +627,6 @@ the context before the decision, what was done, and the outcome that followed. A
 </table></div>
 <p>For these rows the per-mark constants are the <code>intervention_instant</code>, the
 <code>counterfactual</code> spec, and the <code>effect</code> distribution, joined on the mark <code>id</code>.</p>
-<blockquote>
-<p>Hugging Face carries the <strong>same per-mark CSVs</strong> (mirrored at <code>episodes/&lt;id&gt;.csv.gz</code>),
-not a separate unioned table — one row shape everywhere. The mark-level metadata + effect
-distribution are the per-series configs (<code>floor-standards</code>, <code>shmi</code>, <code>bathing-water</code>).</p>
-</blockquote>
 <hr>
 <h2 id="3-submission-and-score">3. Submission and score</h2>
 <p>To be scored, send a <code>submission.json</code>: for each mark, your model's predicted

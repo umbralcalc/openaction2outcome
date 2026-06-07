@@ -45,15 +45,6 @@
   </div>
 </div>
 
-<div class="download">
-  <h3>Hugging Face mirror</h3>
-  <p>The marks are also mirrored to Hugging Face Datasets as one config per series, for discovery and
-     one-line loading.</p>
-  <pre><code>from datasets import load_dataset
-ds = load_dataset("{{.HFRepo}}", "floor-standards")["test"]</code></pre>
-  <div class="actions"><a class="btn secondary" href="{{.HFURL}}">Open on Hugging Face &rarr;</a></div>
-</div>
-
 <h2>Frozen raw inputs <span class="badge">reproducibility</span></h2>
 <p>The original open-data inputs, frozen and content-addressed so every mark re-mints byte-for-byte. You only need
    these to reproduce the marks &mdash; not to use the datasets above. Each carries its own licence.</p>

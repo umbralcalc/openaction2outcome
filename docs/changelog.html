@@ -15,7 +15,6 @@
   <nav class="site-nav">
     <a href="index.html">Home</a><a href="downloads.html">Datasets</a><a href="schema.html">Schema</a><a href="dossiers/index.html">Dossiers</a><a href="changelog.html" class="current">Changelog</a>
     <a class="ext" href="https://github.com/umbralcalc/openaction2outcome">GitHub</a>
-    <a class="ext" href="https://huggingface.co/datasets/umbralcalc/openaction2outcome">🤗 Hugging Face</a>
   </nav>
 </header>
 <main class="content">
@@ -23,6 +22,25 @@
 <p>All notable changes to this project are recorded here. Versions refer to the
 published dataset + tooling release (the wire-format <code>schema_version</code> is tracked
 separately inside each mark).</p>
+<h2 id="v1120--2026-06-07">v1.12.0 — 2026-06-07</h2>
+<p>Removes the <strong>Hugging Face distribution path</strong>. The corpus's value is the design and the
+honest interval per mark, not bulk rows for training — a poor fit for the Hub, whose
+audience and tooling are oriented around large fungible datasets. Distribution moves to the
+blog + the existing GitHub Pages site and object-storage downloads, so we stop carrying HF
+scaffolding we don't use.</p>
+<ul>
+<li><strong>Deleted</strong> <code>internal/hfexport</code> (mark → per-series JSONL flattener) and <code>huggingface/</code>
+(the Dataset Card), with their tests.</li>
+<li>The <code>export</code> CLI command is <strong>renamed to <code>manifest</code></strong> and now does only what survived the
+removal: write <code>datasets/episodes.manifest.json</code> (URL + SHA-256 + size per mark). It no
+longer assembles a <code>dist/hf/</code> directory, copies a Dataset Card, or mirrors the per-mark
+CSVs (<code>episodes.CopyToHF</code> is gone). The Makefile target <code>hf</code> becomes <code>manifest</code>.</li>
+<li>The generated <strong>site</strong> drops the Hugging Face nav link and the &quot;Hugging Face mirror&quot;
+downloads block; <code>site --hf-repo</code> and the <code>Config.HFRepo</code>/<code>hfURL</code> plumbing are removed.</li>
+<li>Docs updated throughout (README, PUBLISHING, <code>docs/schema.md</code>, the episodes manifest's
+<code>join_key</code>): the published artifacts are the marks (git) and the per-mark <code>episodes</code>
+CSVs (object storage) — nothing mirrored to HF.</li>
+</ul>
 <h2 id="v1110--2026-06-06">v1.11.0 — 2026-06-06</h2>
 <p>Lands the <strong>second LEZ→NO₂ anchor</strong>: <code>madrid-lez-no2-2018</code> — <strong>Madrid Central</strong> (30 Nov
 2018, a ~472-ha access-<strong>ban</strong> low-emission zone over the Centro district) on in-zone NO₂.
