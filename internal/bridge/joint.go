@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/umbralcalc/stochadex/pkg/analysis"
 	"github.com/umbralcalc/stochadex/pkg/inference"
+	"github.com/umbralcalc/stochadex/pkg/macros"
 	"github.com/umbralcalc/stochadex/pkg/simulator"
 )
 
@@ -167,30 +167,23 @@ func fitJointSMC(mech Mechanism, xs, mu, noise []float64, L [][]float64, cfg SMC
 	}
 	dim := d + m1
 
-	model := analysis.SMCParticleModel{
-		Build: func(N, _ int) *analysis.SMCInnerSimConfig {
-			parts := make([]*simulator.PartitionConfig, 0, N)
-			loglikeParts := make([]string, N)
-			fwd := make(map[string][]int, N)
-			for p := 0; p < N; p++ {
-				name := fmt.Sprintf("ll_%d", p)
-				parts = append(parts, &simulator.PartitionConfig{
-					Name:              name,
+	model := macros.SMCParticleModel{
+		Build: func(nParams int) *macros.SMCInnerSimConfig {
+			// One particle's model: its log-likelihood under the particle's
+			// parameters, forwarded whole.
+			idx := make([]int, nParams)
+			for j := range idx {
+				idx[j] = j
+			}
+			return &macros.SMCInnerSimConfig{
+				Partitions: []*simulator.PartitionConfig{{
+					Name:              "ll",
 					Iteration:         &jointLogLike{mech: mech, xs: xs, mu: mu, noise: noise, l: L, d: d},
-					Params:            simulator.NewParams(map[string][]float64{"phi": make([]float64, dim)}),
+					Params:            simulator.NewParams(map[string][]float64{"phi": make([]float64, nParams)}),
 					InitStateValues:   []float64{0},
 					StateHistoryDepth: 2,
 					Seed:              0,
-				})
-				loglikeParts[p] = name
-				idx := make([]int, dim)
-				for j := 0; j < dim; j++ {
-					idx[j] = p*dim + j
-				}
-				fwd[name+"/phi"] = idx
-			}
-			return &analysis.SMCInnerSimConfig{
-				Partitions: parts,
+				}},
 				Simulation: &simulator.SimulationConfig{
 					OutputCondition:      &simulator.NilOutputCondition{},
 					OutputFunction:       &simulator.NilOutputFunction{},
@@ -198,13 +191,13 @@ func fitJointSMC(mech Mechanism, xs, mu, noise []float64, L [][]float64, cfg SMC
 					TimestepFunction:     &simulator.ConstantTimestepFunction{Stepsize: 1.0},
 					InitTimeValue:        0.0,
 				},
-				LoglikePartitions: loglikeParts,
-				ParamForwarding:   fwd,
+				LoglikePartition: "ll",
+				ParamForwarding:  map[string][]int{"ll/phi": idx},
 			}
 		},
 	}
 
-	res := analysis.RunSMCInference(analysis.AppliedSMCInference{
+	res := macros.RunSMCInference(macros.AppliedSMCInference{
 		ProposalName:  "proposal",
 		SimName:       "sim",
 		PosteriorName: "posterior",
